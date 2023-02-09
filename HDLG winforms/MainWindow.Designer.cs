@@ -33,6 +33,7 @@
             this.selectedDirectoryLabel = new System.Windows.Forms.Label();
             this.selectedDirectoryBrowser = new System.Windows.Forms.FolderBrowserDialog();
             this.btnStart = new System.Windows.Forms.Button();
+            this.saveContentFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.gbDirectory.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -55,7 +56,7 @@
             this.btnChooseFolder.TabIndex = 0;
             this.btnChooseFolder.Text = "Choose folder";
             this.btnChooseFolder.UseVisualStyleBackColor = true;
-            this.btnChooseFolder.Click += new System.EventHandler(this.btnChooseFolder_Click);
+            this.btnChooseFolder.Click += new System.EventHandler(this.BtnChooseFolder_Click);
             // 
             // selectedDirectoryLabel
             // 
@@ -74,7 +75,11 @@
             this.btnStart.TabIndex = 1;
             this.btnStart.Text = "Start";
             this.btnStart.UseVisualStyleBackColor = true;
-            this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
+            this.btnStart.Click += new System.EventHandler(this.BtnStart_Click);
+            // 
+            // saveContentFileDialog
+            // 
+            this.saveContentFileDialog.DefaultExt = "xml";
             // 
             // MainWindow
             // 
@@ -99,5 +104,6 @@
         private FolderBrowserDialog selectedDirectoryBrowser;
         private Label selectedDirectoryLabel;
         private Button btnStart;
+        private SaveFileDialog saveContentFileDialog;
     }
 }

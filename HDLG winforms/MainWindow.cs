@@ -19,7 +19,7 @@ namespace HDLG_winforms
 
         private string? selectedDirectory;
 
-        private void btnChooseFolder_Click(object sender, EventArgs e)
+        private void BtnChooseFolder_Click(object sender, EventArgs e)
         {
             var result = selectedDirectoryBrowser.ShowDialog();
             if (result == DialogResult.OK)
@@ -38,13 +38,20 @@ namespace HDLG_winforms
         {
             selectedDirectory = null;
             selectedDirectoryLabel.Text = string.Empty;
+            saveContentFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         }
 
-        private void btnStart_Click(object sender, EventArgs e)
+        private async void BtnStart_Click(object sender, EventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(selectedDirectory))
             {
+                var result = saveContentFileDialog.ShowDialog();
+                if (result == DialogResult.OK) { 
+                    Directory directory = new(selectedDirectory);
+                    directory.Browse();
 
+                    await DirectoryBrowser.SaveAsXMLAsync(saveContentFileDialog.FileName, directory);
+                }
             }
         }
     }

@@ -1,28 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+
+using System.Collections.ObjectModel;
 
 namespace HDLG_winforms
 {
 
     internal class Directory: IEquatable<Directory>
     {
-        private readonly string _path;
+        public string Name { get; private set; }
 
-        private readonly List<Directory> directories = new();
+        public string Path { get; private set; }
+
+        public DateTime CreationTime { get; private set; }
+
+        private readonly List<Directory> directories = new();       
+
+        public ReadOnlyCollection<Directory> Directories => directories.AsReadOnly();
 
         private readonly List<File> files = new();
 
+        public ReadOnlyCollection<File> Files => files.AsReadOnly();
+
         public Directory(string path)
         {
-            _path = path ?? throw new ArgumentNullException(nameof(path));
+            DirectoryInfo directory= new(path);
+            Path = path ?? throw new ArgumentNullException(nameof(path));
+            Name = directory.Name;
+            CreationTime = directory.CreationTimeUtc.ToLocalTime();
         }
 
         public void Browse()
         {
-            DirectoryInfo directory = new(_path);
+            DirectoryInfo directory = new(Path);
             directory.EnumerateDirectories().ToList().ForEach(d =>
             {
                 directories.Add(new Directory(d.FullName));
@@ -39,11 +48,12 @@ namespace HDLG_winforms
             }
         }
 
-        public override string ToString() { return _path; }
+        
+        public override string ToString() { return Path; }
 
         public override int GetHashCode()
         {
-            return _path.GetHashCode();
+            return Path.GetHashCode();
         }
 
         public override bool Equals(object? obj)
@@ -59,7 +69,7 @@ namespace HDLG_winforms
         {
             if (other != null)
             {
-                return _path == other._path;
+                return Path == other.Path;
             }
             return false;
         }
