@@ -38,8 +38,12 @@ namespace HDLG_winforms
                     await writer.WriteStartDocumentAsync();
 
                     await writer.WriteStartElementAsync(null, "Hdlg", null);
-                    await writer.WriteElementStringAsync("null", "Directory", null, directory.Path);
-                    await writer.WriteElementStringAsync("null", "DateTime", null, DateTime.Now.ToString("O", CultureInfo.InvariantCulture));
+                    await writer.WriteAttributeStringAsync(null, "Version", null, typeof(DirectoryBrowser).Assembly.GetName().Version?.ToString());
+                    await writer.WriteElementStringAsync(null, "Directory", null, directory.Path);
+                    await writer.WriteElementStringAsync(null, "DateTime", null, DateTime.Now.ToString("O", CultureInfo.InvariantCulture));
+
+                    await writer.WriteElementStringAsync(null, "DirectoriesCount", null, DirectoriesCount(directory).ToString(CultureInfo.InvariantCulture));
+                    await writer.WriteElementStringAsync(null, "filesCount", null, FilesCount(directory).ToString(CultureInfo.InvariantCulture));
 
                     await WriteDirectoriesAsync(writer, directory.Directories);
 
@@ -51,6 +55,26 @@ namespace HDLG_winforms
 
             }
 
+        }
+
+        private static long DirectoriesCount(Directory directory)
+        {
+            long count = directory.DirectoriesCount;
+            foreach(Directory d in directory.Directories)
+            {
+                count += DirectoriesCount(d);
+            }
+            return count;
+        }
+
+        private static long FilesCount(Directory directory)
+        {
+            long count = directory.FilesCount;
+            foreach (Directory d in directory.Directories)
+            {
+                count += FilesCount(d);
+            }
+            return count;
         }
 
         private static async Task WriteDirectoriesAsync(XmlWriter writer, IEnumerable<Directory> directories)
@@ -72,10 +96,12 @@ namespace HDLG_winforms
 
                     if (directory.Files.Any())
                     {
+                        await writer.WriteStartElementAsync(null, "Files", null);
                         foreach (File file in directory.Files)
                         {
                             await file.WriteFileAsync(writer);
                         }
+                        await writer.WriteEndElementAsync();
                     }
 
                     await writer.WriteEndElementAsync();

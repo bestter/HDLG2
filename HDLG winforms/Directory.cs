@@ -1,11 +1,9 @@
-﻿
-
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 
 namespace HDLG_winforms
 {
 
-    internal class Directory: IEquatable<Directory>
+    internal class Directory : IEquatable<Directory>
     {
         public string Name { get; private set; }
 
@@ -13,7 +11,7 @@ namespace HDLG_winforms
 
         public DateTime CreationTime { get; private set; }
 
-        private readonly List<Directory> directories = new();       
+        private readonly List<Directory> directories = new();
 
         public ReadOnlyCollection<Directory> Directories => directories.AsReadOnly();
 
@@ -21,9 +19,12 @@ namespace HDLG_winforms
 
         public ReadOnlyCollection<File> Files => files.AsReadOnly();
 
+        public int DirectoriesCount => directories.Count;
+        public int FilesCount => files.Count;
+
         public Directory(string path)
         {
-            DirectoryInfo directory= new(path);
+            DirectoryInfo directory = new(path);
             Path = path ?? throw new ArgumentNullException(nameof(path));
             Name = directory.Name;
             CreationTime = directory.CreationTimeUtc.ToLocalTime();
@@ -48,7 +49,7 @@ namespace HDLG_winforms
             }
         }
 
-        
+
         public override string ToString() { return Path; }
 
         public override int GetHashCode()
