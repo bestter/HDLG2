@@ -14,7 +14,7 @@ namespace HDLG_winforms
         /// <param name="filePath">Where to save the data</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public static async Task SaveAsXMLAsync(string filePath, Directory directory)
+        public static async Task SaveAsXMLAsync(string filePath, Directory directory, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
@@ -51,7 +51,7 @@ namespace HDLG_winforms
 
                     await writer.WriteEndDocumentAsync();
                 }
-                await stream.FlushAsync();
+                await stream.FlushAsync(cancellationToken);
 
             }
 

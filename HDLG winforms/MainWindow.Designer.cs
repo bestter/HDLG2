@@ -36,6 +36,8 @@
             this.saveContentFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.labelBrowseTime = new System.Windows.Forms.Label();
             this.labelSaveTime = new System.Windows.Forms.Label();
+            this.backgroundWorkerDirectoryBrowse = new System.ComponentModel.BackgroundWorker();
+            this.labelTotalTime = new System.Windows.Forms.Label();
             this.gbDirectory.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -101,11 +103,26 @@
             this.labelSaveTime.TabIndex = 3;
             this.labelSaveTime.Text = "SaveTime";
             // 
+            // backgroundWorkerDirectoryBrowse
+            // 
+            this.backgroundWorkerDirectoryBrowse.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerDirectoryBrowse_DoWork);
+            this.backgroundWorkerDirectoryBrowse.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorkerDirectoryBrowse_RunWorkerCompleted);
+            // 
+            // labelTotalTime
+            // 
+            this.labelTotalTime.AutoSize = true;
+            this.labelTotalTime.Location = new System.Drawing.Point(682, 444);
+            this.labelTotalTime.Name = "labelTotalTime";
+            this.labelTotalTime.Size = new System.Drawing.Size(59, 15);
+            this.labelTotalTime.TabIndex = 4;
+            this.labelTotalTime.Text = "Total time";
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(800, 472);
+            this.Controls.Add(this.labelTotalTime);
             this.Controls.Add(this.labelSaveTime);
             this.Controls.Add(this.labelBrowseTime);
             this.Controls.Add(this.btnStart);
@@ -130,5 +147,7 @@
         private SaveFileDialog saveContentFileDialog;
         private Label labelBrowseTime;
         private Label labelSaveTime;
+        private System.ComponentModel.BackgroundWorker backgroundWorkerDirectoryBrowse;
+        private Label labelTotalTime;
     }
 }

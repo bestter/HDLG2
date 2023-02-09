@@ -9,7 +9,7 @@ using System.Xml;
 
 namespace HDLG_winforms
 {
-    internal class File
+    internal class File: IEquatable<File>, IComparable, IComparable<File>
     {
         public string Name { get; private set; }
 
@@ -80,6 +80,24 @@ namespace HDLG_winforms
                 return Path == other.Path;
             }
             return false;
+        }
+
+        public int CompareTo(object? obj)
+        {
+            if (obj is File file)
+            {
+                return file.CompareTo(this);
+            }
+            return -1;
+        }
+
+        public int CompareTo(File? other)
+        {
+            if (other != null)
+            {
+                return other.Path.CompareTo(Path);
+            }
+            return -1;
         }
     }
 }

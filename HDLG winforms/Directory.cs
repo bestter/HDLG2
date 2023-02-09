@@ -3,7 +3,7 @@
 namespace HDLG_winforms
 {
 
-    internal class Directory : IEquatable<Directory>
+    internal class Directory : IEquatable<Directory>, IComparable, IComparable<Directory>
     {
         public string Name { get; private set; }
 
@@ -37,11 +37,13 @@ namespace HDLG_winforms
             {
                 directories.Add(new Directory(d.FullName));
             });
+            directories.Sort();
 
             directory.EnumerateFiles().ToList().ForEach(f =>
             {
                 files.Add(new File(f.FullName));
             });
+            files.Sort();
 
             foreach (Directory d in directories)
             {
@@ -73,6 +75,24 @@ namespace HDLG_winforms
                 return Path == other.Path;
             }
             return false;
+        }
+
+        public int CompareTo(object? obj)
+        {
+            if (obj is Directory directory)
+            {
+                return directory.CompareTo(this);
+            }
+            return -1;
+        }
+
+        public int CompareTo(Directory? other)
+        {
+            if (other != null)
+            {
+                return other.Path.CompareTo(Path);
+            }
+            return -1;
         }
     }
 }
