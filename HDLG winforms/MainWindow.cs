@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Globalization;
+using System.Reflection;
 
 namespace HDLG_winforms
 {
@@ -38,6 +39,8 @@ namespace HDLG_winforms
 
         private void MainWindow_Load(object sender, EventArgs e)
         {
+            AssemblyName an = typeof(MainWindow).Assembly.GetName();
+            Text = $"{an.Name} {an.Version?.ToString()}";
             selectedDirectory = null;
             selectedDirectoryLabel.Text = string.Empty;
             labelBrowseTime.Text = string.Empty;
@@ -98,20 +101,11 @@ namespace HDLG_winforms
             PerformanceCount? perf = e.Result as PerformanceCount?;
             if (perf != null)
             {
-                labelBrowseTime.Text = perf.Value.BrowseTime.ToString("G", CultureInfo.CurrentUICulture);
-                labelSaveTime.Text = perf.Value.SaveTime.ToString("G", CultureInfo.CurrentUICulture);
-                labelTotalTime.Text = perf.Value.TotalTime.ToString("G", CultureInfo.CurrentUICulture);
+                labelBrowseTime.Text = perf.Value.BrowseTime.ToString("G", CultureInfo.CurrentCulture);
+                labelSaveTime.Text = perf.Value.SaveTime.ToString("G", CultureInfo.CurrentCulture);
+                labelTotalTime.Text = perf.Value.TotalTime.ToString("G", CultureInfo.CurrentCulture);
             }
         }
     }
-
-    internal struct PerformanceCount
-    {
-        public TimeSpan BrowseTime;
-        public TimeSpan SaveTime;
-        public TimeSpan TotalTime;
-        
-    }
-
 
 }

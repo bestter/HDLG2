@@ -7,6 +7,8 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <StartupObject>HDLG_winforms.Program</StartupObject>
+    <AssemblyName>HTML directory list generator</AssemblyName>
   </PropertyGroup>
 
 </Project>
