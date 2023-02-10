@@ -6,6 +6,9 @@ using System.Xml.Linq;
 
 namespace HDLG_winforms
 {
+    /// <summary>
+    /// Directory browser
+    /// </summary>
     internal class DirectoryBrowser
     {
         
@@ -78,6 +81,12 @@ namespace HDLG_winforms
             return count;
         }
 
+        /// <summary>
+        /// Write content of directories
+        /// </summary>
+        /// <param name="writer"></param>
+        /// <param name="directories"></param>
+        /// <returns></returns>
         private static async Task WriteDirectoriesAsync(XmlWriter writer, IEnumerable<Directory> directories)
         {
             if (directories.Any())
@@ -112,6 +121,13 @@ namespace HDLG_winforms
             }
         }
 
+        /// <summary>
+        /// Write the content of a <paramref name="file"/> to the <paramref name="writer"/>
+        /// </summary>
+        /// <param name="writer">The writer to write to</param>
+        /// <param name="file">File that content the data</param>
+        /// <returns>A task</returns>
+        /// <exception cref="ArgumentNullException"></exception>
         private static async Task WriteFileAsync(XmlWriter writer, File file)
         {
             if (writer is null)
