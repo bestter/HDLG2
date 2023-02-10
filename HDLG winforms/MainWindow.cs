@@ -65,7 +65,7 @@ namespace HDLG_winforms
             }
         }
 
-        private async void backgroundWorkerDirectoryBrowse_DoWork(object sender, DoWorkEventArgs e)
+        private async void BackgroundWorkerDirectoryBrowse_DoWork(object sender, DoWorkEventArgs e)
         {
             string? selecteDirectory = e.Argument as string;
             if (!string.IsNullOrWhiteSpace(selecteDirectory))
@@ -91,7 +91,7 @@ namespace HDLG_winforms
             }
         }
 
-        private void backgroundWorkerDirectoryBrowse_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void BackgroundWorkerDirectoryBrowse_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             PerformanceCount? perf = e.Result as PerformanceCount?;
             if (perf != null)

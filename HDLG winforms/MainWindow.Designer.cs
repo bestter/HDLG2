@@ -105,8 +105,8 @@
             // 
             // backgroundWorkerDirectoryBrowse
             // 
-            this.backgroundWorkerDirectoryBrowse.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerDirectoryBrowse_DoWork);
-            this.backgroundWorkerDirectoryBrowse.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorkerDirectoryBrowse_RunWorkerCompleted);
+            this.backgroundWorkerDirectoryBrowse.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundWorkerDirectoryBrowse_DoWork);
+            this.backgroundWorkerDirectoryBrowse.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkerDirectoryBrowse_RunWorkerCompleted);
             // 
             // labelTotalTime
             // 
