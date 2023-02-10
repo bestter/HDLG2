@@ -38,25 +38,6 @@ namespace HDLG_winforms
             }
         }
 
-
-        public async Task WriteFileAsync(XmlWriter writer)
-        {
-            if (writer is null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            await writer.WriteStartElementAsync(null, "File", null);
-            
-            await writer.WriteElementStringAsync(null, "Name", null, Name);
-            await writer.WriteElementStringAsync(null, "Path", null, Path);
-            await writer.WriteElementStringAsync(null, "Extension", null, Extension);
-            await writer.WriteElementStringAsync(null, "Size", null, Size.ToString(CultureInfo.InvariantCulture));
-            await writer.WriteElementStringAsync(null, "CreationTime", null, CreationTime.ToString("O", CultureInfo.InvariantCulture));            
-
-            await writer.WriteEndElementAsync();
-        }
-
         public override string ToString() { return Path; }
 
         public override int GetHashCode()

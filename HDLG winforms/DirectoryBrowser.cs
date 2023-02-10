@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Text;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace HDLG_winforms
 {
@@ -99,7 +100,7 @@ namespace HDLG_winforms
                         await writer.WriteStartElementAsync(null, "Files", null);
                         foreach (File file in directory.Files)
                         {
-                            await file.WriteFileAsync(writer);
+                            await WriteFileAsync(writer, file);
                         }
                         await writer.WriteEndElementAsync();
                     }
@@ -109,6 +110,24 @@ namespace HDLG_winforms
 
                 await writer.WriteEndElementAsync();
             }
+        }
+
+        private static async Task WriteFileAsync(XmlWriter writer, File file)
+        {
+            if (writer is null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            await writer.WriteStartElementAsync(null, "File", null);
+
+            await writer.WriteElementStringAsync(null, "Name", null, file.Name);
+            await writer.WriteElementStringAsync(null, "Path", null, file.Path);
+            await writer.WriteElementStringAsync(null, "Extension", null, file.Extension);
+            await writer.WriteElementStringAsync(null, "Size", null, file.Size.ToString(CultureInfo.InvariantCulture));
+            await writer.WriteElementStringAsync(null, "CreationTime", null, file.CreationTime.ToString("O", CultureInfo.InvariantCulture));
+
+            await writer.WriteEndElementAsync();
         }
 
 
