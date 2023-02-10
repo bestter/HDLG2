@@ -59,6 +59,7 @@ namespace HDLG_winforms
                     var result = saveContentFileDialog.ShowDialog();
                     if (result == DialogResult.OK)
                     {
+                        Cursor.Current = Cursors.WaitCursor;
                         backgroundWorkerDirectoryBrowse.RunWorkerAsync(selectedDirectory);                        
                     }
                 }
@@ -93,6 +94,7 @@ namespace HDLG_winforms
 
         private void BackgroundWorkerDirectoryBrowse_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            Cursor.Current = Cursors.Default;
             PerformanceCount? perf = e.Result as PerformanceCount?;
             if (perf != null)
             {
