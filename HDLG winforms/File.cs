@@ -42,7 +42,7 @@ namespace HDLG_winforms
 
         public override int GetHashCode()
         {
-            return Path.GetHashCode();
+            return Path.GetHashCode(System.StringComparison.OrdinalIgnoreCase);
         }
 
         public override bool Equals(object? obj)
@@ -76,7 +76,7 @@ namespace HDLG_winforms
         {
             if (other != null)
             {
-                return other.Path.CompareTo(Path);
+                return string.Compare(other.Path, Path, StringComparison.OrdinalIgnoreCase);
             }
             return -1;
         }
