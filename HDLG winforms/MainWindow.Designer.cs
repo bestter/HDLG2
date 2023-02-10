@@ -38,6 +38,7 @@
             this.labelSaveTime = new System.Windows.Forms.Label();
             this.backgroundWorkerDirectoryBrowse = new System.ComponentModel.BackgroundWorker();
             this.labelTotalTime = new System.Windows.Forms.Label();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.gbDirectory.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -117,11 +118,19 @@
             this.labelTotalTime.TabIndex = 4;
             this.labelTotalTime.Text = "Total time";
             // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(351, 322);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(100, 23);
+            this.progressBar1.TabIndex = 2;
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 472);
+            this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.labelTotalTime);
             this.Controls.Add(this.labelSaveTime);
             this.Controls.Add(this.labelBrowseTime);
@@ -149,5 +158,6 @@
         private Label labelSaveTime;
         private System.ComponentModel.BackgroundWorker backgroundWorkerDirectoryBrowse;
         private Label labelTotalTime;
+        private ProgressBar progressBar1;
     }
 }

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Globalization;
 using System.Reflection;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace HDLG_winforms
 {
@@ -53,6 +54,7 @@ namespace HDLG_winforms
         {
             if (!backgroundWorkerDirectoryBrowse.IsBusy)
             {
+                progressBar1.Value = 0;
                 labelBrowseTime.Text = string.Empty;
                 labelSaveTime.Text = string.Empty;
                 labelTotalTime.Text = string.Empty;
@@ -63,14 +65,22 @@ namespace HDLG_winforms
                     if (result == DialogResult.OK)
                     {
                         Cursor.Current = Cursors.WaitCursor;
-                        backgroundWorkerDirectoryBrowse.RunWorkerAsync(selectedDirectory);                        
+                        backgroundWorkerDirectoryBrowse.RunWorkerAsync(selectedDirectory);
+                        while (this.backgroundWorkerDirectoryBrowse.IsBusy)
+                        {
+                            progressBar1.Increment(1);
+                            // Keep UI messages moving, so the form remains 
+                            // responsive during the asynchronous operation.
+                            Application.DoEvents();
+                        }
                     }
                 }
             }
         }
 
-        private async void BackgroundWorkerDirectoryBrowse_DoWork(object sender, DoWorkEventArgs e)
+        private void BackgroundWorkerDirectoryBrowse_DoWork(object sender, DoWorkEventArgs e)
         {
+            Debug.Write($"Started at {DateTime.Now.ToLongTimeString()}");
             string? selecteDirectory = e.Argument as string;
             if (!string.IsNullOrWhiteSpace(selecteDirectory))
             {
@@ -78,15 +88,16 @@ namespace HDLG_winforms
                 Stopwatch stopwatch = Stopwatch.StartNew();
                 directory.Browse();
                 TimeSpan browseTime = stopwatch.Elapsed;
-
+                
                 using (CancellationTokenSource source = new())
                 {
-                    await DirectoryBrowser.SaveAsXMLAsync(saveContentFileDialog.FileName, directory, source.Token);
+                    DirectoryBrowser.SaveAsXMLAsync(saveContentFileDialog.FileName, directory, source.Token).Wait();
                 }
                 stopwatch.Stop();
                 TimeSpan saveTime = stopwatch.Elapsed - browseTime;
 
                 e.Result = new PerformanceCount() { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
+                Debug.Write($"Done at {DateTime.Now.ToLongTimeString()}");
             }
             else
             {
@@ -97,6 +108,7 @@ namespace HDLG_winforms
 
         private void BackgroundWorkerDirectoryBrowse_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            Debug.Write($"Completed at {DateTime.Now.ToLongTimeString()}");
             Cursor.Current = Cursors.Default;
             PerformanceCount? perf = e.Result as PerformanceCount?;
             if (perf != null)
