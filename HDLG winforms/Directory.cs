@@ -1,9 +1,10 @@
-﻿using System.Collections.ObjectModel;
+﻿using HdlgFileProperty;
+using System.Collections.ObjectModel;
 
 namespace HDLG_winforms
 {
 
-    internal class Directory : IEquatable<Directory>, IComparable, IComparable<Directory>
+    public class Directory : IEquatable<Directory>, IComparable, IComparable<Directory>
     {
         public string Name { get; private set; }
 
@@ -30,7 +31,7 @@ namespace HDLG_winforms
             CreationTime = directory.CreationTimeUtc.ToLocalTime();
         }
 
-        public void Browse()
+        public void Browse(FilePropertyBrowser propertyBrowser)
         {
             DirectoryInfo directory = new(Path);
             directory.EnumerateDirectories().ToList().ForEach(d =>
@@ -41,13 +42,15 @@ namespace HDLG_winforms
 
             directory.EnumerateFiles().ToList().ForEach(f =>
             {
-                files.Add(new File(f.FullName));
+                var properties = propertyBrowser.GetFileProperty(f.FullName);
+                var file = new File(f.FullName, properties);
+                files.Add(file);
             });
             files.Sort();
 
             foreach (Directory d in directories)
             {
-                d.Browse();
+                d.Browse(propertyBrowser);
             }
         }
 

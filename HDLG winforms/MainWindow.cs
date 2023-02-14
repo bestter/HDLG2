@@ -11,14 +11,21 @@ using System.Windows.Forms;
 using System.Globalization;
 using System.Reflection;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using HdlgFileProperty;
 
 namespace HDLG_winforms
 {
     public partial class MainWindow : Form
     {
-        public MainWindow()
+        public IFilePropertyGetter ImagePropertyGetter;
+
+        private readonly FilePropertyBrowser propertyBrowser;
+
+        public MainWindow(IFilePropertyGetter imagePropertyGetter)
         {
             InitializeComponent();
+            ImagePropertyGetter = imagePropertyGetter;
+            propertyBrowser = new(imagePropertyGetter);
         }
 
         private string? selectedDirectory;
@@ -86,7 +93,7 @@ namespace HDLG_winforms
             {
                 Directory directory = new(selecteDirectory);
                 Stopwatch stopwatch = Stopwatch.StartNew();
-                directory.Browse();
+                directory.Browse(propertyBrowser);
                 TimeSpan browseTime = stopwatch.Elapsed;
                 
                 using (CancellationTokenSource source = new())

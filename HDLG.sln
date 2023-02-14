@@ -14,6 +14,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Éléments de solution", "�
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HdlgFileProperty", "HDLG file property\HdlgFileProperty.csproj", "{9ECDEA80-A070-4385-8DC8-531E91694AF2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{76DC9657-102B-4CB6-99D0-FF4A5810303A}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,6 +31,10 @@ Global
 		{B6A39CA2-3E4C-4467-9C07-5BCF7C63503B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B6A39CA2-3E4C-4467-9C07-5BCF7C63503B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B6A39CA2-3E4C-4467-9C07-5BCF7C63503B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9ECDEA80-A070-4385-8DC8-531E91694AF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9ECDEA80-A070-4385-8DC8-531E91694AF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9ECDEA80-A070-4385-8DC8-531E91694AF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9ECDEA80-A070-4385-8DC8-531E91694AF2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

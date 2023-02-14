@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using HdlgFileProperty;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using System.Xml;
@@ -9,9 +10,9 @@ namespace HDLG_winforms
     /// <summary>
     /// Directory browser
     /// </summary>
-    internal class DirectoryBrowser
+    public class DirectoryBrowser
     {
-        
+
         /// <summary>
         /// Export directory content as XML
         /// </summary>
@@ -142,6 +143,21 @@ namespace HDLG_winforms
             await writer.WriteElementStringAsync(null, "Extension", null, file.Extension);
             await writer.WriteElementStringAsync(null, "Size", null, file.Size.ToString(CultureInfo.InvariantCulture));
             await writer.WriteElementStringAsync(null, "CreationTime", null, file.CreationTime.ToString("O", CultureInfo.InvariantCulture));
+
+            
+            if (file.Properties!= null)
+            {
+                await writer.WriteStartElementAsync(null, "ExtentedProperties", null);
+                foreach (var property in file.Properties)
+                {
+                    if (!string.IsNullOrWhiteSpace(property.Key) && property.Value != null)
+                    {
+                        await writer.WriteElementStringAsync(null, property.Key, null, property.Value);
+                    }
+                }
+                await writer.WriteEndElementAsync();
+            }
+            
 
             await writer.WriteEndElementAsync();
         }

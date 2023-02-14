@@ -9,7 +9,7 @@ using System.Xml;
 
 namespace HDLG_winforms
 {
-    internal class File: IEquatable<File>, IComparable, IComparable<File>
+    public class File: IEquatable<File>, IComparable, IComparable<File>
     {
         public string Name { get; private set; }
 
@@ -21,7 +21,9 @@ namespace HDLG_winforms
 
         public DateTime CreationTime { get; private set; }
 
-        public File(string path)
+        public Dictionary<string, string> Properties { get; private set; }
+
+        public File(string path, Dictionary<string, string> properties)
         {
             Path = path;
             FileInfo info = new(Path);
@@ -31,6 +33,7 @@ namespace HDLG_winforms
                 Extension = info.Extension;
                 Size = info.Length;
                 CreationTime = info.CreationTime;
+                Properties = new Dictionary<string, string>(properties);
             }
             else
             {
