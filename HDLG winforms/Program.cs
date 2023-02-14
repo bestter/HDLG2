@@ -12,7 +12,9 @@ namespace HDLG_winforms
         {
             return Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) => {
-                    services.AddTransient<IFilePropertyGetter, ImagePropertyGetter>();
+                    services.AddTransient<ImagePropertyGetter, ImagePropertyGetter>();
+                    services.AddTransient<WordPropertyGetter, WordPropertyGetter>();
+                    services.AddTransient<ExcelPropertyGetter, ExcelPropertyGetter>();
                     services.AddTransient<MainWindow>();
                 });
         }

@@ -17,15 +17,21 @@ namespace HDLG_winforms
 {
     public partial class MainWindow : Form
     {
-        public IFilePropertyGetter ImagePropertyGetter;
+        public ImagePropertyGetter ImagePropertyGetter;
+
+        public WordPropertyGetter WordPropertyGetter;
+
+        public ExcelPropertyGetter ExcelPropertyGetter;
 
         private readonly FilePropertyBrowser propertyBrowser;
 
-        public MainWindow(IFilePropertyGetter imagePropertyGetter)
+        public MainWindow(ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter)
         {
             InitializeComponent();
             ImagePropertyGetter = imagePropertyGetter;
-            propertyBrowser = new(imagePropertyGetter);
+            WordPropertyGetter = wordPropertyGetter;
+            ExcelPropertyGetter = excelPropertyGetter;
+            propertyBrowser = new(imagePropertyGetter, wordPropertyGetter, excelPropertyGetter);
         }
 
         private string? selectedDirectory;

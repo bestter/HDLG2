@@ -10,10 +10,14 @@ namespace HdlgFileProperty
     {
         private readonly IFilePropertyGetter[] filePropertyGetters;
 
-        public FilePropertyBrowser(IFilePropertyGetter imagePropertyGetter)
+        public FilePropertyBrowser(params IFilePropertyGetter[] imagePropertyGetters)
         {
-
-            filePropertyGetters = new IFilePropertyGetter[] { imagePropertyGetter };
+            if (imagePropertyGetters is null)
+            {
+                throw new ArgumentNullException(nameof(imagePropertyGetters));
+            }
+            filePropertyGetters = new IFilePropertyGetter[imagePropertyGetters.Length];
+            imagePropertyGetters.CopyTo(filePropertyGetters, 0);
         }
 
         public Dictionary<string,string> GetFileProperty(string path)
