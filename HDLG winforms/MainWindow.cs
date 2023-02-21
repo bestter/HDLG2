@@ -80,7 +80,7 @@ namespace HDLG_winforms
                     labelBrowseTime.Text = string.Empty;
                     labelSaveTime.Text = string.Empty;
                     labelTotalTime.Text = string.Empty;
-                    labelException.Text = string.Empty;                    
+                    labelException.Text = string.Empty;
 
                     if (!string.IsNullOrWhiteSpace(selectedDirectory))
                     {
@@ -102,8 +102,8 @@ namespace HDLG_winforms
                     }
                 }
             }
-            catch(Exception ex)
-            {                
+            catch (Exception ex)
+            {
                 labelException.Text = ex.Message;
                 log.Fatal(ex, $"Error in {nameof(BtnStart_Click)}");
             }
@@ -173,5 +173,4 @@ namespace HDLG_winforms
             base.Dispose(disposing);
         }
     }
-
 }

@@ -1,11 +1,7 @@
-﻿using HdlgFileProperty;
-using Microsoft.VisualBasic.Logging;
-using System.Diagnostics.CodeAnalysis;
+﻿using Serilog.Core;
 using System.Globalization;
 using System.Text;
 using System.Xml;
-using Serilog;
-using Serilog.Core;
 
 namespace HDLG_winforms
 {
