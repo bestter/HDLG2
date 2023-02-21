@@ -1,9 +1,11 @@
 ﻿using HdlgFileProperty;
+using Microsoft.VisualBasic.Logging;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using System.Xml;
-using System.Xml.Linq;
+using Serilog;
+using Serilog.Core;
 
 namespace HDLG_winforms
 {
@@ -12,6 +14,12 @@ namespace HDLG_winforms
     /// </summary>
     public class DirectoryBrowser
     {
+        private readonly Logger log;
+
+        public DirectoryBrowser(Logger log)
+        {
+            this.log = log;
+        }
 
         /// <summary>
         /// Export directory content as XML
@@ -19,7 +27,7 @@ namespace HDLG_winforms
         /// <param name="filePath">Where to save the data</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public static async Task SaveAsXMLAsync(string filePath, Directory directory, CancellationToken cancellationToken)
+        public async Task SaveAsXMLAsync(string filePath, Directory directory, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
@@ -36,42 +44,49 @@ namespace HDLG_winforms
                 IndentChars = "\t"
             };
 
-            using (Stream stream = fileInfo.OpenWrite())
+            using Stream stream = fileInfo.OpenWrite();
+            using (XmlWriter writer = XmlWriter.Create(stream, settings))
             {
-                using (XmlWriter writer = XmlWriter.Create(stream, settings))
-                {
-                    await writer.WriteStartDocumentAsync();
+                await writer.WriteStartDocumentAsync();
 
-                    await writer.WriteStartElementAsync(null, "Hdlg", null);
-                    await writer.WriteAttributeStringAsync(null, "Version", null, typeof(DirectoryBrowser).Assembly.GetName().Version?.ToString());
-                    await writer.WriteElementStringAsync(null, "Directory", null, directory.Path);
-                    await writer.WriteElementStringAsync(null, "DateTime", null, DateTime.Now.ToString("O", CultureInfo.InvariantCulture));
+                await writer.WriteStartElementAsync(null, "Hdlg", null);
+                await writer.WriteAttributeStringAsync(null, "Version", null, typeof(DirectoryBrowser).Assembly.GetName().Version?.ToString());
+                await writer.WriteElementStringAsync(null, "Directory", null, directory.Path);
+                await writer.WriteElementStringAsync(null, "DateTime", null, DateTime.Now.ToString("O", CultureInfo.InvariantCulture));
 
-                    await writer.WriteElementStringAsync(null, "DirectoriesCount", null, DirectoriesCount(directory).ToString(CultureInfo.InvariantCulture));
-                    await writer.WriteElementStringAsync(null, "filesCount", null, FilesCount(directory).ToString(CultureInfo.InvariantCulture));
+                await writer.WriteElementStringAsync(null, "DirectoriesCount", null, DirectoriesCount(directory).ToString(CultureInfo.InvariantCulture));
+                await writer.WriteElementStringAsync(null, "filesCount", null, FilesCount(directory).ToString(CultureInfo.InvariantCulture));
 
-                    await WriteDirectoriesAsync(writer, directory.Directories);
+                await WriteDirectoryAsync(writer, directory);
 
-                    await writer.WriteEndElementAsync();
+                await writer.WriteEndElementAsync();
 
-                    await writer.WriteEndDocumentAsync();
-                }
-                await stream.FlushAsync(cancellationToken);
-
+                await writer.WriteEndDocumentAsync();
             }
+            await stream.FlushAsync(cancellationToken);
 
         }
 
+        /// <summary>
+        /// Count the total numbers of directories into <paramref name="directory"/> and is children
+        /// </summary>
+        /// <param name="directory"></param>
+        /// <returns></returns>
         private static long DirectoriesCount(Directory directory)
         {
             long count = directory.DirectoriesCount;
-            foreach(Directory d in directory.Directories)
+            foreach (Directory d in directory.Directories)
             {
                 count += DirectoriesCount(d);
             }
             return count;
         }
 
+        /// <summary>
+        /// Count the total numbers of files into <paramref name="directory"/> and is children
+        /// </summary>
+        /// <param name="directory"></param>
+        /// <returns></returns>
         private static long FilesCount(Directory directory)
         {
             long count = directory.FilesCount;
@@ -83,43 +98,39 @@ namespace HDLG_winforms
         }
 
         /// <summary>
-        /// Write content of directories
+        /// Write the content of a directory
         /// </summary>
         /// <param name="writer"></param>
-        /// <param name="directories"></param>
+        /// <param name="directory"></param>
         /// <returns></returns>
-        private static async Task WriteDirectoriesAsync(XmlWriter writer, IEnumerable<Directory> directories)
+        private async Task WriteDirectoryAsync(XmlWriter writer, Directory directory)
         {
-            if (directories.Any())
+            log.Debug($"In {nameof(WriteDirectoryAsync)} {nameof(Directory)} {directory}");
+            await writer.WriteStartElementAsync(null, "Directory", null);
+            await writer.WriteElementStringAsync(null, "Name", null, directory.Name);
+            await writer.WriteElementStringAsync(null, "Path", null, directory.Path);
+            await writer.WriteElementStringAsync(null, "CreationTime", null, directory.CreationTime.ToString("O", CultureInfo.InvariantCulture));
+            if (directory.Directories.Any())
             {
                 await writer.WriteStartElementAsync(null, "Directories", null);
-
-                foreach (Directory directory in directories)
-                {
-                    await writer.WriteStartElementAsync(null, "Directory", null);
-                    await writer.WriteElementStringAsync(null, "Name", null, directory.Name);
-                    await writer.WriteElementStringAsync(null, "Path", null, directory.Path);
-                    await writer.WriteElementStringAsync(null, "CreationTime", null, directory.CreationTime.ToString("O", CultureInfo.InvariantCulture));
-                    if (directory.Directories.Any())
-                    {
-                        await WriteDirectoriesAsync(writer, directory.Directories);
-                    }
-
-                    if (directory.Files.Any())
-                    {
-                        await writer.WriteStartElementAsync(null, "Files", null);
-                        foreach (File file in directory.Files)
-                        {
-                            await WriteFileAsync(writer, file);
-                        }
-                        await writer.WriteEndElementAsync();
-                    }
-
-                    await writer.WriteEndElementAsync();
+                foreach (Directory d in directory.Directories)
+                {                    
+                    await WriteDirectoryAsync(writer, d);                    
                 }
-
                 await writer.WriteEndElementAsync();
             }
+
+            if (directory.Files.Any())
+            {
+                await writer.WriteStartElementAsync(null, "Files", null);
+                foreach (File file in directory.Files)
+                {
+                    await WriteFileAsync(writer, file);
+                }
+                await writer.WriteEndElementAsync();
+            }
+
+            await writer.WriteEndElementAsync();
         }
 
         /// <summary>
@@ -129,12 +140,14 @@ namespace HDLG_winforms
         /// <param name="file">File that content the data</param>
         /// <returns>A task</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        private static async Task WriteFileAsync(XmlWriter writer, File file)
+        private async Task WriteFileAsync(XmlWriter writer, File file)
         {
             if (writer is null)
             {
                 throw new ArgumentNullException(nameof(writer));
             }
+
+            log.Verbose($"{nameof(WriteFileAsync)} {file}");
 
             await writer.WriteStartElementAsync(null, "File", null);
 
@@ -144,8 +157,8 @@ namespace HDLG_winforms
             await writer.WriteElementStringAsync(null, "Size", null, file.Size.ToString(CultureInfo.InvariantCulture));
             await writer.WriteElementStringAsync(null, "CreationTime", null, file.CreationTime.ToString("O", CultureInfo.InvariantCulture));
 
-            
-            if (file.Properties!= null)
+
+            if (file.Properties != null)
             {
                 await writer.WriteStartElementAsync(null, "ExtentedProperties", null);
                 foreach (var property in file.Properties)
@@ -157,11 +170,8 @@ namespace HDLG_winforms
                 }
                 await writer.WriteEndElementAsync();
             }
-            
 
             await writer.WriteEndElementAsync();
         }
-
-
     }
 }

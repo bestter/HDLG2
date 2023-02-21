@@ -8,15 +8,25 @@ namespace HdlgFileProperty
         public Dictionary<string, string> GetFileProperties(string path)
         {
             Dictionary<string, string> properties = new();
-            using (WordprocessingDocument wordDoc = WordprocessingDocument.Open(path, true))
+            try
             {
-                properties.Add("Title", wordDoc.PackageProperties.Title);
+                using WordprocessingDocument wordDoc = WordprocessingDocument.Open(path, true);
+                if (!string.IsNullOrWhiteSpace(wordDoc.PackageProperties.Title))
+                {
+                    properties.Add("Title", wordDoc.PackageProperties.Title);
+                }
                 DateTime? created = wordDoc.PackageProperties.Created;
                 if (created != null)
                 {
                     properties.Add("Created", created.Value.ToString("O", CultureInfo.InvariantCulture));
                 }
-                properties.Add("Creator", wordDoc.PackageProperties.Creator);
+                if (!string.IsNullOrWhiteSpace(wordDoc.PackageProperties.Creator))
+                {
+                    properties.Add("Creator", wordDoc.PackageProperties.Creator);
+                }
+            }
+            catch(IOException)
+            {
             }
 
             return properties;

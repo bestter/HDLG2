@@ -61,7 +61,7 @@ namespace HDLG_winforms
         {
             if (other != null)
             {
-                return Path == other.Path;
+                return string.Equals(Path, other.Path, StringComparison.OrdinalIgnoreCase);
             }
             return false;
         }
@@ -70,7 +70,7 @@ namespace HDLG_winforms
         {
             if (obj is File file)
             {
-                return file.CompareTo(this);
+                return CompareTo(file);
             }
             return -1;
         }
@@ -79,7 +79,7 @@ namespace HDLG_winforms
         {
             if (other != null)
             {
-                return string.Compare(other.Path, Path, StringComparison.OrdinalIgnoreCase);
+                return string.Compare(Path, other.Path, StringComparison.OrdinalIgnoreCase);
             }
             return -1;
         }

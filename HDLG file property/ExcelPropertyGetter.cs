@@ -11,13 +11,19 @@ namespace HdlgFileProperty
             Dictionary<string, string> properties = new();
             using (SpreadsheetDocument excelDoc = SpreadsheetDocument.Open(path, true))
             {
-                properties.Add("Title", excelDoc.PackageProperties.Title);
+                if (!string.IsNullOrWhiteSpace(excelDoc.PackageProperties.Title))
+                {
+                    properties.Add("Title", excelDoc.PackageProperties.Title);
+                }
                 DateTime? created = excelDoc.PackageProperties.Created;
                 if (created != null)
                 {
                     properties.Add("Created", created.Value.ToString("O", CultureInfo.InvariantCulture));
                 }
-                properties.Add("Creator", excelDoc.PackageProperties.Creator);
+                if (!string.IsNullOrWhiteSpace(excelDoc.PackageProperties.Creator))
+                {
+                    properties.Add("Creator", excelDoc.PackageProperties.Creator);
+                }
             }
 
             return properties;

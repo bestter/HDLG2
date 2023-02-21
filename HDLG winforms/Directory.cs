@@ -1,5 +1,9 @@
 ﻿using HdlgFileProperty;
+using Serilog;
+using Serilog.Core;
 using System.Collections.ObjectModel;
+using System.Globalization;
+using System.IO;
 
 namespace HDLG_winforms
 {
@@ -12,7 +16,11 @@ namespace HDLG_winforms
 
         public DateTime CreationTime { get; private set; }
 
+        private readonly DirectoryInfo directoryInfo;
+
         private readonly List<Directory> directories = new();
+
+        public bool IsTopDirectory { get; private set; }
 
         public ReadOnlyCollection<Directory> Directories => directories.AsReadOnly();
 
@@ -23,24 +31,39 @@ namespace HDLG_winforms
         public int DirectoriesCount => directories.Count;
         public int FilesCount => files.Count;
 
-        public Directory(string path)
+        private readonly Logger log;
+
+        public Directory(string path, bool isTopDirectory, Logger log) : this(new DirectoryInfo(path), isTopDirectory, log)
         {
-            DirectoryInfo directory = new(path);
-            Path = path ?? throw new ArgumentNullException(nameof(path));
-            Name = directory.Name;
-            CreationTime = directory.CreationTimeUtc.ToLocalTime();
+            
         }
 
+        public Directory(DirectoryInfo directory, bool isTopDirectory, Logger log)
+        {
+            directoryInfo = directory;
+            Path = directory.FullName;
+            Name = directory.Name;
+            CreationTime = directory.CreationTimeUtc.ToLocalTime();
+            IsTopDirectory = isTopDirectory;
+            this.log = log;
+        }
+
+       
+        /// <summary>
+        /// Browse the content
+        /// </summary>
+        /// <param name="propertyBrowser"></param>
         public void Browse(FilePropertyBrowser propertyBrowser)
         {
-            DirectoryInfo directory = new(Path);
-            directory.EnumerateDirectories().ToList().ForEach(d =>
+            log.Debug($"Directory: {Path} {nameof(IsTopDirectory)}: {IsTopDirectory}");
+            
+            directoryInfo.EnumerateDirectories().ToList().ForEach(d =>
             {
-                directories.Add(new Directory(d.FullName));
+                directories.Add(new Directory(d.FullName, false, log));
             });
             directories.Sort();
 
-            directory.EnumerateFiles().ToList().ForEach(f =>
+            directoryInfo.EnumerateFiles().ToList().ForEach(f =>
             {
                 var properties = propertyBrowser.GetFileProperty(f.FullName);
                 var file = new File(f.FullName, properties);
@@ -50,7 +73,7 @@ namespace HDLG_winforms
 
             foreach (Directory d in directories)
             {
-                d.Browse(propertyBrowser);
+                d.Browse(propertyBrowser);                
             }
         }
 
@@ -75,7 +98,7 @@ namespace HDLG_winforms
         {
             if (other != null)
             {
-                return Path == other.Path;
+                return string.Equals(Path, other.Path, StringComparison.OrdinalIgnoreCase);
             }
             return false;
         }
@@ -84,7 +107,7 @@ namespace HDLG_winforms
         {
             if (obj is Directory directory)
             {
-                return directory.CompareTo(this);
+                return CompareTo(directory);
             }
             return -1;
         }
@@ -93,7 +116,12 @@ namespace HDLG_winforms
         {
             if (other != null)
             {
-                return string.Compare(other.Path, Path, StringComparison.OrdinalIgnoreCase);
+                int compareValue = other.IsTopDirectory.CompareTo(IsTopDirectory);
+                if (compareValue == 0)
+                {
+                    compareValue = string.Compare(Path, other.Path, StringComparison.OrdinalIgnoreCase);
+                }
+                return compareValue;
             }
             return -1;
         }

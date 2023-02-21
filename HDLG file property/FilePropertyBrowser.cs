@@ -35,7 +35,7 @@ namespace HdlgFileProperty
                     var currentProperties = propertyGetters.GetFileProperties(path);
                     foreach (var currentProperty in currentProperties)
                     {
-                        properties.TryAdd(currentProperty.Key, currentProperty.Value);
+                        _ = properties.TryAdd(currentProperty.Key, currentProperty.Value);
                     }
 
                 }
