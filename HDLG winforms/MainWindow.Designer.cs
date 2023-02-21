@@ -7,19 +7,7 @@
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-
+        
         #region Windows Form Designer generated code
 
         /// <summary>
@@ -38,6 +26,8 @@
             this.labelSaveTime = new System.Windows.Forms.Label();
             this.backgroundWorkerDirectoryBrowse = new System.ComponentModel.BackgroundWorker();
             this.labelTotalTime = new System.Windows.Forms.Label();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.labelException = new System.Windows.Forms.Label();
             this.gbDirectory.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -84,6 +74,7 @@
             // saveContentFileDialog
             // 
             this.saveContentFileDialog.DefaultExt = "xml";
+            this.saveContentFileDialog.Filter = "Fichiers XML|*.xml|Tous les fichiers|*.*";
             // 
             // labelBrowseTime
             // 
@@ -105,8 +96,8 @@
             // 
             // backgroundWorkerDirectoryBrowse
             // 
-            this.backgroundWorkerDirectoryBrowse.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerDirectoryBrowse_DoWork);
-            this.backgroundWorkerDirectoryBrowse.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorkerDirectoryBrowse_RunWorkerCompleted);
+            this.backgroundWorkerDirectoryBrowse.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundWorkerDirectoryBrowse_DoWork);
+            this.backgroundWorkerDirectoryBrowse.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkerDirectoryBrowse_RunWorkerCompleted);
             // 
             // labelTotalTime
             // 
@@ -117,11 +108,29 @@
             this.labelTotalTime.TabIndex = 4;
             this.labelTotalTime.Text = "Total time";
             // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(95, 322);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(610, 23);
+            this.progressBar1.TabIndex = 2;
+            // 
+            // labelException
+            // 
+            this.labelException.AutoSize = true;
+            this.labelException.Location = new System.Drawing.Point(12, 369);
+            this.labelException.Name = "labelException";
+            this.labelException.Size = new System.Drawing.Size(59, 15);
+            this.labelException.TabIndex = 5;
+            this.labelException.Text = "Exception";
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 472);
+            this.Controls.Add(this.labelException);
+            this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.labelTotalTime);
             this.Controls.Add(this.labelSaveTime);
             this.Controls.Add(this.labelBrowseTime);
@@ -149,5 +158,7 @@
         private Label labelSaveTime;
         private System.ComponentModel.BackgroundWorker backgroundWorkerDirectoryBrowse;
         private Label labelTotalTime;
+        private ProgressBar progressBar1;
+        private Label labelException;
     }
 }

@@ -9,7 +9,7 @@ using System.Xml;
 
 namespace HDLG_winforms
 {
-    internal class File: IEquatable<File>, IComparable, IComparable<File>
+    public class File: IEquatable<File>, IComparable, IComparable<File>
     {
         public string Name { get; private set; }
 
@@ -21,7 +21,9 @@ namespace HDLG_winforms
 
         public DateTime CreationTime { get; private set; }
 
-        public File(string path)
+        public Dictionary<string, string> Properties { get; private set; }
+
+        public File(string path, Dictionary<string, string> properties)
         {
             Path = path;
             FileInfo info = new(Path);
@@ -31,6 +33,7 @@ namespace HDLG_winforms
                 Extension = info.Extension;
                 Size = info.Length;
                 CreationTime = info.CreationTime;
+                Properties = new Dictionary<string, string>(properties);
             }
             else
             {
@@ -38,30 +41,11 @@ namespace HDLG_winforms
             }
         }
 
-
-        public async Task WriteFileAsync(XmlWriter writer)
-        {
-            if (writer is null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            await writer.WriteStartElementAsync(null, "File", null);
-            
-            await writer.WriteElementStringAsync(null, "Name", null, Name);
-            await writer.WriteElementStringAsync(null, "Path", null, Path);
-            await writer.WriteElementStringAsync(null, "Extension", null, Extension);
-            await writer.WriteElementStringAsync(null, "Size", null, Size.ToString(CultureInfo.InvariantCulture));
-            await writer.WriteElementStringAsync(null, "CreationTime", null, CreationTime.ToString("O", CultureInfo.InvariantCulture));            
-
-            await writer.WriteEndElementAsync();
-        }
-
         public override string ToString() { return Path; }
 
         public override int GetHashCode()
         {
-            return Path.GetHashCode();
+            return Path.GetHashCode(System.StringComparison.OrdinalIgnoreCase);
         }
 
         public override bool Equals(object? obj)
@@ -77,7 +61,7 @@ namespace HDLG_winforms
         {
             if (other != null)
             {
-                return Path == other.Path;
+                return string.Equals(Path, other.Path, StringComparison.OrdinalIgnoreCase);
             }
             return false;
         }
@@ -86,7 +70,7 @@ namespace HDLG_winforms
         {
             if (obj is File file)
             {
-                return file.CompareTo(this);
+                return CompareTo(file);
             }
             return -1;
         }
@@ -95,7 +79,7 @@ namespace HDLG_winforms
         {
             if (other != null)
             {
-                return other.Path.CompareTo(Path);
+                return string.Compare(Path, other.Path, StringComparison.OrdinalIgnoreCase);
             }
             return -1;
         }
