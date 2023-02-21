@@ -1,9 +1,6 @@
 ﻿using HdlgFileProperty;
-using Serilog;
 using Serilog.Core;
 using System.Collections.ObjectModel;
-using System.Globalization;
-using System.IO;
 
 namespace HDLG_winforms
 {
@@ -35,7 +32,7 @@ namespace HDLG_winforms
 
         public Directory(string path, bool isTopDirectory, Logger log) : this(new DirectoryInfo(path), isTopDirectory, log)
         {
-            
+
         }
 
         public Directory(DirectoryInfo directory, bool isTopDirectory, Logger log)
@@ -48,7 +45,7 @@ namespace HDLG_winforms
             this.log = log;
         }
 
-       
+
         /// <summary>
         /// Browse the content
         /// </summary>
@@ -56,7 +53,7 @@ namespace HDLG_winforms
         public void Browse(FilePropertyBrowser propertyBrowser)
         {
             log.Debug($"Directory: {Path} {nameof(IsTopDirectory)}: {IsTopDirectory}");
-            
+
             directoryInfo.EnumerateDirectories().ToList().ForEach(d =>
             {
                 directories.Add(new Directory(d.FullName, false, log));
@@ -73,7 +70,7 @@ namespace HDLG_winforms
 
             foreach (Directory d in directories)
             {
-                d.Browse(propertyBrowser);                
+                d.Browse(propertyBrowser);
             }
         }
 
