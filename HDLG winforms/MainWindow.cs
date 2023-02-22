@@ -88,6 +88,8 @@ namespace HDLG_winforms
 
                     if (!string.IsNullOrWhiteSpace(selectedDirectory))
                     {
+                        DirectoryInfo di = new DirectoryInfo(selectedDirectory);
+                        saveContentFileDialog.FileName= $"{di.Name}.xml";
                         var result = saveContentFileDialog.ShowDialog();
                         if (result == DialogResult.OK)
                         {
@@ -160,6 +162,24 @@ namespace HDLG_winforms
                 labelSaveTime.Text = perf.Value.SaveTime.ToString("G", CultureInfo.CurrentCulture);
                 labelTotalTime.Text = perf.Value.TotalTime.ToString("G", CultureInfo.CurrentCulture);
             }
+            if (saveContentFileDialog.FileName != null)
+            {
+                OpenWithDefaultProgram(saveContentFileDialog.FileName);
+            }
+        }
+
+        /// <summary>
+        /// Open file
+        /// </summary>
+        /// <param name="path"></param>
+        /// <remarks>https://stackoverflow.com/a/54275102/910741</remarks>
+        public static void OpenWithDefaultProgram(string path)
+        {
+            using Process fileopener = new Process();
+
+            fileopener.StartInfo.FileName = "explorer";
+            fileopener.StartInfo.Arguments = "\"" + path + "\"";
+            fileopener.Start();
         }
 
         protected override void Dispose(bool disposing)
