@@ -92,7 +92,7 @@ namespace HDLG_winforms
                         if (result == DialogResult.OK)
                         {
                             btnStart.Enabled = false;
-                            Cursor.Current = Cursors.WaitCursor;
+                            UseWaitCursor = true;
                             log.Information($"Start browse with {selectedDirectory}");
                             backgroundWorkerDirectoryBrowse.RunWorkerAsync(selectedDirectory);
                             while (backgroundWorkerDirectoryBrowse.IsBusy)
@@ -151,7 +151,7 @@ namespace HDLG_winforms
         private void BackgroundWorkerDirectoryBrowse_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             Debug.Write($"Completed at {DateTime.Now.ToLongTimeString()}");
-            Cursor.Current = Cursors.Default;
+            UseWaitCursor = false;
             btnStart.Enabled = true;
             PerformanceCount? perf = e.Result as PerformanceCount?;
             if (perf != null)
