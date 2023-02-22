@@ -10,7 +10,7 @@ namespace HdlgFileProperty
             Dictionary<string, string> properties = new();
             try
             {
-                using WordprocessingDocument wordDoc = WordprocessingDocument.Open(path, true);
+                using WordprocessingDocument wordDoc = WordprocessingDocument.Open(path, false);
                 if (!string.IsNullOrWhiteSpace(wordDoc.PackageProperties.Title))
                 {
                     properties.Add("Title", wordDoc.PackageProperties.Title);

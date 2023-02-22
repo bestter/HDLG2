@@ -25,19 +25,23 @@ namespace HDLG_winforms
 
         public ExcelPropertyGetter ExcelPropertyGetter;
 
+        public PdfPropertyGetter PdfPropertyGetter;
+
         private readonly FilePropertyBrowser propertyBrowser;
+
         readonly Logger log = new LoggerConfiguration()
     .WriteTo.File(@"logs\log.txt", formatProvider: CultureInfo.CurrentCulture, rollingInterval: RollingInterval.Day).MinimumLevel.Debug()
     .CreateLogger();
 
 
-        public MainWindow(ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter)
+        public MainWindow(ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter, PdfPropertyGetter pdfPropertyGetter)
         {
             InitializeComponent();
             ImagePropertyGetter = imagePropertyGetter;
             WordPropertyGetter = wordPropertyGetter;
             ExcelPropertyGetter = excelPropertyGetter;
-            propertyBrowser = new(imagePropertyGetter, wordPropertyGetter, excelPropertyGetter);
+            PdfPropertyGetter = pdfPropertyGetter;
+            propertyBrowser = new(imagePropertyGetter, wordPropertyGetter, excelPropertyGetter, pdfPropertyGetter);
         }
 
         private string? selectedDirectory;
@@ -84,11 +88,13 @@ namespace HDLG_winforms
 
                     if (!string.IsNullOrWhiteSpace(selectedDirectory))
                     {
+                        DirectoryInfo di = new DirectoryInfo(selectedDirectory);
+                        saveContentFileDialog.FileName= $"{di.Name}.xml";
                         var result = saveContentFileDialog.ShowDialog();
                         if (result == DialogResult.OK)
                         {
                             btnStart.Enabled = false;
-                            Cursor.Current = Cursors.WaitCursor;
+                            UseWaitCursor = true;
                             log.Information($"Start browse with {selectedDirectory}");
                             backgroundWorkerDirectoryBrowse.RunWorkerAsync(selectedDirectory);
                             while (backgroundWorkerDirectoryBrowse.IsBusy)
@@ -147,7 +153,7 @@ namespace HDLG_winforms
         private void BackgroundWorkerDirectoryBrowse_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             Debug.Write($"Completed at {DateTime.Now.ToLongTimeString()}");
-            Cursor.Current = Cursors.Default;
+            UseWaitCursor = false;
             btnStart.Enabled = true;
             PerformanceCount? perf = e.Result as PerformanceCount?;
             if (perf != null)
@@ -156,6 +162,24 @@ namespace HDLG_winforms
                 labelSaveTime.Text = perf.Value.SaveTime.ToString("G", CultureInfo.CurrentCulture);
                 labelTotalTime.Text = perf.Value.TotalTime.ToString("G", CultureInfo.CurrentCulture);
             }
+            if (saveContentFileDialog.FileName != null)
+            {
+                OpenWithDefaultProgram(saveContentFileDialog.FileName);
+            }
+        }
+
+        /// <summary>
+        /// Open file
+        /// </summary>
+        /// <param name="path"></param>
+        /// <remarks>https://stackoverflow.com/a/54275102/910741</remarks>
+        public static void OpenWithDefaultProgram(string path)
+        {
+            using Process fileopener = new Process();
+
+            fileopener.StartInfo.FileName = "explorer";
+            fileopener.StartInfo.Arguments = "\"" + path + "\"";
+            fileopener.Start();
         }
 
         protected override void Dispose(bool disposing)

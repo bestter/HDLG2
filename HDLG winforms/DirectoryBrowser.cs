@@ -32,35 +32,38 @@ namespace HDLG_winforms
 
             FileInfo fileInfo = new(filePath);
 
+            var encoding = Encoding.UTF8;
+
             XmlWriterSettings settings = new()
             {
                 Indent = true,
-                Encoding = Encoding.UTF8,
+                Encoding = encoding,
                 Async = true,
                 IndentChars = "\t"
             };
 
-            using Stream stream = fileInfo.OpenWrite();
-            using (XmlWriter writer = XmlWriter.Create(stream, settings))
+            using (StreamWriter sw = new StreamWriter(fileInfo.OpenWrite(), encoding, 4096, false))
             {
-                await writer.WriteStartDocumentAsync();
+                using (XmlWriter writer = XmlWriter.Create(sw, settings))
+                {
+                    await writer.WriteStartDocumentAsync();
 
-                await writer.WriteStartElementAsync(null, "Hdlg", null);
-                await writer.WriteAttributeStringAsync(null, "Version", null, typeof(DirectoryBrowser).Assembly.GetName().Version?.ToString());
-                await writer.WriteElementStringAsync(null, "Directory", null, directory.Path);
-                await writer.WriteElementStringAsync(null, "DateTime", null, DateTime.Now.ToString("O", CultureInfo.InvariantCulture));
+                    await writer.WriteStartElementAsync(null, "Hdlg", null);
+                    await writer.WriteAttributeStringAsync(null, "Version", null, typeof(DirectoryBrowser).Assembly.GetName().Version?.ToString());
+                    await writer.WriteElementStringAsync(null, "Directory", null, directory.Path);
+                    await writer.WriteElementStringAsync(null, "DateTime", null, DateTime.Now.ToString("O", CultureInfo.InvariantCulture));
 
-                await writer.WriteElementStringAsync(null, "DirectoriesCount", null, DirectoriesCount(directory).ToString(CultureInfo.InvariantCulture));
-                await writer.WriteElementStringAsync(null, "filesCount", null, FilesCount(directory).ToString(CultureInfo.InvariantCulture));
+                    await writer.WriteElementStringAsync(null, "DirectoriesCount", null, DirectoriesCount(directory).ToString(CultureInfo.InvariantCulture));
+                    await writer.WriteElementStringAsync(null, "filesCount", null, FilesCount(directory).ToString(CultureInfo.InvariantCulture));
 
-                await WriteDirectoryAsync(writer, directory);
+                    await WriteDirectoryAsync(writer, directory);
 
-                await writer.WriteEndElementAsync();
+                    await writer.WriteEndElementAsync();
 
-                await writer.WriteEndDocumentAsync();
+                    await writer.WriteEndDocumentAsync();
+                }
+                await sw.FlushAsync();
             }
-            await stream.FlushAsync(cancellationToken);
-
         }
 
         /// <summary>
@@ -110,8 +113,8 @@ namespace HDLG_winforms
             {
                 await writer.WriteStartElementAsync(null, "Directories", null);
                 foreach (Directory d in directory.Directories)
-                {                    
-                    await WriteDirectoryAsync(writer, d);                    
+                {
+                    await WriteDirectoryAsync(writer, d);
                 }
                 await writer.WriteEndElementAsync();
             }

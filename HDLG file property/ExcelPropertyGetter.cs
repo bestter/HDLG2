@@ -9,7 +9,7 @@ namespace HdlgFileProperty
         public Dictionary<string, string> GetFileProperties(string path)
         {
             Dictionary<string, string> properties = new();
-            using (SpreadsheetDocument excelDoc = SpreadsheetDocument.Open(path, true))
+            using (SpreadsheetDocument excelDoc = SpreadsheetDocument.Open(path, false))
             {
                 if (!string.IsNullOrWhiteSpace(excelDoc.PackageProperties.Title))
                 {
