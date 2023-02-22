@@ -1,7 +1,6 @@
 using HdlgFileProperty;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.ComponentModel.Design;
 
 namespace HDLG_winforms
 {
@@ -11,11 +10,12 @@ namespace HDLG_winforms
         static IHostBuilder CreateHostBuilder()
         {
             return Host.CreateDefaultBuilder()
-                .ConfigureServices((context, services) => {
+                .ConfigureServices((context, services) =>
+                {
                     services.AddTransient<ImagePropertyGetter, ImagePropertyGetter>();
                     services.AddTransient<WordPropertyGetter, WordPropertyGetter>();
                     services.AddTransient<ExcelPropertyGetter, ExcelPropertyGetter>();
-                    services.AddTransient<PdfPropertyGetter, PdfPropertyGetter>();                    
+                    services.AddTransient<PdfPropertyGetter, PdfPropertyGetter>();
                     services.AddTransient<MainWindow>();
                 });
         }
@@ -36,6 +36,6 @@ namespace HDLG_winforms
 
             Application.Run(ServiceProvider.GetRequiredService<MainWindow>());
         }
-               
+
     }
 }

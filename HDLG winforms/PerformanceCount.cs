@@ -4,7 +4,7 @@
     {
         public TimeSpan BrowseTime;
         public TimeSpan SaveTime;
-        public TimeSpan TotalTime;        
+        public TimeSpan TotalTime;
     }
 
 

@@ -12,18 +12,16 @@ namespace HdlgFileProperty
             try
             {
                 DocumentProperties documentProperties = new();
-                using (PdfDocument pdfDoc = new(new PdfReader(path), documentProperties))
+                using PdfDocument pdfDoc = new(new PdfReader(path), documentProperties);
+                PdfAcroForm form = PdfAcroForm.GetAcroForm(pdfDoc, false);
+                if (form != null)
                 {
-                    PdfAcroForm form = PdfAcroForm.GetAcroForm(pdfDoc, false);
-                    if (form != null)
+                    IDictionary<string, PdfFormField> fields = form.GetFormFields();
+                    if (fields.Any() && fields.TryGetValue("name", out PdfFormField toSet))
                     {
-                        IDictionary<string, PdfFormField> fields = form.GetFormFields();
-                        if (fields.Any() && fields.TryGetValue("name", out PdfFormField toSet))
+                        if (toSet != null)
                         {
-                            if (toSet != null)
-                            {
-                                properties.Add("Title", toSet.GetValueAsString());
-                            }
+                            properties.Add("Title", toSet.GetValueAsString());
                         }
                     }
                 }
@@ -39,7 +37,7 @@ namespace HdlgFileProperty
         public bool IsSupportedFile(string path)
         {
             FileInfo fileInfo = new(path);
-            var extension = fileInfo.Extension.ToLowerInvariant();            
+            var extension = fileInfo.Extension.ToLowerInvariant();
             return extension == ".pdf";
         }
     }

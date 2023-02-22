@@ -23,7 +23,7 @@ namespace HDLG_winforms
         /// <param name="filePath">Where to save the data</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public async Task SaveAsXMLAsync(string filePath, Directory directory, CancellationToken cancellationToken)
+        public async Task SaveAsXMLAsync(string filePath, Directory directory)
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {

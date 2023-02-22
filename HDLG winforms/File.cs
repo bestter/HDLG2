@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-
-namespace HDLG_winforms
+﻿namespace HDLG_winforms
 {
-    public class File: IEquatable<File>, IComparable, IComparable<File>
+    public class File : IEquatable<File>, IComparable, IComparable<File>
     {
         public string Name { get; private set; }
 
