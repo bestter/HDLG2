@@ -1,11 +1,6 @@
-﻿using iText.Forms.Fields;
-using iText.Forms;
+﻿using iText.Forms;
+using iText.Forms.Fields;
 using iText.Kernel.Pdf;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HdlgFileProperty
 {
@@ -14,18 +9,29 @@ namespace HdlgFileProperty
         public Dictionary<string, string> GetFileProperties(string path)
         {
             Dictionary<string, string> properties = new();
-            using (PdfDocument pdfDoc = new PdfDocument(new PdfReader(path)))
+            try
             {
-                PdfAcroForm form = PdfAcroForm.GetAcroForm(pdfDoc, true);
-                IDictionary<string, PdfFormField> fields = form.GetFormFields();
-                if (fields.TryGetValue("name", out PdfFormField toSet))
+                DocumentProperties documentProperties = new();
+                using (PdfDocument pdfDoc = new(new PdfReader(path), documentProperties))
                 {
-                    if (toSet != null)
+                    PdfAcroForm form = PdfAcroForm.GetAcroForm(pdfDoc, false);
+                    if (form != null)
                     {
-                        properties.Add("Title", toSet.GetValueAsString());
+                        IDictionary<string, PdfFormField> fields = form.GetFormFields();
+                        if (fields.Any() && fields.TryGetValue("name", out PdfFormField toSet))
+                        {
+                            if (toSet != null)
+                            {
+                                properties.Add("Title", toSet.GetValueAsString());
+                            }
+                        }
                     }
                 }
             }
+            catch (System.IO.IOException)
+            { }
+            catch (iText.Kernel.Exceptions.BadPasswordException)
+            { }
 
             return properties;
         }
@@ -33,7 +39,7 @@ namespace HdlgFileProperty
         public bool IsSupportedFile(string path)
         {
             FileInfo fileInfo = new(path);
-            var extension = fileInfo.Extension.ToLowerInvariant();
+            var extension = fileInfo.Extension.ToLowerInvariant();            
             return extension == ".pdf";
         }
     }
