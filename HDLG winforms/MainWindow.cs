@@ -25,19 +25,23 @@ namespace HDLG_winforms
 
         public ExcelPropertyGetter ExcelPropertyGetter;
 
+        public PdfPropertyGetter PdfPropertyGetter;
+
         private readonly FilePropertyBrowser propertyBrowser;
+
         readonly Logger log = new LoggerConfiguration()
     .WriteTo.File(@"logs\log.txt", formatProvider: CultureInfo.CurrentCulture, rollingInterval: RollingInterval.Day).MinimumLevel.Debug()
     .CreateLogger();
 
 
-        public MainWindow(ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter)
+        public MainWindow(ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter, PdfPropertyGetter pdfPropertyGetter)
         {
             InitializeComponent();
             ImagePropertyGetter = imagePropertyGetter;
             WordPropertyGetter = wordPropertyGetter;
             ExcelPropertyGetter = excelPropertyGetter;
-            propertyBrowser = new(imagePropertyGetter, wordPropertyGetter, excelPropertyGetter);
+            PdfPropertyGetter = pdfPropertyGetter;
+            propertyBrowser = new(imagePropertyGetter, wordPropertyGetter, excelPropertyGetter, pdfPropertyGetter);
         }
 
         private string? selectedDirectory;
