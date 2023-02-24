@@ -10,6 +10,7 @@ namespace HDLG_winforms
 {
     public partial class MainWindow : Form
     {
+        #region PropertyGetter
         public ImagePropertyGetter ImagePropertyGetter;
 
         public WordPropertyGetter WordPropertyGetter;
@@ -17,10 +18,17 @@ namespace HDLG_winforms
         public ExcelPropertyGetter ExcelPropertyGetter;
 
         public PdfPropertyGetter PdfPropertyGetter;
+        #endregion
 
+        /// <summary>
+        /// Property browser
+        /// </summary>
         private readonly FilePropertyBrowser propertyBrowser;
 
-        readonly Logger log = new LoggerConfiguration()
+        /// <summary>
+        /// Logger
+        /// </summary>
+        private readonly Logger log = new LoggerConfiguration()
     .WriteTo.File(@"logs\log.txt", formatProvider: CultureInfo.CurrentCulture, rollingInterval: RollingInterval.Day).MinimumLevel.Debug()
     .CreateLogger();
 
@@ -122,9 +130,9 @@ namespace HDLG_winforms
 
                 DirectoryBrowser db = new(log);
                 log.Debug($"Ready to start {nameof(DirectoryBrowser.SaveAsXMLAsync)}");
-                
+
                 db.SaveAsXMLAsync(saveContentFileDialog.FileName, directory).Wait();
-                
+
                 log.Debug($"{nameof(DirectoryBrowser.SaveAsXMLAsync)} done");
                 stopwatch.Stop();
                 TimeSpan saveTime = stopwatch.Elapsed - browseTime;
@@ -172,6 +180,10 @@ namespace HDLG_winforms
             fileopener.Start();
         }
 
+        /// <summary>
+        /// Dispose
+        /// </summary>
+        /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
