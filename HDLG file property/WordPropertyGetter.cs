@@ -25,7 +25,7 @@ namespace HdlgFileProperty
                     properties.Add("Creator", wordDoc.PackageProperties.Creator);
                 }
             }
-            catch(IOException)
+            catch (IOException)
             {
             }
 

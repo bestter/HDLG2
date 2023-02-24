@@ -1,24 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Globalization;
-using System.Reflection;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-using HdlgFileProperty;
+﻿using HdlgFileProperty;
 using Serilog;
 using Serilog.Core;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Globalization;
+using System.Reflection;
 
 namespace HDLG_winforms
 {
     public partial class MainWindow : Form
     {
+        #region PropertyGetter
         public ImagePropertyGetter ImagePropertyGetter;
 
         public WordPropertyGetter WordPropertyGetter;
@@ -26,10 +18,17 @@ namespace HDLG_winforms
         public ExcelPropertyGetter ExcelPropertyGetter;
 
         public PdfPropertyGetter PdfPropertyGetter;
+        #endregion
 
+        /// <summary>
+        /// Property browser
+        /// </summary>
         private readonly FilePropertyBrowser propertyBrowser;
 
-        readonly Logger log = new LoggerConfiguration()
+        /// <summary>
+        /// Logger
+        /// </summary>
+        private readonly Logger log = new LoggerConfiguration()
     .WriteTo.File(@"logs\log.txt", formatProvider: CultureInfo.CurrentCulture, rollingInterval: RollingInterval.Day).MinimumLevel.Debug()
     .CreateLogger();
 
@@ -88,8 +87,8 @@ namespace HDLG_winforms
 
                     if (!string.IsNullOrWhiteSpace(selectedDirectory))
                     {
-                        DirectoryInfo di = new DirectoryInfo(selectedDirectory);
-                        saveContentFileDialog.FileName= $"{di.Name}.xml";
+                        DirectoryInfo di = new(selectedDirectory);
+                        saveContentFileDialog.FileName = $"{di.Name}.xml";
                         var result = saveContentFileDialog.ShowDialog();
                         if (result == DialogResult.OK)
                         {
@@ -131,10 +130,9 @@ namespace HDLG_winforms
 
                 DirectoryBrowser db = new(log);
                 log.Debug($"Ready to start {nameof(DirectoryBrowser.SaveAsXMLAsync)}");
-                using (CancellationTokenSource source = new())
-                {
-                    db.SaveAsXMLAsync(saveContentFileDialog.FileName, directory, source.Token).Wait();
-                }
+
+                db.SaveAsXMLAsync(saveContentFileDialog.FileName, directory).Wait();
+
                 log.Debug($"{nameof(DirectoryBrowser.SaveAsXMLAsync)} done");
                 stopwatch.Stop();
                 TimeSpan saveTime = stopwatch.Elapsed - browseTime;
@@ -175,21 +173,22 @@ namespace HDLG_winforms
         /// <remarks>https://stackoverflow.com/a/54275102/910741</remarks>
         public static void OpenWithDefaultProgram(string path)
         {
-            using Process fileopener = new Process();
+            using Process fileopener = new();
 
             fileopener.StartInfo.FileName = "explorer";
             fileopener.StartInfo.Arguments = "\"" + path + "\"";
             fileopener.Start();
         }
 
+        /// <summary>
+        /// Dispose
+        /// </summary>
+        /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                if (components != null)
-                {
-                    components.Dispose();
-                }
+                components?.Dispose();
 
                 log.Dispose();
             }
