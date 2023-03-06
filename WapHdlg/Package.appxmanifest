@@ -13,7 +13,7 @@
 
   <Properties>
     <DisplayName>Hdlg</DisplayName>
-    <PublisherDisplayName>User</PublisherDisplayName>
+    <PublisherDisplayName>Martin Labelle</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
   </Properties>
 
@@ -38,6 +38,8 @@
         Square44x44Logo="Images\Square44x44Logo.png">
         <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png" />
         <uap:SplashScreen Image="Images\SplashScreen.png" />
+        <uap:InitialRotationPreference>
+          <uap:Rotation Preference="landscape"/></uap:InitialRotationPreference>
       </uap:VisualElements>
     </Application>
   </Applications>
