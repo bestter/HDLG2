@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net7.0-Windows</TargetFramework>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <RootNamespace>HDLG_winforms</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
