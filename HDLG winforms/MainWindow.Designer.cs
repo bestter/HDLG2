@@ -7,7 +7,7 @@
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        
+
         #region Windows Form Designer generated code
 
         /// <summary>
@@ -16,134 +16,167 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.gbDirectory = new System.Windows.Forms.GroupBox();
-            this.btnChooseFolder = new System.Windows.Forms.Button();
-            this.selectedDirectoryLabel = new System.Windows.Forms.Label();
-            this.selectedDirectoryBrowser = new System.Windows.Forms.FolderBrowserDialog();
-            this.btnStart = new System.Windows.Forms.Button();
-            this.saveContentFileDialog = new System.Windows.Forms.SaveFileDialog();
-            this.labelBrowseTime = new System.Windows.Forms.Label();
-            this.labelSaveTime = new System.Windows.Forms.Label();
-            this.backgroundWorkerDirectoryBrowse = new System.ComponentModel.BackgroundWorker();
-            this.labelTotalTime = new System.Windows.Forms.Label();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
-            this.labelException = new System.Windows.Forms.Label();
-            this.gbDirectory.SuspendLayout();
-            this.SuspendLayout();
+            gbDirectory = new GroupBox();
+            btnChooseFolder = new Button();
+            selectedDirectoryLabel = new Label();
+            selectedDirectoryBrowser = new FolderBrowserDialog();
+            btnStartXml = new Button();
+            saveContentFileDialog = new SaveFileDialog();
+            labelBrowseTime = new Label();
+            labelSaveTime = new Label();
+            backgroundWorkerDirectoryBrowseXml = new System.ComponentModel.BackgroundWorker();
+            labelTotalTime = new Label();
+            progressBar1 = new ProgressBar();
+            labelException = new Label();
+            tableLayoutPanelStart = new TableLayoutPanel();
+            btnStartHtml = new Button();
+            backgroundWorkerDirectoryBrowseHtml = new System.ComponentModel.BackgroundWorker();
+            gbDirectory.SuspendLayout();
+            tableLayoutPanelStart.SuspendLayout();
+            SuspendLayout();
             // 
             // gbDirectory
             // 
-            this.gbDirectory.Controls.Add(this.btnChooseFolder);
-            this.gbDirectory.Controls.Add(this.selectedDirectoryLabel);
-            this.gbDirectory.Location = new System.Drawing.Point(95, 176);
-            this.gbDirectory.Name = "gbDirectory";
-            this.gbDirectory.Size = new System.Drawing.Size(610, 99);
-            this.gbDirectory.TabIndex = 0;
-            this.gbDirectory.TabStop = false;
-            this.gbDirectory.Text = "Directory";
+            gbDirectory.Controls.Add(btnChooseFolder);
+            gbDirectory.Controls.Add(selectedDirectoryLabel);
+            gbDirectory.Location = new Point(95, 176);
+            gbDirectory.Name = "gbDirectory";
+            gbDirectory.Size = new Size(610, 99);
+            gbDirectory.TabIndex = 0;
+            gbDirectory.TabStop = false;
+            gbDirectory.Text = "Directory";
             // 
             // btnChooseFolder
             // 
-            this.btnChooseFolder.Location = new System.Drawing.Point(249, 20);
-            this.btnChooseFolder.Name = "btnChooseFolder";
-            this.btnChooseFolder.Size = new System.Drawing.Size(112, 23);
-            this.btnChooseFolder.TabIndex = 0;
-            this.btnChooseFolder.Text = "Choose folder";
-            this.btnChooseFolder.UseVisualStyleBackColor = true;
-            this.btnChooseFolder.Click += new System.EventHandler(this.BtnChooseFolder_Click);
+            btnChooseFolder.Location = new Point(249, 20);
+            btnChooseFolder.Name = "btnChooseFolder";
+            btnChooseFolder.Size = new Size(112, 23);
+            btnChooseFolder.TabIndex = 0;
+            btnChooseFolder.Text = "Choose folder";
+            btnChooseFolder.UseVisualStyleBackColor = true;
+            btnChooseFolder.Click += BtnChooseFolder_Click;
             // 
             // selectedDirectoryLabel
             // 
-            this.selectedDirectoryLabel.AutoSize = true;
-            this.selectedDirectoryLabel.Location = new System.Drawing.Point(255, 63);
-            this.selectedDirectoryLabel.Name = "selectedDirectoryLabel";
-            this.selectedDirectoryLabel.Size = new System.Drawing.Size(101, 15);
-            this.selectedDirectoryLabel.TabIndex = 1;
-            this.selectedDirectoryLabel.Text = "Selected directory";
+            selectedDirectoryLabel.AutoSize = true;
+            selectedDirectoryLabel.Location = new Point(255, 63);
+            selectedDirectoryLabel.Name = "selectedDirectoryLabel";
+            selectedDirectoryLabel.Size = new Size(101, 15);
+            selectedDirectoryLabel.TabIndex = 1;
+            selectedDirectoryLabel.Text = "Selected directory";
             // 
-            // btnStart
+            // btnStartXml
             // 
-            this.btnStart.Location = new System.Drawing.Point(344, 293);
-            this.btnStart.Name = "btnStart";
-            this.btnStart.Size = new System.Drawing.Size(112, 23);
-            this.btnStart.TabIndex = 1;
-            this.btnStart.Text = "Start";
-            this.btnStart.UseVisualStyleBackColor = true;
-            this.btnStart.Click += new System.EventHandler(this.BtnStart_Click);
+            btnStartXml.Location = new Point(3, 3);
+            btnStartXml.Name = "btnStartXml";
+            btnStartXml.Size = new Size(112, 23);
+            btnStartXml.TabIndex = 1;
+            btnStartXml.Text = "XML";
+            btnStartXml.UseVisualStyleBackColor = true;
+            btnStartXml.Click += BtnStart_Click;
             // 
             // saveContentFileDialog
             // 
-            this.saveContentFileDialog.DefaultExt = "xml";
-            this.saveContentFileDialog.Filter = "Fichiers XML|*.xml|Tous les fichiers|*.*";
+            saveContentFileDialog.DefaultExt = "xml";
+            saveContentFileDialog.Filter = "Fichiers XML|*.xml|Tous les fichiers|*.*";
             // 
             // labelBrowseTime
             // 
-            this.labelBrowseTime.AutoSize = true;
-            this.labelBrowseTime.Location = new System.Drawing.Point(682, 411);
-            this.labelBrowseTime.Name = "labelBrowseTime";
-            this.labelBrowseTime.Size = new System.Drawing.Size(71, 15);
-            this.labelBrowseTime.TabIndex = 2;
-            this.labelBrowseTime.Text = "BrowseTime";
+            labelBrowseTime.AutoSize = true;
+            labelBrowseTime.Location = new Point(682, 411);
+            labelBrowseTime.Name = "labelBrowseTime";
+            labelBrowseTime.Size = new Size(71, 15);
+            labelBrowseTime.TabIndex = 2;
+            labelBrowseTime.Text = "BrowseTime";
             // 
             // labelSaveTime
             // 
-            this.labelSaveTime.AutoSize = true;
-            this.labelSaveTime.Location = new System.Drawing.Point(682, 426);
-            this.labelSaveTime.Name = "labelSaveTime";
-            this.labelSaveTime.Size = new System.Drawing.Size(57, 15);
-            this.labelSaveTime.TabIndex = 3;
-            this.labelSaveTime.Text = "SaveTime";
+            labelSaveTime.AutoSize = true;
+            labelSaveTime.Location = new Point(682, 426);
+            labelSaveTime.Name = "labelSaveTime";
+            labelSaveTime.Size = new Size(57, 15);
+            labelSaveTime.TabIndex = 3;
+            labelSaveTime.Text = "SaveTime";
             // 
-            // backgroundWorkerDirectoryBrowse
+            // backgroundWorkerDirectoryBrowseXml
             // 
-            this.backgroundWorkerDirectoryBrowse.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundWorkerDirectoryBrowse_DoWork);
-            this.backgroundWorkerDirectoryBrowse.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkerDirectoryBrowse_RunWorkerCompleted);
+            backgroundWorkerDirectoryBrowseXml.DoWork += BackgroundWorkerDirectoryBrowse_DoWork;
+            backgroundWorkerDirectoryBrowseXml.RunWorkerCompleted += BackgroundWorkerDirectoryBrowse_RunWorkerCompleted;
             // 
             // labelTotalTime
             // 
-            this.labelTotalTime.AutoSize = true;
-            this.labelTotalTime.Location = new System.Drawing.Point(682, 444);
-            this.labelTotalTime.Name = "labelTotalTime";
-            this.labelTotalTime.Size = new System.Drawing.Size(59, 15);
-            this.labelTotalTime.TabIndex = 4;
-            this.labelTotalTime.Text = "Total time";
+            labelTotalTime.AutoSize = true;
+            labelTotalTime.Location = new Point(682, 444);
+            labelTotalTime.Name = "labelTotalTime";
+            labelTotalTime.Size = new Size(59, 15);
+            labelTotalTime.TabIndex = 4;
+            labelTotalTime.Text = "Total time";
             // 
             // progressBar1
             // 
-            this.progressBar1.Location = new System.Drawing.Point(95, 322);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(610, 23);
-            this.progressBar1.TabIndex = 2;
+            progressBar1.Location = new Point(95, 322);
+            progressBar1.Name = "progressBar1";
+            progressBar1.Size = new Size(610, 23);
+            progressBar1.TabIndex = 2;
             // 
             // labelException
             // 
-            this.labelException.AutoSize = true;
-            this.labelException.Location = new System.Drawing.Point(12, 369);
-            this.labelException.Name = "labelException";
-            this.labelException.Size = new System.Drawing.Size(59, 15);
-            this.labelException.TabIndex = 5;
-            this.labelException.Text = "Exception";
+            labelException.AutoSize = true;
+            labelException.Location = new Point(12, 369);
+            labelException.Name = "labelException";
+            labelException.Size = new Size(59, 15);
+            labelException.TabIndex = 5;
+            labelException.Text = "Exception";
+            // 
+            // tableLayoutPanelStart
+            // 
+            tableLayoutPanelStart.ColumnCount = 2;
+            tableLayoutPanelStart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelStart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelStart.Controls.Add(btnStartHtml, 1, 0);
+            tableLayoutPanelStart.Controls.Add(btnStartXml, 0, 0);
+            tableLayoutPanelStart.Location = new Point(271, 281);
+            tableLayoutPanelStart.Name = "tableLayoutPanelStart";
+            tableLayoutPanelStart.RowCount = 1;
+            tableLayoutPanelStart.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            tableLayoutPanelStart.Size = new Size(259, 30);
+            tableLayoutPanelStart.TabIndex = 6;
+            // 
+            // btnStartHtml
+            // 
+            btnStartHtml.Location = new Point(132, 3);
+            btnStartHtml.Name = "btnStartHtml";
+            btnStartHtml.Size = new Size(112, 23);
+            btnStartHtml.TabIndex = 7;
+            btnStartHtml.Text = "HTML";
+            btnStartHtml.UseVisualStyleBackColor = true;
+            btnStartHtml.Click += btnStartHtml_Click;
+            // 
+            // backgroundWorkerDirectoryBrowseHtml
+            // 
+            backgroundWorkerDirectoryBrowseHtml.DoWork += backgroundWorkerDirectoryBrowseHtml_DoWork;
+            backgroundWorkerDirectoryBrowseHtml.RunWorkerCompleted += backgroundWorkerDirectoryBrowseHtml_RunWorkerCompleted;
             // 
             // MainWindow
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 472);
-            this.Controls.Add(this.labelException);
-            this.Controls.Add(this.progressBar1);
-            this.Controls.Add(this.labelTotalTime);
-            this.Controls.Add(this.labelSaveTime);
-            this.Controls.Add(this.labelBrowseTime);
-            this.Controls.Add(this.btnStart);
-            this.Controls.Add(this.gbDirectory);
-            this.Name = "MainWindow";
-            this.Text = "MainWindow";
-            this.Load += new System.EventHandler(this.MainWindow_Load);
-            this.gbDirectory.ResumeLayout(false);
-            this.gbDirectory.PerformLayout();
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(800, 472);
+            Controls.Add(tableLayoutPanelStart);
+            Controls.Add(labelException);
+            Controls.Add(progressBar1);
+            Controls.Add(labelTotalTime);
+            Controls.Add(labelSaveTime);
+            Controls.Add(labelBrowseTime);
+            Controls.Add(gbDirectory);
+            Name = "MainWindow";
+            Text = "MainWindow";
+            Load += MainWindow_Load;
+            gbDirectory.ResumeLayout(false);
+            gbDirectory.PerformLayout();
+            tableLayoutPanelStart.ResumeLayout(false);
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -152,13 +185,16 @@
         private Button btnChooseFolder;
         private FolderBrowserDialog selectedDirectoryBrowser;
         private Label selectedDirectoryLabel;
-        private Button btnStart;
+        private Button btnStartXml;
         private SaveFileDialog saveContentFileDialog;
         private Label labelBrowseTime;
         private Label labelSaveTime;
-        private System.ComponentModel.BackgroundWorker backgroundWorkerDirectoryBrowse;
+        private System.ComponentModel.BackgroundWorker backgroundWorkerDirectoryBrowseXml;
         private Label labelTotalTime;
         private ProgressBar progressBar1;
         private Label labelException;
+        private TableLayoutPanel tableLayoutPanelStart;
+        private Button btnStartHtml;
+        private System.ComponentModel.BackgroundWorker backgroundWorkerDirectoryBrowseHtml;
     }
 }
