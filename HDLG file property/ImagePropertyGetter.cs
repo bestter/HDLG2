@@ -5,15 +5,15 @@ namespace HdlgFileProperty
 {
     public class ImagePropertyGetter : IFilePropertyGetter
     {
-        public Dictionary<string, string> GetFileProperties(string path)
+        public Dictionary<string, IConvertible> GetFileProperties(string path)
         {
-            Dictionary<string, string> properties = new();
+            Dictionary<string, IConvertible> properties = new();
             try
             {
                 var img = Image.FromStream(File.OpenRead(path), false, false);
 
-                properties.Add(nameof(img.Width), img.Width.ToString(CultureInfo.InvariantCulture));
-                properties.Add(nameof(img.Height), img.Height.ToString(CultureInfo.InvariantCulture));
+                properties.Add(nameof(img.Width), img.Width);
+                properties.Add(nameof(img.Height), img.Height);
             }
             catch (ArgumentException)
             {

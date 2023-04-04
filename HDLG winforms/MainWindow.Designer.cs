@@ -31,6 +31,8 @@
             tableLayoutPanelStart = new TableLayoutPanel();
             btnStartHtml = new Button();
             backgroundWorkerDirectoryBrowseHtml = new System.ComponentModel.BackgroundWorker();
+            saveFileDialog1 = new SaveFileDialog();
+            saveFileDialogHtml = new SaveFileDialog();
             gbDirectory.SuspendLayout();
             tableLayoutPanelStart.SuspendLayout();
             SuspendLayout();
@@ -157,6 +159,16 @@
             backgroundWorkerDirectoryBrowseHtml.DoWork += backgroundWorkerDirectoryBrowseHtml_DoWork;
             backgroundWorkerDirectoryBrowseHtml.RunWorkerCompleted += backgroundWorkerDirectoryBrowseHtml_RunWorkerCompleted;
             // 
+            // saveFileDialog1
+            // 
+            saveFileDialog1.DefaultExt = "xml";
+            saveFileDialog1.Filter = "Fichiers XML|*.xml|Tous les fichiers|*.*";
+            // 
+            // saveFileDialogHtml
+            // 
+            saveFileDialogHtml.Filter = "Fichiers HTML|*.html|Tous les fichiers|*.*";
+            saveFileDialogHtml.FileOk += saveFileDialogHtml_FileOk;
+            // 
             // MainWindow
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -196,5 +208,7 @@
         private TableLayoutPanel tableLayoutPanelStart;
         private Button btnStartHtml;
         private System.ComponentModel.BackgroundWorker backgroundWorkerDirectoryBrowseHtml;
+        private SaveFileDialog saveFileDialog1;
+        private SaveFileDialog saveFileDialogHtml;
     }
 }

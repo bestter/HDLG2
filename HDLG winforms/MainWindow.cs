@@ -71,6 +71,7 @@ namespace HDLG_winforms
             labelTotalTime.Text = string.Empty;
             labelException.Text = string.Empty;
             saveContentFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            saveFileDialogHtml.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         }
 
         private void BtnStart_Click(object sender, EventArgs e)
@@ -93,6 +94,7 @@ namespace HDLG_winforms
                         if (result == DialogResult.OK)
                         {
                             btnStartXml.Enabled = false;
+                            btnStartHtml.Enabled = false;
                             UseWaitCursor = true;
                             log.Information($"Start browse with {selectedDirectory}");
                             backgroundWorkerDirectoryBrowseXml.RunWorkerAsync(selectedDirectory);
@@ -211,11 +213,12 @@ namespace HDLG_winforms
                     if (!string.IsNullOrWhiteSpace(selectedDirectory))
                     {
                         DirectoryInfo di = new(selectedDirectory);
-                        saveContentFileDialog.FileName = $"{di.Name}.html";
-                        var result = saveContentFileDialog.ShowDialog();
+                        saveFileDialogHtml.FileName = $"{di.Name}.html";
+                        var result = saveFileDialogHtml.ShowDialog();
                         if (result == DialogResult.OK)
                         {
                             btnStartXml.Enabled = false;
+                            btnStartHtml.Enabled = false;
                             UseWaitCursor = true;
                             log.Information($"Start browse with {selectedDirectory}");
                             backgroundWorkerDirectoryBrowseHtml.RunWorkerAsync(selectedDirectory);
@@ -254,7 +257,7 @@ namespace HDLG_winforms
                 DirectoryBrowser db = new(log);
                 log.Debug($"Ready to start {nameof(DirectoryBrowser.SaveAsHTMLAsync)}");
 
-                db.SaveAsHTMLAsync(saveContentFileDialog.FileName, directory).Wait();
+                db.SaveAsHTMLAsync(saveFileDialogHtml.FileName, directory).Wait();
 
                 log.Debug($"{nameof(DirectoryBrowser.SaveAsHTMLAsync)} done");
                 stopwatch.Stop();
@@ -276,6 +279,7 @@ namespace HDLG_winforms
             Debug.Write($"Completed at {DateTime.Now.ToLongTimeString()}");
             UseWaitCursor = false;
             btnStartXml.Enabled = true;
+            btnStartHtml.Enabled = true;
             PerformanceCount? perf = e.Result as PerformanceCount?;
             if (perf != null)
             {
@@ -283,10 +287,15 @@ namespace HDLG_winforms
                 labelSaveTime.Text = perf.Value.SaveTime.ToString("G", CultureInfo.CurrentCulture);
                 labelTotalTime.Text = perf.Value.TotalTime.ToString("G", CultureInfo.CurrentCulture);
             }
-            if (saveContentFileDialog.FileName != null)
+            if (saveFileDialogHtml.FileName != null)
             {
-                OpenWithDefaultProgram(saveContentFileDialog.FileName);
+                OpenWithDefaultProgram(saveFileDialogHtml.FileName);
             }
+        }
+
+        private void saveFileDialogHtml_FileOk(object sender, CancelEventArgs e)
+        {
+
         }
     }
 }

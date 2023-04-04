@@ -6,9 +6,9 @@ namespace HdlgFileProperty
 {
     public class PdfPropertyGetter : IFilePropertyGetter
     {
-        public Dictionary<string, string> GetFileProperties(string path)
+        public Dictionary<string, IConvertible> GetFileProperties(string path)
         {
-            Dictionary<string, string> properties = new();
+            Dictionary<string, IConvertible> properties = new();
             try
             {
                 DocumentProperties documentProperties = new();

@@ -12,9 +12,9 @@
 
         public DateTime CreationTime { get; private set; }
 
-        public Dictionary<string, string> Properties { get; private set; }
+        public Dictionary<string, IConvertible> Properties { get; private set; }
 
-        public File(string path, Dictionary<string, string> properties)
+        public File(string path, Dictionary<string, IConvertible> properties)
         {
             Path = path;
             FileInfo info = new(Path);
@@ -24,7 +24,7 @@
                 Extension = info.Extension;
                 Size = info.Length;
                 CreationTime = info.CreationTime;
-                Properties = new Dictionary<string, string>(properties);
+                Properties = new Dictionary<string, IConvertible>(properties);
             }
             else
             {
@@ -73,6 +73,41 @@
                 return string.Compare(Path, other.Path, StringComparison.OrdinalIgnoreCase);
             }
             return -1;
+        }
+
+        public static bool operator ==(File left, File right)
+        {
+            if (ReferenceEquals(left, null))
+            {
+                return ReferenceEquals(right, null);
+            }
+
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(File left, File right)
+        {
+            return !(left == right);
+        }
+
+        public static bool operator <(File left, File right)
+        {
+            return ReferenceEquals(left, null) ? !ReferenceEquals(right, null) : left.CompareTo(right) < 0;
+        }
+
+        public static bool operator <=(File left, File right)
+        {
+            return ReferenceEquals(left, null) || left.CompareTo(right) <= 0;
+        }
+
+        public static bool operator >(File left, File right)
+        {
+            return !ReferenceEquals(left, null) && left.CompareTo(right) > 0;
+        }
+
+        public static bool operator >=(File left, File right)
+        {
+            return ReferenceEquals(left, null) ? ReferenceEquals(right, null) : left.CompareTo(right) >= 0;
         }
     }
 }

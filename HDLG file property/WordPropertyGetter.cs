@@ -5,9 +5,9 @@ namespace HdlgFileProperty
 {
     public class WordPropertyGetter : IFilePropertyGetter
     {
-        public Dictionary<string, string> GetFileProperties(string path)
+        public Dictionary<string, IConvertible> GetFileProperties(string path)
         {
-            Dictionary<string, string> properties = new();
+            Dictionary<string, IConvertible> properties = new();
             try
             {
                 using WordprocessingDocument wordDoc = WordprocessingDocument.Open(path, false);
@@ -18,7 +18,7 @@ namespace HdlgFileProperty
                 DateTime? created = wordDoc.PackageProperties.Created;
                 if (created != null)
                 {
-                    properties.Add("Created", created.Value.ToString("O", CultureInfo.InvariantCulture));
+                    properties.Add("Created", created.Value);
                 }
                 if (!string.IsNullOrWhiteSpace(wordDoc.PackageProperties.Creator))
                 {

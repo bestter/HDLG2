@@ -111,16 +111,51 @@ namespace HDLG_winforms
 
         public int CompareTo(Directory? other)
         {
-            if (other != null)
+            if (other == null)
             {
-                int compareValue = other.IsTopDirectory.CompareTo(IsTopDirectory);
-                if (compareValue == 0)
-                {
-                    compareValue = string.Compare(Path, other.Path, StringComparison.OrdinalIgnoreCase);
-                }
-                return compareValue;
+                return -1;
             }
-            return -1;
+            int compareValue = other.IsTopDirectory.CompareTo(IsTopDirectory);
+            if (compareValue == 0)
+            {
+                compareValue = string.Compare(Path, other.Path, StringComparison.OrdinalIgnoreCase);
+            }
+            return compareValue;
+        }
+
+        public static bool operator ==(Directory left, Directory right)
+        {
+            if (ReferenceEquals(left, null))
+            {
+                return ReferenceEquals(right, null);
+            }
+
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Directory left, Directory right)
+        {
+            return !(left == right);
+        }
+
+        public static bool operator <(Directory left, Directory right)
+        {
+            return ReferenceEquals(left, null) ? !ReferenceEquals(right, null) : left.CompareTo(right) < 0;
+        }
+
+        public static bool operator <=(Directory left, Directory right)
+        {
+            return ReferenceEquals(left, null) || left.CompareTo(right) <= 0;
+        }
+
+        public static bool operator >(Directory left, Directory right)
+        {
+            return !ReferenceEquals(left, null) && left.CompareTo(right) > 0;
+        }
+
+        public static bool operator >=(Directory left, Directory right)
+        {
+            return ReferenceEquals(left, null) ? ReferenceEquals(right, null) : left.CompareTo(right) >= 0;
         }
     }
 }
