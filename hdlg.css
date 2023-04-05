@@ -1,0 +1,45 @@
+﻿body {
+    font-family: 'Roboto Serif', serif;
+    background-color: #956E53;
+    color: #82A19B;
+}
+
+a {
+    color: #5BC794;
+    text-decoration: underline;
+}
+
+    a:link {
+        color: #C79D48;
+    }
+
+    a:visited {
+        color: #AC6FC7;
+    }
+
+    a:hover {
+        text-decoration: none;
+    }
+
+    a:active {
+        color: #2C7A56;
+        text-decoration: none;
+    }
+
+h1, h2, h3, h4, h5, h6, .directories {
+    font-family: 'Source Sans Pro', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #FAB528;
+}
+
+
+.directory
+{
+    border-bottom: 3em;
+}
+
+.files {
+    border-bottom: 1.5em;
+}

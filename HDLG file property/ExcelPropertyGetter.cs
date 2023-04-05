@@ -5,9 +5,9 @@ namespace HdlgFileProperty
 {
     public class ExcelPropertyGetter : IFilePropertyGetter
     {
-        public Dictionary<string, string> GetFileProperties(string path)
+        public Dictionary<string, IConvertible> GetFileProperties(string path)
         {
-            Dictionary<string, string> properties = new();
+            Dictionary<string, IConvertible> properties = new();
             using (SpreadsheetDocument excelDoc = SpreadsheetDocument.Open(path, false))
             {
                 if (!string.IsNullOrWhiteSpace(excelDoc.PackageProperties.Title))
@@ -17,7 +17,7 @@ namespace HdlgFileProperty
                 DateTime? created = excelDoc.PackageProperties.Created;
                 if (created != null)
                 {
-                    properties.Add("Created", created.Value.ToString("O", CultureInfo.InvariantCulture));
+                    properties.Add("Created", created.Value);
                 }
                 if (!string.IsNullOrWhiteSpace(excelDoc.PackageProperties.Creator))
                 {

@@ -14,6 +14,6 @@
         /// </summary>
         /// <param name="path">The full file path</param>
         /// <returns></returns>
-        Dictionary<string, string> GetFileProperties(string path);
+        Dictionary<string, IConvertible> GetFileProperties(string path);
     }
 }

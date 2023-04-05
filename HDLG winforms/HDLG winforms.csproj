@@ -40,6 +40,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="hdlg.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="hdlg.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\LICENSE">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
