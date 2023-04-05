@@ -254,7 +254,7 @@ namespace HDLG_winforms
             var title = $"HTML Directory list generator {directory.Path} {version} {DateTimeOffset.Now.ToString("F", CultureInfo.CurrentCulture)}";
             await sw.WriteLineAsync("<!DOCTYPE html>");
 
-            await sw.WriteLineAsync("<html>");
+            await sw.WriteLineAsync($"<html lang=\"{CultureInfo.CurrentCulture.TwoLetterISOLanguageName}\">");
             await sw.WriteLineAsync("<head>");
             await sw.WriteLineAsync($"<meta charset=\"{encoding.WebName}\">");
             await sw.WriteLineAsync("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
@@ -366,24 +366,24 @@ namespace HDLG_winforms
 
             log.Verbose($"{nameof(WriteHtmlFileAsync)} {file}");
 
-            await writer.WriteLineAsync("<div class=\"file\">");
+            await writer.WriteLineAsync("<details class=\"file\">");
 
-            await writer.WriteLineAsync($"<a href=\"{file.Path}\">{file.Name}</a>");
-            
-            await writer.WriteLineAsync($"<span class=\"extension\">{file.Extension}</span>");
-            await writer.WriteLineAsync($"<span class=\"size\">{file.Size.ToString(CultureInfo.CurrentCulture)}</span>");
+            await writer.WriteLineAsync("<summary>");
+            await writer.WriteLineAsync($"<a href=\"{file.Path}\">{file.Name}</a>");                        
+            await writer.WriteLineAsync("</summary>");
+
+            await writer.WriteLineAsync("<div>");
+            await writer.WriteLineAsync($"<span class=\"size\">{file.Size.ToString(CultureInfo.CurrentCulture)} kb</span>");
             await writer.WriteLineAsync($"<span class=\"creationTime\">{file.CreationTime.ToString("F", CultureInfo.CurrentCulture)}</span>");
-            
-
             if (file.Properties != null)
             {
-                await writer.WriteLineAsync("<div class=\"extentedProperties\">");
+                await writer.WriteLineAsync("<p class=\"extentedProperties\">");
                 
                 foreach (var property in file.Properties)
                 {
                     if (!string.IsNullOrWhiteSpace(property.Key) && property.Value != null)
                     {
-                        await writer.WriteLineAsync("<div class=\"extentedProperty\">");
+                        await writer.WriteLineAsync("<p class=\"extentedProperty\">");
                         await writer.WriteLineAsync($"<span>{property.Key}</span>");
 
                         DateTime? dtValue = property.Value as DateTime?;
@@ -397,14 +397,15 @@ namespace HDLG_winforms
                             await writer.WriteLineAsync($"<span>{value}</span>");
                         }
                         
-                        await writer.WriteLineAsync("</div>");
+                        await writer.WriteLineAsync("</p>");
 
                     }
                 }
-                await writer.WriteLineAsync("</div>");
+                await writer.WriteLineAsync("</p>");
             }
 
             await writer.WriteLineAsync("</div>");
+            await writer.WriteLineAsync("</details>");
         }
 
         #endregion
