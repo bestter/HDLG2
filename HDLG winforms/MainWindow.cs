@@ -123,7 +123,7 @@ namespace HDLG_winforms
             if (!string.IsNullOrWhiteSpace(selecteDirectory))
             {
                 log.Information(selecteDirectory);
-                Directory directory = new(selecteDirectory, true, log);
+                Directory directory = new(selecteDirectory, true, cbBrowseSubDirectory.Checked, log);
                 Stopwatch stopwatch = Stopwatch.StartNew();
                 log.Debug($"Ready to start {nameof(directory.Browse)}");
                 directory.Browse(propertyBrowser);
@@ -155,6 +155,7 @@ namespace HDLG_winforms
             Debug.Write($"Completed at {DateTime.Now.ToLongTimeString()}");
             UseWaitCursor = false;
             btnStartXml.Enabled = true;
+            btnStartHtml.Enabled = true;
             PerformanceCount? perf = e.Result as PerformanceCount?;
             if (perf != null)
             {
@@ -198,7 +199,7 @@ namespace HDLG_winforms
             base.Dispose(disposing);
         }
 
-        private void btnStartHtml_Click(object sender, EventArgs e)
+        private void BtnStartHtml_Click(object sender, EventArgs e)
         {
             try
             {
@@ -240,14 +241,14 @@ namespace HDLG_winforms
             }
         }
 
-        private void backgroundWorkerDirectoryBrowseHtml_DoWork(object sender, DoWorkEventArgs e)
+        private void BackgroundWorkerDirectoryBrowseHtml_DoWork(object sender, DoWorkEventArgs e)
         {
-            Debug.Write($"{nameof(backgroundWorkerDirectoryBrowseHtml_DoWork)} started at {DateTime.Now.ToLongTimeString()}");
+            Debug.Write($"{nameof(BackgroundWorkerDirectoryBrowseHtml_DoWork)} started at {DateTime.Now.ToLongTimeString()}");
             string? selecteDirectory = e.Argument as string;
             if (!string.IsNullOrWhiteSpace(selecteDirectory))
             {
-                log.Information(selecteDirectory);
-                Directory directory = new(selecteDirectory, true, log);
+                log.Information(selecteDirectory);                
+                Directory directory = new(selecteDirectory, true, cbBrowseSubDirectory.Checked, log);
                 Stopwatch stopwatch = Stopwatch.StartNew();
                 log.Debug($"Ready to start {nameof(directory.Browse)}");
                 directory.Browse(propertyBrowser);
@@ -274,7 +275,7 @@ namespace HDLG_winforms
             }
         }
 
-        private void backgroundWorkerDirectoryBrowseHtml_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void BackgroundWorkerDirectoryBrowseHtml_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             Debug.Write($"Completed at {DateTime.Now.ToLongTimeString()}");
             UseWaitCursor = false;

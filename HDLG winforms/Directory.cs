@@ -19,6 +19,8 @@ namespace HDLG_winforms
 
         public bool IsTopDirectory { get; private set; }
 
+        public bool BrowseSubdirectory { get; private set; }
+
         public ReadOnlyCollection<Directory> Directories => directories.AsReadOnly();
 
         private readonly List<File> files = new();
@@ -28,20 +30,24 @@ namespace HDLG_winforms
         public int DirectoriesCount => directories.Count;
         public int FilesCount => files.Count;
 
+        /// <summary>
+        /// Logger
+        /// </summary>
         private readonly Logger log;
 
-        public Directory(string path, bool isTopDirectory, Logger log) : this(new DirectoryInfo(path), isTopDirectory, log)
+        public Directory(string path, bool isTopDirectory, bool browseSubdirectory, Logger log) : this(new DirectoryInfo(path), isTopDirectory, browseSubdirectory, log)
         {
 
         }
 
-        public Directory(DirectoryInfo directory, bool isTopDirectory, Logger log)
+        public Directory(DirectoryInfo directory, bool isTopDirectory, bool browseSubdirectory, Logger log)
         {
             directoryInfo = directory;
             Path = directory.FullName;
             Name = directory.Name;
             CreationTime = directory.CreationTimeUtc.ToLocalTime();
             IsTopDirectory = isTopDirectory;
+            BrowseSubdirectory = browseSubdirectory;
             this.log = log;
         }
 
@@ -52,13 +58,16 @@ namespace HDLG_winforms
         /// <param name="propertyBrowser"></param>
         public void Browse(FilePropertyBrowser propertyBrowser)
         {
-            log.Debug($"Directory: {Path} {nameof(IsTopDirectory)}: {IsTopDirectory}");
+            log.Debug($"Directory: {Path} {nameof(IsTopDirectory)}: {IsTopDirectory} {nameof(BrowseSubdirectory)}: {BrowseSubdirectory}");
 
-            directoryInfo.EnumerateDirectories().ToList().ForEach(d =>
+            if (BrowseSubdirectory)
             {
-                directories.Add(new Directory(d.FullName, false, log));
-            });
-            directories.Sort();
+                directoryInfo.EnumerateDirectories().ToList().ForEach(d =>
+                {
+                    directories.Add(new Directory(d.FullName, false, true, log));
+                });
+                directories.Sort();
+            }
 
             directoryInfo.EnumerateFiles().ToList().ForEach(f =>
             {

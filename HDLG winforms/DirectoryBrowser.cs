@@ -54,8 +54,8 @@ namespace HDLG_winforms
                 Async = true,
                 IndentChars = "\t"
             };
-
-            using StreamWriter sw = new (fileInfo.OpenWrite(), encoding, 4096, false);
+            using FileStream fileStream = new(fileInfo.FullName, FileMode.Create, FileAccess.Write, FileShare.None);
+            using StreamWriter sw = new (fileStream, encoding, 4096, false);
             using (XmlWriter writer = XmlWriter.Create(sw, settings))
             {
                 await writer.WriteStartDocumentAsync();
@@ -250,7 +250,8 @@ namespace HDLG_winforms
             
             string? version = typeof(DirectoryBrowser).Assembly.GetName().Version?.ToString();
 
-            using StreamWriter sw = new(fileInfo.OpenWrite(), encoding, 4096, false);
+            using FileStream fileStream = new(fileInfo.FullName, FileMode.Create, FileAccess.Write, FileShare.None);
+            using StreamWriter sw = new(fileStream, encoding, 4096, false);            
             var title = $"HTML Directory list generator {directory.Path} {version} {DateTimeOffset.Now.ToString("F", CultureInfo.CurrentCulture)}";
             await sw.WriteLineAsync("<!DOCTYPE html>");
 

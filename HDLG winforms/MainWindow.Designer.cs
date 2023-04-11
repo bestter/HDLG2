@@ -33,12 +33,14 @@
             backgroundWorkerDirectoryBrowseHtml = new System.ComponentModel.BackgroundWorker();
             saveFileDialog1 = new SaveFileDialog();
             saveFileDialogHtml = new SaveFileDialog();
+            cbBrowseSubDirectory = new CheckBox();
             gbDirectory.SuspendLayout();
             tableLayoutPanelStart.SuspendLayout();
             SuspendLayout();
             // 
             // gbDirectory
             // 
+            gbDirectory.Controls.Add(cbBrowseSubDirectory);
             gbDirectory.Controls.Add(btnChooseFolder);
             gbDirectory.Controls.Add(selectedDirectoryLabel);
             gbDirectory.Location = new Point(95, 176);
@@ -152,12 +154,12 @@
             btnStartHtml.TabIndex = 7;
             btnStartHtml.Text = "HTML";
             btnStartHtml.UseVisualStyleBackColor = true;
-            btnStartHtml.Click += btnStartHtml_Click;
+            btnStartHtml.Click += BtnStartHtml_Click;
             // 
             // backgroundWorkerDirectoryBrowseHtml
             // 
-            backgroundWorkerDirectoryBrowseHtml.DoWork += backgroundWorkerDirectoryBrowseHtml_DoWork;
-            backgroundWorkerDirectoryBrowseHtml.RunWorkerCompleted += backgroundWorkerDirectoryBrowseHtml_RunWorkerCompleted;
+            backgroundWorkerDirectoryBrowseHtml.DoWork += BackgroundWorkerDirectoryBrowseHtml_DoWork;
+            backgroundWorkerDirectoryBrowseHtml.RunWorkerCompleted += BackgroundWorkerDirectoryBrowseHtml_RunWorkerCompleted;
             // 
             // saveFileDialog1
             // 
@@ -168,6 +170,18 @@
             // 
             saveFileDialogHtml.Filter = "Fichiers HTML|*.html|Tous les fichiers|*.*";
             saveFileDialogHtml.FileOk += saveFileDialogHtml_FileOk;
+            // 
+            // cbBrowseSubDirectory
+            // 
+            cbBrowseSubDirectory.AutoSize = true;
+            cbBrowseSubDirectory.Checked = true;
+            cbBrowseSubDirectory.CheckState = CheckState.Checked;
+            cbBrowseSubDirectory.Location = new Point(398, 22);
+            cbBrowseSubDirectory.Name = "cbBrowseSubDirectory";
+            cbBrowseSubDirectory.Size = new Size(138, 19);
+            cbBrowseSubDirectory.TabIndex = 2;
+            cbBrowseSubDirectory.Text = "Browse sub-directory";
+            cbBrowseSubDirectory.UseVisualStyleBackColor = true;
             // 
             // MainWindow
             // 
@@ -210,5 +224,6 @@
         private System.ComponentModel.BackgroundWorker backgroundWorkerDirectoryBrowseHtml;
         private SaveFileDialog saveFileDialog1;
         private SaveFileDialog saveFileDialogHtml;
+        private CheckBox cbBrowseSubDirectory;
     }
 }
