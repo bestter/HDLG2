@@ -36,7 +36,7 @@
 
         public override int GetHashCode()
         {
-            return Path.GetHashCode(System.StringComparison.OrdinalIgnoreCase);
+            return Path.GetHashCode(StringComparison.OrdinalIgnoreCase);
         }
 
         public override bool Equals(object? obj)
