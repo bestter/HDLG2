@@ -50,7 +50,7 @@
 
         public bool Equals(File? other)
         {
-            if (other != null)
+            if (other is not null)
             {
                 return string.Equals(Path, other.Path, StringComparison.OrdinalIgnoreCase);
             }
@@ -68,7 +68,7 @@
 
         public int CompareTo(File? other)
         {
-            if (other != null)
+            if (other is not null)
             {
                 return string.Compare(Path, other.Path, StringComparison.OrdinalIgnoreCase);
             }

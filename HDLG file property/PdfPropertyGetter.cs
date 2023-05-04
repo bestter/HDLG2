@@ -17,11 +17,14 @@ namespace HdlgFileProperty
                 if (form != null)
                 {
                     IDictionary<string, PdfFormField> fields = form.GetFormFields();
-                    if (fields.Any() && fields.TryGetValue("name", out PdfFormField toSet))
+                    if (fields.Any())
                     {
-                        if (toSet != null)
-                        {
-                            properties.Add("Title", toSet.GetValueAsString());
+                        if (fields.TryGetValue("name", out PdfFormField toSet))
+                        { 
+                            if (toSet != null)
+                            {
+                                properties.Add("Title", toSet.GetValueAsString());
+                            }
                         }
                     }
                 }
