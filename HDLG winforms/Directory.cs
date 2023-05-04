@@ -102,7 +102,7 @@ namespace HDLG_winforms
 
         public bool Equals(Directory? other)
         {
-            if (other != null)
+            if (other is not null)
             {
                 return string.Equals(Path, other.Path, StringComparison.OrdinalIgnoreCase);
             }
@@ -120,7 +120,7 @@ namespace HDLG_winforms
 
         public int CompareTo(Directory? other)
         {
-            if (other == null)
+            if (other is null)
             {
                 return -1;
             }
