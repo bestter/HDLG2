@@ -16,6 +16,7 @@ namespace HDLG_winforms
                     services.AddTransient<WordPropertyGetter, WordPropertyGetter>();
                     services.AddTransient<ExcelPropertyGetter, ExcelPropertyGetter>();
                     services.AddTransient<PdfPropertyGetter, PdfPropertyGetter>();
+                    services.AddTransient<Mp3PropertyGetter, Mp3PropertyGetter>();
                     services.AddTransient<MainWindow>();
                 });
         }

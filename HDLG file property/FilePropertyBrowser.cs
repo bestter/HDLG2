@@ -1,17 +1,29 @@
-﻿namespace HdlgFileProperty
+﻿using Microsoft.Extensions.Logging;
+using Serilog.Core;
+
+namespace HdlgFileProperty
 {
     public class FilePropertyBrowser
     {
         private readonly IFilePropertyGetter[] filePropertyGetters;
 
-        public FilePropertyBrowser(params IFilePropertyGetter[] imagePropertyGetters)
+        public FilePropertyBrowser(Serilog.ILogger logger, params IFilePropertyGetter[] imagePropertyGetters)
         {
+            if (logger is null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             if (imagePropertyGetters is null)
             {
                 throw new ArgumentNullException(nameof(imagePropertyGetters));
             }
             filePropertyGetters = new IFilePropertyGetter[imagePropertyGetters.Length];
             imagePropertyGetters.CopyTo(filePropertyGetters, 0);
+            foreach (var imagePropertyGetter in imagePropertyGetters)
+            {
+                imagePropertyGetter.AddLogger(logger);
+            }
         }
 
         public Dictionary<string, IConvertible> GetFileProperty(string path)
