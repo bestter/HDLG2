@@ -18,6 +18,8 @@ namespace HDLG_winforms
         public ExcelPropertyGetter ExcelPropertyGetter;
 
         public PdfPropertyGetter PdfPropertyGetter;
+
+        public Mp3PropertyGetter Mp3PropertyGetter;
         #endregion
 
         /// <summary>
@@ -29,18 +31,20 @@ namespace HDLG_winforms
         /// Logger
         /// </summary>
         private readonly Logger log = new LoggerConfiguration()
-    .WriteTo.File(@"logs\log.txt", formatProvider: CultureInfo.CurrentCulture, rollingInterval: RollingInterval.Day).MinimumLevel.Debug()
+    .WriteTo.File(@"logs\log.txt", formatProvider: CultureInfo.CurrentCulture, rollingInterval: RollingInterval.Day, outputTemplate:
+        "[{Timestamp:R} {Level:u3}] {Message:lj}{NewLine}{Exception}").MinimumLevel.Debug()
     .CreateLogger();
 
 
-        public MainWindow(ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter, PdfPropertyGetter pdfPropertyGetter)
+        public MainWindow(ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter, PdfPropertyGetter pdfPropertyGetter, Mp3PropertyGetter mp3PropertyGetter)
         {
             InitializeComponent();
             ImagePropertyGetter = imagePropertyGetter;
             WordPropertyGetter = wordPropertyGetter;
             ExcelPropertyGetter = excelPropertyGetter;
             PdfPropertyGetter = pdfPropertyGetter;
-            propertyBrowser = new(imagePropertyGetter, wordPropertyGetter, excelPropertyGetter, pdfPropertyGetter);
+            Mp3PropertyGetter = mp3PropertyGetter;
+            propertyBrowser = new(log, imagePropertyGetter, wordPropertyGetter, excelPropertyGetter, pdfPropertyGetter, mp3PropertyGetter);
         }
 
         private string? selectedDirectory;
@@ -129,6 +133,7 @@ namespace HDLG_winforms
                 directory.Browse(propertyBrowser);
                 log.Debug($"{nameof(directory.Browse)} of directory {directory.Name} done");
                 TimeSpan browseTime = stopwatch.Elapsed;
+                propertyBrowser.LogGetterStatistics();
 
                 DirectoryBrowser db = new(log);
                 log.Debug($"Ready to start {nameof(DirectoryBrowser.SaveAsXMLAsync)}");
@@ -247,13 +252,14 @@ namespace HDLG_winforms
             string? selecteDirectory = e.Argument as string;
             if (!string.IsNullOrWhiteSpace(selecteDirectory))
             {
-                log.Information(selecteDirectory);                
+                log.Information(selecteDirectory);
                 Directory directory = new(selecteDirectory, true, cbBrowseSubDirectory.Checked, log);
                 Stopwatch stopwatch = Stopwatch.StartNew();
                 log.Debug($"Ready to start {nameof(directory.Browse)}");
                 directory.Browse(propertyBrowser);
                 log.Debug($"{nameof(directory.Browse)} of directory {directory.Name} done");
                 TimeSpan browseTime = stopwatch.Elapsed;
+                propertyBrowser.LogGetterStatistics();
 
                 DirectoryBrowser db = new(log);
                 log.Debug($"Ready to start {nameof(DirectoryBrowser.SaveAsHTMLAsync)}");
@@ -294,7 +300,7 @@ namespace HDLG_winforms
             }
         }
 
-        private void saveFileDialogHtml_FileOk(object sender, CancelEventArgs e)
+        private void SaveFileDialogHtml_FileOk(object sender, CancelEventArgs e)
         {
 
         }

@@ -1,10 +1,18 @@
-﻿using System.Drawing;
+﻿using Serilog;
+using System.Drawing;
 using System.Globalization;
 
 namespace HdlgFileProperty
 {
     public class ImagePropertyGetter : IFilePropertyGetter
     {
+
+        public ILogger? Logger { get; private set; }
+
+        public void AddLogger(ILogger logger)
+        {
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
         public Dictionary<string, IConvertible> GetFileProperties(string path)
         {
             Dictionary<string, IConvertible> properties = new();

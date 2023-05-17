@@ -1,11 +1,19 @@
 ﻿using iText.Forms;
 using iText.Forms.Fields;
 using iText.Kernel.Pdf;
+using Serilog;
 
 namespace HdlgFileProperty
 {
     public class PdfPropertyGetter : IFilePropertyGetter
     {
+        public ILogger? Logger { get; private set; }
+
+        public void AddLogger(ILogger logger)
+        {
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
         public Dictionary<string, IConvertible> GetFileProperties(string path)
         {
             Dictionary<string, IConvertible> properties = new();
@@ -16,7 +24,7 @@ namespace HdlgFileProperty
                 PdfAcroForm form = PdfAcroForm.GetAcroForm(pdfDoc, false);
                 if (form != null)
                 {
-                    IDictionary<string, PdfFormField> fields = form.GetFormFields();
+                    IDictionary<string, PdfFormField> fields = form.GetAllFormFields();
                     if (fields.Any())
                     {
                         if (fields.TryGetValue("name", out PdfFormField toSet))

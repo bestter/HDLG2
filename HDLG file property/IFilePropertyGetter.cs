@@ -1,7 +1,15 @@
-﻿namespace HdlgFileProperty
+﻿using Serilog;
+
+namespace HdlgFileProperty
 {
     public interface IFilePropertyGetter
     {
+        /// <summary>
+        /// Add valid <see cref="ILogger"/> to this property getter
+        /// </summary>
+        /// <param name="logger"></param>
+        void AddLogger(ILogger logger);
+
         /// <summary>
         /// Did this file is supported
         /// </summary>
