@@ -133,6 +133,7 @@ namespace HDLG_winforms
                 directory.Browse(propertyBrowser);
                 log.Debug($"{nameof(directory.Browse)} of directory {directory.Name} done");
                 TimeSpan browseTime = stopwatch.Elapsed;
+                propertyBrowser.LogGetterStatistics();
 
                 DirectoryBrowser db = new(log);
                 log.Debug($"Ready to start {nameof(DirectoryBrowser.SaveAsXMLAsync)}");
@@ -251,13 +252,14 @@ namespace HDLG_winforms
             string? selecteDirectory = e.Argument as string;
             if (!string.IsNullOrWhiteSpace(selecteDirectory))
             {
-                log.Information(selecteDirectory);                
+                log.Information(selecteDirectory);
                 Directory directory = new(selecteDirectory, true, cbBrowseSubDirectory.Checked, log);
                 Stopwatch stopwatch = Stopwatch.StartNew();
                 log.Debug($"Ready to start {nameof(directory.Browse)}");
                 directory.Browse(propertyBrowser);
                 log.Debug($"{nameof(directory.Browse)} of directory {directory.Name} done");
                 TimeSpan browseTime = stopwatch.Elapsed;
+                propertyBrowser.LogGetterStatistics();
 
                 DirectoryBrowser db = new(log);
                 log.Debug($"Ready to start {nameof(DirectoryBrowser.SaveAsHTMLAsync)}");
@@ -298,7 +300,7 @@ namespace HDLG_winforms
             }
         }
 
-        private void saveFileDialogHtml_FileOk(object sender, CancelEventArgs e)
+        private void SaveFileDialogHtml_FileOk(object sender, CancelEventArgs e)
         {
 
         }

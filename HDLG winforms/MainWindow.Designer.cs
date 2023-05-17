@@ -169,7 +169,7 @@
             // saveFileDialogHtml
             // 
             saveFileDialogHtml.Filter = "Fichiers HTML|*.html|Tous les fichiers|*.*";
-            saveFileDialogHtml.FileOk += saveFileDialogHtml_FileOk;
+            saveFileDialogHtml.FileOk += SaveFileDialogHtml_FileOk;
             // 
             // cbBrowseSubDirectory
             // 

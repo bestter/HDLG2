@@ -24,7 +24,7 @@ namespace HDLG_winforms
 
         public DirectoryBrowser(Logger log)
         {
-            this.log = log;
+            this.log = log ?? throw new ArgumentNullException(nameof(log));
             CssContent = null;
         }
 

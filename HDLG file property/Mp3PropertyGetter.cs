@@ -1,5 +1,6 @@
 ﻿using Serilog;
 using Serilog.Core;
+using System.Globalization;
 
 namespace HdlgFileProperty
 {
@@ -14,7 +15,7 @@ namespace HdlgFileProperty
 
         public Dictionary<string, IConvertible> GetFileProperties(string path)
         {
-            Logger?.Information($"In {nameof(Mp3PropertyGetter)}.{nameof(GetFileProperties)}: {path}");
+            Logger?.Verbose($"In {nameof(Mp3PropertyGetter)}.{nameof(GetFileProperties)}: {path}");
             Dictionary<string, IConvertible> properties = new();
             try
             {
@@ -23,8 +24,9 @@ namespace HdlgFileProperty
                 {
                     if (!f.Tag.IsEmpty)
                     {
-                        properties.Add(nameof(f.Name), f.Name);
                         properties.Add(nameof(f.Tag.Title), f.Tag.Title);
+
+                        properties.Add(nameof(f.Properties.Duration), f.Properties.Duration.ToString("G", CultureInfo.CurrentCulture));                        
 
                         properties.Add(nameof(f.Tag.Album), f.Tag.Album);
                         properties.Add(nameof(f.Tag.Year), f.Tag.Year);
@@ -37,6 +39,16 @@ namespace HdlgFileProperty
                         if (f.Tag.AlbumArtists != null && f.Tag.AlbumArtists.Any())
                         {
                             properties.Add(nameof(f.Tag.AlbumArtists), string.Join(", ", f.Tag.AlbumArtists));
+                        }
+
+                        if (f.Tag.Composers != null && f.Tag.Composers.Any())
+                        {
+                            properties.Add(nameof(f.Tag.Composers), string.Join(", ", f.Tag.Composers));
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(f.Tag.Copyright))
+                        {
+                            properties.Add(nameof(f.Tag.Copyright), f.Tag.Copyright);
                         }
                     }
                 }
@@ -60,7 +72,9 @@ namespace HdlgFileProperty
         {
             FileInfo fileInfo = new(path);
             var extension = fileInfo.Extension.ToLowerInvariant();
-            string[] extensions = { ".mp3", ".m4a", ".m4p" };
+            string[] extensions = { ".mkv", ".ogv", ".avi", ".wmv", ".asf", ".mp4", ".m4p", ".m4v", ".mpeg", ".mpg", ".mpe", ".mpv", ".mpg", ".m2v",
+            ".aa", ".aax", ".aac", ".aiff", ".ape", ".dsf", ".flac", ".m4a", ".m4b", ".m4p", ".mp3", ".mpc", ".mpp", ".ogg", ".oga", ".wav", ".wma", ".wv", ".webm"};
+
             return extensions.Contains(extension);
         }
     }

@@ -83,6 +83,7 @@ namespace HDLG_winforms
             }
         }
 
+        
 
         public override string ToString() { return Path; }
 
