@@ -27,7 +27,7 @@ namespace HdlgFileProperty
                     IDictionary<string, PdfFormField> fields = form.GetAllFormFields();
                     if (fields.Any())
                     {
-                        if (fields.TryGetValue("name", out PdfFormField toSet))
+                        if (fields.TryGetValue("name", out var toSet))
                         { 
                             if (toSet != null)
                             {
