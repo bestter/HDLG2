@@ -42,13 +42,13 @@ namespace HDLG_winforms
 
         public Directory(DirectoryInfo directory, bool isTopDirectory, bool browseSubdirectory, Logger log)
         {
-            directoryInfo = directory;
+            directoryInfo = directory ?? throw new ArgumentNullException( nameof( directory ) );
             Path = directory.FullName;
             Name = directory.Name;
             CreationTime = directory.CreationTimeUtc.ToLocalTime();
             IsTopDirectory = isTopDirectory;
             BrowseSubdirectory = browseSubdirectory;
-            this.log = log;
+            this.log = log ?? throw new ArgumentNullException( nameof( log ) );
         }
 
 
@@ -58,7 +58,8 @@ namespace HDLG_winforms
         /// <param name="propertyBrowser"></param>
         public void Browse(FilePropertyBrowser propertyBrowser)
         {
-            log.Debug($"Directory: {Path} {nameof(IsTopDirectory)}: {IsTopDirectory} {nameof(BrowseSubdirectory)}: {BrowseSubdirectory}");
+			ArgumentNullException.ThrowIfNull( propertyBrowser );
+			log.Debug($"Directory: {Path} {nameof(IsTopDirectory)}: {IsTopDirectory} {nameof(BrowseSubdirectory)}: {BrowseSubdirectory}");
 
             if (BrowseSubdirectory)
             {
@@ -135,9 +136,9 @@ namespace HDLG_winforms
 
         public static bool operator ==(Directory left, Directory right)
         {
-            if (ReferenceEquals(left, null))
+            if (left is null)
             {
-                return ReferenceEquals(right, null);
+                return right is null;
             }
 
             return left.Equals(right);
@@ -150,22 +151,22 @@ namespace HDLG_winforms
 
         public static bool operator <(Directory left, Directory right)
         {
-            return ReferenceEquals(left, null) ? !ReferenceEquals(right, null) : left.CompareTo(right) < 0;
+            return left is null ? right is not null : left.CompareTo(right) < 0;
         }
 
         public static bool operator <=(Directory left, Directory right)
         {
-            return ReferenceEquals(left, null) || left.CompareTo(right) <= 0;
+            return left is null || left.CompareTo(right) <= 0;
         }
 
         public static bool operator >(Directory left, Directory right)
         {
-            return !ReferenceEquals(left, null) && left.CompareTo(right) > 0;
+            return left is not null && left.CompareTo(right) > 0;
         }
 
         public static bool operator >=(Directory left, Directory right)
         {
-            return ReferenceEquals(left, null) ? ReferenceEquals(right, null) : left.CompareTo(right) >= 0;
+            return left is null ? right is null : left.CompareTo(right) >= 0;
         }
     }
 }
