@@ -303,7 +303,7 @@ namespace HDLG_winforms
 
             await sw.WriteLineAsync("<div class=\"directories\">").ConfigureAwait( false );
 
-            await WritHtmlDirectoryAsync(sw, directory).ConfigureAwait( false );
+            await WritHtmlDirectoryAsync(sw, directory, 0).ConfigureAwait( false );
 
             await sw.WriteLineAsync("</div>").ConfigureAwait( false );
 
@@ -321,37 +321,40 @@ namespace HDLG_winforms
         /// <param name="writer"></param>
         /// <param name="directory"></param>
         /// <returns></returns>
-        private async Task WritHtmlDirectoryAsync(TextWriter writer, Directory directory)
+        private async Task WritHtmlDirectoryAsync(TextWriter writer, Directory directory, int depth)
         {
             log.Debug($"In {nameof(WritHtmlDirectoryAsync)} {nameof(Directory)} {directory}");
-
-
-            await writer.WriteLineAsync("<div class=\"directory\">").ConfigureAwait( false );
-            await writer.WriteLineAsync($"<span class=\"name\">{directory.Name}</span>").ConfigureAwait( false );
-            await writer.WriteLineAsync($"<span class=\"path\">{directory.Path}</span>").ConfigureAwait( false );
-            await writer.WriteLineAsync($"<span class=\"creationTime\">{directory.CreationTime.ToString("F", CultureInfo.CurrentCulture)}</span>").ConfigureAwait( false );
+			var spacerStrb = new StringBuilder( );
+			for (int i = 0; i < depth; i++)
+			{
+				spacerStrb.Append( ' ' );
+			}
+			
+            await writer.WriteLineAsync( spacerStrb.ToString() + "<div class=\"directory\">" ).ConfigureAwait( false );
+            await writer.WriteLineAsync($"{spacerStrb}<span class=\"name\">{directory.Name}</span>").ConfigureAwait( false );
+            await writer.WriteLineAsync( $"{spacerStrb}<span class=\"path\">{directory.Path}</span>").ConfigureAwait( false );
+            await writer.WriteLineAsync($"{spacerStrb}<span class=\"creationTime\">{directory.CreationTime.ToString("F", CultureInfo.CurrentCulture)}</span>").ConfigureAwait( false );
 
             if (directory.Directories.Any())
-            {
-                await writer.WriteLineAsync("<div class=\"directories\">").ConfigureAwait( false );
+            {                await writer.WriteLineAsync(spacerStrb.ToString()+ "<div class=\"directories\">").ConfigureAwait( false );
                 foreach (Directory d in directory.Directories)
                 {
-                    await WritHtmlDirectoryAsync(writer, d).ConfigureAwait( false );
+                    await WritHtmlDirectoryAsync(writer, d, ++depth).ConfigureAwait( false );
                 }
-                await writer.WriteLineAsync("</div>").ConfigureAwait( false );
+                await writer.WriteLineAsync( spacerStrb.ToString( ) + "</div>" ).ConfigureAwait( false );
             }
 
             if (directory.Files.Any())
             {
-                await writer.WriteLineAsync("<div class=\"files\">").ConfigureAwait( false );
+                await writer.WriteLineAsync(spacerStrb.ToString() + "<div class=\"files\">").ConfigureAwait( false );
                 foreach (File file in directory.Files)
                 {
-                    await WriteHtmlFileAsync(writer, file).ConfigureAwait( false );
+                    await WriteHtmlFileAsync(writer, file, spacerStrb.ToString()).ConfigureAwait( false );
                 }
-                await writer.WriteLineAsync("</div>").ConfigureAwait( false );
+                await writer.WriteLineAsync(spacerStrb.ToString() + "</div>").ConfigureAwait( false );
             }
 
-            await writer.WriteLineAsync("</div>").ConfigureAwait( false );
+            await writer.WriteLineAsync(spacerStrb.ToString() + "</div>").ConfigureAwait( false );
         }
 
         /// <summary>
@@ -361,7 +364,7 @@ namespace HDLG_winforms
         /// <param name="file">File that content the data</param>
         /// <returns>A task</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        private async Task WriteHtmlFileAsync(TextWriter writer, File file)
+        private async Task WriteHtmlFileAsync(TextWriter writer, File file, string spacer)
         {
             if (writer is null)
             {
@@ -370,46 +373,46 @@ namespace HDLG_winforms
 
             log.Verbose($"{nameof(WriteHtmlFileAsync)} {file}");
 
-            await writer.WriteLineAsync("<details class=\"file\">").ConfigureAwait( false );
+            await writer.WriteLineAsync( spacer + "<details class=\"file\">" ).ConfigureAwait( false );
 
-            await writer.WriteLineAsync("<summary>").ConfigureAwait( false );
-            await writer.WriteLineAsync($"<a href=\"{file.Path}\">{file.Name}</a>").ConfigureAwait( false );                        
-            await writer.WriteLineAsync("</summary>").ConfigureAwait( false );
+            await writer.WriteLineAsync( spacer + "<summary>" ).ConfigureAwait( false );
+            await writer.WriteLineAsync($"{spacer}<a href=\"{file.Path}\">{file.Name}</a>").ConfigureAwait( false );                        
+            await writer.WriteLineAsync(spacer + "</summary>").ConfigureAwait( false );
 
-            await writer.WriteLineAsync("<div>").ConfigureAwait( false );
-            await writer.WriteLineAsync($"<span class=\"size\">{file.Size.ToString(CultureInfo.CurrentCulture)} kb</span>").ConfigureAwait( false );
-            await writer.WriteLineAsync($"<span class=\"creationTime\">{file.CreationTime.ToString("F", CultureInfo.CurrentCulture)}</span>").ConfigureAwait( false );
+            await writer.WriteLineAsync(spacer + "<div>").ConfigureAwait( false );
+            await writer.WriteLineAsync($"{spacer}<span class=\"size\">{file.Size.ToString(CultureInfo.CurrentCulture)} kb</span>").ConfigureAwait( false );
+            await writer.WriteLineAsync($"{spacer}<span class=\"creationTime\">{file.CreationTime.ToString("F", CultureInfo.CurrentCulture)}</span>").ConfigureAwait( false );
             if (file.Properties != null)
             {
-                await writer.WriteLineAsync("<p class=\"extentedProperties\">").ConfigureAwait( false );
+                await writer.WriteLineAsync(spacer + "<p class=\"extentedProperties\">").ConfigureAwait( false );
                 
                 foreach (var property in file.Properties)
                 {
                     if (!string.IsNullOrWhiteSpace(property.Key) && property.Value != null)
                     {
-                        await writer.WriteLineAsync("<p class=\"extentedProperty\">").ConfigureAwait( false );
-                        await writer.WriteLineAsync($"<span>{property.Key}</span>").ConfigureAwait( false );
+                        await writer.WriteLineAsync(spacer + "\t<p class=\"extentedProperty\">").ConfigureAwait( false );
+                        await writer.WriteLineAsync($"{spacer}\t\t<span>{property.Key}</span>").ConfigureAwait( false );
 
                         DateTime? dtValue = property.Value as DateTime?;
                         if (dtValue != null && dtValue.HasValue)
                         {
-                            await writer.WriteLineAsync($"<span>{dtValue.Value.ToString("F", CultureInfo.CurrentCulture)}</span>").ConfigureAwait( false );
+                            await writer.WriteLineAsync($"{spacer}\t\t<span>{dtValue.Value.ToString("F", CultureInfo.CurrentCulture)}</span>").ConfigureAwait( false );
                         }
                         else
                         {
                             var value = property.Value.ToString(CultureInfo.CurrentCulture);
-                            await writer.WriteLineAsync($"<span>{value}</span>").ConfigureAwait( false );
+                            await writer.WriteLineAsync($"{spacer}\t\t<span>{value}</span>").ConfigureAwait( false );
                         }
                         
-                        await writer.WriteLineAsync("</p>").ConfigureAwait( false );
+                        await writer.WriteLineAsync( spacer + "\t</p>" ).ConfigureAwait( false );
 
                     }
                 }
-                await writer.WriteLineAsync("</p>").ConfigureAwait( false );
+                await writer.WriteLineAsync(spacer + "</p>").ConfigureAwait( false );
             }
 
-            await writer.WriteLineAsync("</div>").ConfigureAwait( false );
-            await writer.WriteLineAsync("</details>").ConfigureAwait( false );
+            await writer.WriteLineAsync( spacer + "</div>").ConfigureAwait( false );
+            await writer.WriteLineAsync(spacer + "</details>").ConfigureAwait( false );
         }
 
         #endregion
