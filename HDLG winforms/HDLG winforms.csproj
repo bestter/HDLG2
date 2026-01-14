@@ -16,12 +16,12 @@
     <RepositoryUrl>https://github.com/bestter/HDLG2.git</RepositoryUrl>
     <Title>HTML directory list generator</Title>
     <NeutralLanguage>en-CA</NeutralLanguage>
-    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
     <Version>1.0.0</Version>
     <Copyright>2023 Martin Labelle</Copyright>
     <PlatformTarget>x64</PlatformTarget>
     <Platforms>x86;x64</Platforms>
-    <FileVersion>1.0.1.0</FileVersion>
+    <FileVersion>1.0.2.0</FileVersion>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
     <AnalysisLevel>6.0-all</AnalysisLevel>
   </PropertyGroup>
@@ -64,12 +64,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
-    <PackageReference Include="Serilog" Version="2.12.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.2" />
+    <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
