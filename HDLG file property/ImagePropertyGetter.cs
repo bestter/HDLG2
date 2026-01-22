@@ -18,7 +18,8 @@ namespace HdlgFileProperty
             Dictionary<string, IConvertible> properties = new();
             try
             {
-                var img = Image.FromStream(File.OpenRead(path), false, false);
+                using var file = File.OpenRead(path);
+                var img = Image.FromStream(file, false, false);
 
                 properties.Add(nameof(img.Width), img.Width);
                 properties.Add(nameof(img.Height), img.Height);

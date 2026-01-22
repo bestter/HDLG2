@@ -20,7 +20,8 @@ namespace HdlgFileProperty
             try
             {
                 DocumentProperties documentProperties = new();
-                using PdfDocument pdfDoc = new(new PdfReader(path), documentProperties);
+                using var reader = new PdfReader(path);
+                using PdfDocument pdfDoc = new(reader, documentProperties);
                 PdfAcroForm form = PdfAcroForm.GetAcroForm(pdfDoc, false);
                 if (form != null)
                 {

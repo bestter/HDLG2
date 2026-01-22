@@ -43,7 +43,8 @@ namespace HDLG_winforms
                 throw new ArgumentException($"'{nameof(filePath)}' ne peut pas avoir une valeur null ou être un espace blanc.", nameof(filePath));
             }
 
-            FileInfo fileInfo = new(filePath);
+			ArgumentNullException.ThrowIfNull( directory );
+			FileInfo fileInfo = new(filePath);
 
             var encoding = Encoding.UTF8;
 
@@ -58,23 +59,23 @@ namespace HDLG_winforms
             using StreamWriter sw = new (fileStream, encoding, 4096, false);
             using (XmlWriter writer = XmlWriter.Create(sw, settings))
             {
-                await writer.WriteStartDocumentAsync();
+                await writer.WriteStartDocumentAsync().ConfigureAwait( false );
 
-                await writer.WriteStartElementAsync(null, "Hdlg", null);
-                await writer.WriteAttributeStringAsync(null, "Version", null, typeof(DirectoryBrowser).Assembly.GetName().Version?.ToString());
-                await writer.WriteElementStringAsync(null, "Directory", null, directory.Path);
-                await writer.WriteElementStringAsync(null, "DateTime", null, DateTime.Now.ToString("O", CultureInfo.InvariantCulture));
+                await writer.WriteStartElementAsync(null, "Hdlg", null).ConfigureAwait( false );
+                await writer.WriteAttributeStringAsync(null, "Version", null, typeof(DirectoryBrowser).Assembly.GetName().Version?.ToString()).ConfigureAwait( false );
+                await writer.WriteElementStringAsync(null, "Directory", null, directory.Path).ConfigureAwait( false );
+                await writer.WriteElementStringAsync(null, "DateTime", null, DateTime.Now.ToString("O", CultureInfo.InvariantCulture)).ConfigureAwait( false );
 
-                await writer.WriteElementStringAsync(null, "DirectoriesCount", null, DirectoriesCount(directory).ToString(CultureInfo.InvariantCulture));
-                await writer.WriteElementStringAsync(null, "FilesCount", null, FilesCount(directory).ToString(CultureInfo.InvariantCulture));
+                await writer.WriteElementStringAsync(null, "DirectoriesCount", null, DirectoriesCount(directory).ToString(CultureInfo.InvariantCulture)).ConfigureAwait( false );
+                await writer.WriteElementStringAsync(null, "FilesCount", null, FilesCount(directory).ToString(CultureInfo.InvariantCulture)).ConfigureAwait( false );
 
-                await WriteXmlDirectoryAsync(writer, directory);
+                await WriteXmlDirectoryAsync(writer, directory).ConfigureAwait( false );
 
-                await writer.WriteEndElementAsync();
+                await writer.WriteEndElementAsync().ConfigureAwait( false );
 
-                await writer.WriteEndDocumentAsync();
+                await writer.WriteEndDocumentAsync().ConfigureAwait( false );
             }
-            await sw.FlushAsync();
+            await sw.FlushAsync().ConfigureAwait( false );
         }
 
         /// <summary>
@@ -116,31 +117,31 @@ namespace HDLG_winforms
         private async Task WriteXmlDirectoryAsync(XmlWriter writer, Directory directory)
         {
             log.Debug($"In {nameof(WriteXmlDirectoryAsync)} {nameof(Directory)} {directory}");
-            await writer.WriteStartElementAsync(null, "Directory", null);
-            await writer.WriteElementStringAsync(null, "Name", null, directory.Name);
-            await writer.WriteElementStringAsync(null, "Path", null, directory.Path);
-            await writer.WriteElementStringAsync(null, "CreationTime", null, directory.CreationTime.ToString("O", CultureInfo.InvariantCulture));
+            await writer.WriteStartElementAsync(null, "Directory", null).ConfigureAwait( false );
+            await writer.WriteElementStringAsync(null, "Name", null, directory.Name).ConfigureAwait( false );
+            await writer.WriteElementStringAsync(null, "Path", null, directory.Path).ConfigureAwait( false );
+            await writer.WriteElementStringAsync(null, "CreationTime", null, directory.CreationTime.ToString("O", CultureInfo.InvariantCulture)).ConfigureAwait( false );
             if (directory.Directories.Any())
             {
-                await writer.WriteStartElementAsync(null, "Directories", null);
+                await writer.WriteStartElementAsync(null, "Directories", null).ConfigureAwait( false );
                 foreach (Directory d in directory.Directories)
                 {
-                    await WriteXmlDirectoryAsync(writer, d);
+                    await WriteXmlDirectoryAsync(writer, d).ConfigureAwait( false );
                 }
-                await writer.WriteEndElementAsync();
+                await writer.WriteEndElementAsync().ConfigureAwait( false );
             }
 
             if (directory.Files.Any())
             {
-                await writer.WriteStartElementAsync(null, "Files", null);
+                await writer.WriteStartElementAsync(null, "Files", null).ConfigureAwait( false );
                 foreach (File file in directory.Files)
                 {
-                    await WriteXmlFileAsync(writer, file);
+                    await WriteXmlFileAsync(writer, file).ConfigureAwait( false );
                 }
-                await writer.WriteEndElementAsync();
+                await writer.WriteEndElementAsync().ConfigureAwait( false );
             }
 
-            await writer.WriteEndElementAsync();
+            await writer.WriteEndElementAsync().ConfigureAwait( false );
         }
 
         /// <summary>
@@ -159,18 +160,18 @@ namespace HDLG_winforms
 
             log.Verbose($"{nameof(WriteXmlFileAsync)} {file}");
 
-            await writer.WriteStartElementAsync(null, "File", null);
+            await writer.WriteStartElementAsync(null, "File", null).ConfigureAwait( false );
 
-            await writer.WriteElementStringAsync(null, "Name", null, file.Name);
-            await writer.WriteElementStringAsync(null, "Path", null, file.Path);
-            await writer.WriteElementStringAsync(null, "Extension", null, file.Extension);
-            await writer.WriteElementStringAsync(null, "Size", null, file.Size.ToString(CultureInfo.InvariantCulture));
-            await writer.WriteElementStringAsync(null, "CreationTime", null, file.CreationTime.ToString("O", CultureInfo.InvariantCulture));
+            await writer.WriteElementStringAsync(null, "Name", null, file.Name).ConfigureAwait( false );
+            await writer.WriteElementStringAsync(null, "Path", null, file.Path).ConfigureAwait( false );
+            await writer.WriteElementStringAsync(null, "Extension", null, file.Extension).ConfigureAwait( false );
+            await writer.WriteElementStringAsync(null, "Size", null, file.Size.ToString(CultureInfo.InvariantCulture)).ConfigureAwait( false );
+            await writer.WriteElementStringAsync(null, "CreationTime", null, file.CreationTime.ToString("O", CultureInfo.InvariantCulture)).ConfigureAwait( false );
 
 
             if (file.Properties != null)
             {
-                await writer.WriteStartElementAsync(null, "ExtentedProperties", null);
+                await writer.WriteStartElementAsync(null, "ExtentedProperties", null).ConfigureAwait( false );
                 foreach (var property in file.Properties)
                 {
                     if (!string.IsNullOrWhiteSpace(property.Key) && property.Value != null)
@@ -178,19 +179,19 @@ namespace HDLG_winforms
                         DateTime? dtValue = property.Value as DateTime?;
                         if (dtValue != null && dtValue.HasValue)
                         {
-                            await writer.WriteElementStringAsync(null, property.Key, null, dtValue.Value.ToString("O", CultureInfo.InvariantCulture));
+                            await writer.WriteElementStringAsync(null, property.Key, null, dtValue.Value.ToString("O", CultureInfo.InvariantCulture)).ConfigureAwait( false );
                         }
                         else
                         {
                             var value = property.Value.ToString(CultureInfo.InvariantCulture);
-                            await writer.WriteElementStringAsync(null, property.Key, null,value);
+                            await writer.WriteElementStringAsync(null, property.Key, null,value).ConfigureAwait( false );
                         }
                     }
                 }
-                await writer.WriteEndElementAsync();
+                await writer.WriteEndElementAsync().ConfigureAwait( false );
             }
 
-            await writer.WriteEndElementAsync();
+            await writer.WriteEndElementAsync().ConfigureAwait( false );
         }
         #endregion
 
@@ -237,14 +238,16 @@ namespace HDLG_winforms
 
         }
 
-        public async Task SaveAsHTMLAsync(string filePath, Directory directory)
+		public async Task SaveAsHTMLAsync (string filePath, Directory directory)
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
                 throw new ArgumentException($"'{nameof(filePath)}' ne peut pas avoir une valeur null ou être un espace blanc.", nameof(filePath));
             }
 
-            FileInfo fileInfo = new(filePath);
+			ArgumentNullException.ThrowIfNull( directory );
+
+			FileInfo fileInfo = new(filePath);
 
             var encoding = Encoding.UTF8;
             
@@ -253,62 +256,62 @@ namespace HDLG_winforms
             using FileStream fileStream = new(fileInfo.FullName, FileMode.Create, FileAccess.Write, FileShare.None);
             using StreamWriter sw = new(fileStream, encoding, 4096, false);            
             var title = $"HTML Directory list generator {directory.Path} {version} {DateTimeOffset.Now.ToString("F", CultureInfo.CurrentCulture)}";
-            await sw.WriteLineAsync("<!DOCTYPE html>");
+            await sw.WriteLineAsync("<!DOCTYPE html>").ConfigureAwait( false );
 
-            await sw.WriteLineAsync($"<html lang=\"{CultureInfo.CurrentCulture.TwoLetterISOLanguageName}\">");
-            await sw.WriteLineAsync("<head>");
-            await sw.WriteLineAsync($"<meta charset=\"{encoding.WebName}\">");
-            await sw.WriteLineAsync("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-            await sw.WriteLineAsync("<meta name=\"robots\" content=\"noindex, nofollow\">");
-            await sw.WriteLineAsync("<meta name=\"rating\" content=\"general\">");
-            await sw.WriteAsync($"<title>{title}</title>");
-            await sw.WriteLineAsync(GetGoogleFontHeader());
-            await sw.WriteLineAsync(GetCss());
-            await sw.WriteLineAsync();
-            await sw.WriteLineAsync("</head>");
+            await sw.WriteLineAsync($"<html lang=\"{CultureInfo.CurrentCulture.TwoLetterISOLanguageName}\">").ConfigureAwait( false );
+            await sw.WriteLineAsync("<head>").ConfigureAwait( false );
+            await sw.WriteLineAsync($"<meta charset=\"{encoding.WebName}\">").ConfigureAwait( false );
+            await sw.WriteLineAsync("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">").ConfigureAwait( false );
+            await sw.WriteLineAsync("<meta name=\"robots\" content=\"noindex, nofollow\">").ConfigureAwait( false );
+            await sw.WriteLineAsync("<meta name=\"rating\" content=\"general\">").ConfigureAwait( false );
+            await sw.WriteAsync($"<title>{title}</title>").ConfigureAwait( false );
+            await sw.WriteLineAsync(GetGoogleFontHeader()).ConfigureAwait( false );
+            await sw.WriteLineAsync(GetCss()).ConfigureAwait( false );
+            await sw.WriteLineAsync().ConfigureAwait( false );
+            await sw.WriteLineAsync("</head>").ConfigureAwait( false );
 
-            await sw.WriteLineAsync("<body>");
+            await sw.WriteLineAsync("<body>").ConfigureAwait( false );
 
-            await sw.WriteLineAsync("<div class=\"Hdlg\">");
+            await sw.WriteLineAsync("<div class=\"Hdlg\">").ConfigureAwait( false );
 
-            await sw.WriteLineAsync("<div class=\"version\">");
-            await sw.WriteLineAsync($"<h1>{title}</h1>");
-            await sw.WriteLineAsync("<span>Version</span>");
-            await sw.WriteLineAsync($"<span>{version}</span>");
-            await sw.WriteLineAsync("</div>");
+            await sw.WriteLineAsync("<div class=\"version\">").ConfigureAwait( false );
+            await sw.WriteLineAsync($"<h1>{title}</h1>").ConfigureAwait( false );
+            await sw.WriteLineAsync("<span>Version</span>").ConfigureAwait( false );
+            await sw.WriteLineAsync($"<span>{version}</span>").ConfigureAwait( false );
+            await sw.WriteLineAsync("</div>").ConfigureAwait( false );
 
-            await sw.WriteLineAsync("<div class=\"directoryHeader\">");
-            await sw.WriteLineAsync("<span>Directory</span>");
-            await sw.WriteLineAsync($"<h2>{directory.Path}</h2>");
-            await sw.WriteLineAsync("</div>");
+            await sw.WriteLineAsync("<div class=\"directoryHeader\">").ConfigureAwait( false );
+            await sw.WriteLineAsync("<span>Directory</span>").ConfigureAwait( false );
+            await sw.WriteLineAsync($"<h2>{directory.Path}</h2>").ConfigureAwait( false );
+            await sw.WriteLineAsync("</div>").ConfigureAwait( false );
 
-            await sw.WriteLineAsync("<div class=\"dateTime headerContent\">");
-            await sw.WriteLineAsync("<span class=\"headerContentTitle\">DateTime</span>");
-            await sw.WriteLineAsync($"<span class=\"headerContentData\">{DateTime.Now.ToString("F", CultureInfo.CurrentCulture)}</span>");
-            await sw.WriteLineAsync("</div>");
+            await sw.WriteLineAsync("<div class=\"dateTime headerContent\">").ConfigureAwait( false );
+            await sw.WriteLineAsync("<span class=\"headerContentTitle\">DateTime</span>").ConfigureAwait( false );
+            await sw.WriteLineAsync($"<span class=\"headerContentData\">{DateTime.Now.ToString("F", CultureInfo.CurrentCulture)}</span>").ConfigureAwait( false );
+            await sw.WriteLineAsync("</div>").ConfigureAwait( false );
 
-            await sw.WriteLineAsync("<div class=\"directoriesCount headerContent\">");
-            await sw.WriteLineAsync("<span class=\"headerContentTitle\">DirectoriesCount</span>");
-            await sw.WriteLineAsync($"<span class=\"headerContentData\">{DirectoriesCount(directory).ToString(CultureInfo.CurrentCulture)}</span>");
-            await sw.WriteLineAsync("</div>");
+            await sw.WriteLineAsync("<div class=\"directoriesCount headerContent\">").ConfigureAwait( false );
+            await sw.WriteLineAsync("<span class=\"headerContentTitle\">DirectoriesCount</span>").ConfigureAwait( false );
+            await sw.WriteLineAsync($"<span class=\"headerContentData\">{DirectoriesCount(directory).ToString(CultureInfo.CurrentCulture)}</span>").ConfigureAwait( false );
+            await sw.WriteLineAsync("</div>").ConfigureAwait( false );
 
-            await sw.WriteLineAsync("<div class=\"filesCount headerContent\">");
-            await sw.WriteLineAsync("<span class=\"headerContentTitle\">FilesCount</span>");
-            await sw.WriteLineAsync($"<span class=\"headerContentData\">{FilesCount(directory).ToString(CultureInfo.CurrentCulture)}</span>");
-            await sw.WriteLineAsync("</div>");
-            await sw.WriteLineAsync("</div>");
+            await sw.WriteLineAsync("<div class=\"filesCount headerContent\">").ConfigureAwait( false );
+            await sw.WriteLineAsync("<span class=\"headerContentTitle\">FilesCount</span>").ConfigureAwait( false );
+            await sw.WriteLineAsync($"<span class=\"headerContentData\">{FilesCount(directory).ToString(CultureInfo.CurrentCulture)}</span>").ConfigureAwait( false );
+            await sw.WriteLineAsync("</div>").ConfigureAwait( false );
+            await sw.WriteLineAsync("</div>").ConfigureAwait( false );
 
-            await sw.WriteLineAsync("<div class=\"directories\">");
+            await sw.WriteLineAsync("<div class=\"directories\">").ConfigureAwait( false );
 
-            await WritHtmlDirectoryAsync(sw, directory);
+            await WritHtmlDirectoryAsync(sw, directory, 0).ConfigureAwait( false );
 
-            await sw.WriteLineAsync("</div>");
+            await sw.WriteLineAsync("</div>").ConfigureAwait( false );
 
-            await sw.WriteLineAsync("</body>");
+            await sw.WriteLineAsync("</body>").ConfigureAwait( false );
 
-            await sw.WriteAsync("</html>");
+            await sw.WriteAsync("</html>").ConfigureAwait( false );
 
-            await sw.FlushAsync();
+            await sw.FlushAsync().ConfigureAwait( false );
         }
 
 
@@ -318,37 +321,40 @@ namespace HDLG_winforms
         /// <param name="writer"></param>
         /// <param name="directory"></param>
         /// <returns></returns>
-        private async Task WritHtmlDirectoryAsync(TextWriter writer, Directory directory)
+        private async Task WritHtmlDirectoryAsync(TextWriter writer, Directory directory, int depth)
         {
             log.Debug($"In {nameof(WritHtmlDirectoryAsync)} {nameof(Directory)} {directory}");
-
-
-            await writer.WriteLineAsync("<div class=\"directory\">");
-            await writer.WriteLineAsync($"<span class=\"name\">{directory.Name}</span>");
-            await writer.WriteLineAsync($"<span class=\"path\">{directory.Path}</span>");
-            await writer.WriteLineAsync($"<span class=\"creationTime\">{directory.CreationTime.ToString("F", CultureInfo.CurrentCulture)}</span>");
+			var spacerStrb = new StringBuilder( );
+			for (int i = 0; i < depth; i++)
+			{
+				spacerStrb.Append( ' ' );
+			}
+			
+            await writer.WriteLineAsync( spacerStrb.ToString() + "<div class=\"directory\">" ).ConfigureAwait( false );
+            await writer.WriteLineAsync($"{spacerStrb}<span class=\"name\">{directory.Name}</span>").ConfigureAwait( false );
+            await writer.WriteLineAsync( $"{spacerStrb}<span class=\"path\">{directory.Path}</span>").ConfigureAwait( false );
+            await writer.WriteLineAsync($"{spacerStrb}<span class=\"creationTime\">{directory.CreationTime.ToString("F", CultureInfo.CurrentCulture)}</span>").ConfigureAwait( false );
 
             if (directory.Directories.Any())
-            {
-                await writer.WriteLineAsync("<div class=\"directories\">");
+            {                await writer.WriteLineAsync(spacerStrb.ToString()+ "<div class=\"directories\">").ConfigureAwait( false );
                 foreach (Directory d in directory.Directories)
                 {
-                    await WritHtmlDirectoryAsync(writer, d);
+                    await WritHtmlDirectoryAsync(writer, d, ++depth).ConfigureAwait( false );
                 }
-                await writer.WriteLineAsync("</div>");
+                await writer.WriteLineAsync( spacerStrb.ToString( ) + "</div>" ).ConfigureAwait( false );
             }
 
             if (directory.Files.Any())
             {
-                await writer.WriteLineAsync("<div class=\"files\">");
+                await writer.WriteLineAsync(spacerStrb.ToString() + "<div class=\"files\">").ConfigureAwait( false );
                 foreach (File file in directory.Files)
                 {
-                    await WriteHtmlFileAsync(writer, file);
+                    await WriteHtmlFileAsync(writer, file, spacerStrb.ToString()).ConfigureAwait( false );
                 }
-                await writer.WriteLineAsync("</div>");
+                await writer.WriteLineAsync(spacerStrb.ToString() + "</div>").ConfigureAwait( false );
             }
 
-            await writer.WriteLineAsync("</div>");
+            await writer.WriteLineAsync(spacerStrb.ToString() + "</div>").ConfigureAwait( false );
         }
 
         /// <summary>
@@ -358,7 +364,7 @@ namespace HDLG_winforms
         /// <param name="file">File that content the data</param>
         /// <returns>A task</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        private async Task WriteHtmlFileAsync(TextWriter writer, File file)
+        private async Task WriteHtmlFileAsync(TextWriter writer, File file, string spacer)
         {
             if (writer is null)
             {
@@ -367,46 +373,46 @@ namespace HDLG_winforms
 
             log.Verbose($"{nameof(WriteHtmlFileAsync)} {file}");
 
-            await writer.WriteLineAsync("<details class=\"file\">");
+            await writer.WriteLineAsync( spacer + "<details class=\"file\">" ).ConfigureAwait( false );
 
-            await writer.WriteLineAsync("<summary>");
-            await writer.WriteLineAsync($"<a href=\"{file.Path}\">{file.Name}</a>");                        
-            await writer.WriteLineAsync("</summary>");
+            await writer.WriteLineAsync( spacer + "<summary>" ).ConfigureAwait( false );
+            await writer.WriteLineAsync($"{spacer}<a href=\"{file.Path}\">{file.Name}</a>").ConfigureAwait( false );                        
+            await writer.WriteLineAsync(spacer + "</summary>").ConfigureAwait( false );
 
-            await writer.WriteLineAsync("<div>");
-            await writer.WriteLineAsync($"<span class=\"size\">{file.Size.ToString(CultureInfo.CurrentCulture)} kb</span>");
-            await writer.WriteLineAsync($"<span class=\"creationTime\">{file.CreationTime.ToString("F", CultureInfo.CurrentCulture)}</span>");
+            await writer.WriteLineAsync(spacer + "<div>").ConfigureAwait( false );
+            await writer.WriteLineAsync($"{spacer}<span class=\"size\">{file.Size.ToString(CultureInfo.CurrentCulture)} kb</span>").ConfigureAwait( false );
+            await writer.WriteLineAsync($"{spacer}<span class=\"creationTime\">{file.CreationTime.ToString("F", CultureInfo.CurrentCulture)}</span>").ConfigureAwait( false );
             if (file.Properties != null)
             {
-                await writer.WriteLineAsync("<p class=\"extentedProperties\">");
+                await writer.WriteLineAsync(spacer + "<p class=\"extentedProperties\">").ConfigureAwait( false );
                 
                 foreach (var property in file.Properties)
                 {
                     if (!string.IsNullOrWhiteSpace(property.Key) && property.Value != null)
                     {
-                        await writer.WriteLineAsync("<p class=\"extentedProperty\">");
-                        await writer.WriteLineAsync($"<span>{property.Key}</span>");
+                        await writer.WriteLineAsync(spacer + "\t<p class=\"extentedProperty\">").ConfigureAwait( false );
+                        await writer.WriteLineAsync($"{spacer}\t\t<span>{property.Key}</span>").ConfigureAwait( false );
 
                         DateTime? dtValue = property.Value as DateTime?;
                         if (dtValue != null && dtValue.HasValue)
                         {
-                            await writer.WriteLineAsync($"<span>{dtValue.Value.ToString("F", CultureInfo.CurrentCulture)}</span>");
+                            await writer.WriteLineAsync($"{spacer}\t\t<span>{dtValue.Value.ToString("F", CultureInfo.CurrentCulture)}</span>").ConfigureAwait( false );
                         }
                         else
                         {
                             var value = property.Value.ToString(CultureInfo.CurrentCulture);
-                            await writer.WriteLineAsync($"<span>{value}</span>");
+                            await writer.WriteLineAsync($"{spacer}\t\t<span>{value}</span>").ConfigureAwait( false );
                         }
                         
-                        await writer.WriteLineAsync("</p>");
+                        await writer.WriteLineAsync( spacer + "\t</p>" ).ConfigureAwait( false );
 
                     }
                 }
-                await writer.WriteLineAsync("</p>");
+                await writer.WriteLineAsync(spacer + "</p>").ConfigureAwait( false );
             }
 
-            await writer.WriteLineAsync("</div>");
-            await writer.WriteLineAsync("</details>");
+            await writer.WriteLineAsync( spacer + "</div>").ConfigureAwait( false );
+            await writer.WriteLineAsync(spacer + "</details>").ConfigureAwait( false );
         }
 
         #endregion
