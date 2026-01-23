@@ -7,15 +7,7 @@ HTML Directory List Generator is distributed in the hope that it will be useful,
 
 You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
  */
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
-using System.Drawing;
-using System.Reflection;
-using System.Text;
-using System.Windows.Forms;
 
 namespace HDLG_winforms
 {

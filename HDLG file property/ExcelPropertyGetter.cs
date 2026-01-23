@@ -10,7 +10,6 @@ You should have received a copy of the GNU General Public License along with Foo
 
 using DocumentFormat.OpenXml.Packaging;
 using Serilog;
-using System.Globalization;
 
 namespace HdlgFileProperty
 {

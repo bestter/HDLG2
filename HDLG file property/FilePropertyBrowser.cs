@@ -8,11 +8,7 @@ HTML Directory List Generator is distributed in the hope that it will be useful,
 You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
  */
 
-using Microsoft.Extensions.Logging;
-using Serilog.Core;
-using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.Intrinsics.X86;
 
 namespace HdlgFileProperty
 {

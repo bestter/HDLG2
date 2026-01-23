@@ -9,8 +9,6 @@ You should have received a copy of the GNU General Public License along with Foo
  */
 using Serilog.Core;
 using System.Globalization;
-using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml;
 
