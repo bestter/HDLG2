@@ -15,7 +15,7 @@ namespace HDLG_winforms
 
         private readonly DirectoryInfo directoryInfo;
 
-		private readonly List<HdlgDirectory> directories = new( );
+		private readonly List<HdlgDirectory> directories = [];
 
         public bool IsTopDirectory { get; private set; }
 
