@@ -47,6 +47,11 @@ h1, h2, h3, h4, h5, h6 {
     border-bottom: 1.5em;
 }
 
+summary.file
+{
+    font-size: 1.25em;
+}
+
 .file {
     padding-bottom: 0.25em;
 }
@@ -96,3 +101,22 @@ details[open] > summary > a {
     background-color: #717EC3;
     color: #AE8799;
   }
+
+.spacer
+{
+    display: block;
+    height: 4em;
+}
+
+.directoryList ul {
+    column-count: 3; /* nombre de colonnes */
+    column-gap: 20px; /* espace entre les colonnes */
+    list-style-type: disc; /* type de puce */
+}
+
+.directoryList ul > ul{
+    column-count: 2; /* nombre de colonnes */
+    column-gap: 20px; /* espace entre les colonnes */
+    list-style-type: disc; /* type de puce */
+}
+
