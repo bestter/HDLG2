@@ -262,7 +262,7 @@ namespace HDLG_winforms
 
             using FileStream fileStream = new(fileInfo.FullName, FileMode.Create, FileAccess.Write, FileShare.None);
             using StreamWriter sw = new(fileStream, encoding, 4096, false);            
-            var title = $"HTML Directory list generator {directory.Path} {version} {DateTimeOffset.Now.ToString("F", CultureInfo.CurrentCulture)}";
+            var title = $"HTML Directory list generator  {version} {directory.Path} {DateTimeOffset.Now.ToString("F", CultureInfo.CurrentCulture)}";
             await sw.WriteLineAsync("<!DOCTYPE html>").ConfigureAwait( false );
 
             await sw.WriteLineAsync($"<html lang=\"{CultureInfo.CurrentCulture.TwoLetterISOLanguageName}\">").ConfigureAwait( false );
@@ -380,18 +380,18 @@ namespace HDLG_winforms
 
             log.Verbose($"{nameof(WriteHtmlFileAsync)} {file}");
 
-            await writer.WriteLineAsync( spacer + "<details class=\"file\">" ).ConfigureAwait( false );
+            await writer.WriteLineAsync( spacer + "<div class=\"file\">" ).ConfigureAwait( false );
 
-            await writer.WriteLineAsync( spacer + "<summary>" ).ConfigureAwait( false );
-            await writer.WriteLineAsync($"{spacer}<a href=\"{file.Path}\">{file.Name}</a>").ConfigureAwait( false );                        
-            await writer.WriteLineAsync(spacer + "</summary>").ConfigureAwait( false );
+            await writer.WriteLineAsync( spacer + $"<summary>{file.Name}</summary>" ).ConfigureAwait( false );
+            
+			await writer.WriteLineAsync( $"{spacer}<a href=\"file:///{file.Path}\" download=\"{file.Name}\" referrerpolicy=\"strict-origin\">{file.Name}</a>" ).ConfigureAwait( false );
 
-            await writer.WriteLineAsync(spacer + "<div>").ConfigureAwait( false );
+			await writer.WriteLineAsync(spacer + "<div>").ConfigureAwait( false );
             await writer.WriteLineAsync($"{spacer}<span class=\"size\">{file.Size.ToString(CultureInfo.CurrentCulture)} kb</span>").ConfigureAwait( false );
             await writer.WriteLineAsync($"{spacer}<span class=\"creationTime\">{file.CreationTime.ToString("F", CultureInfo.CurrentCulture)}</span>").ConfigureAwait( false );
             if (file.Properties != null)
             {
-                await writer.WriteLineAsync(spacer + "<p class=\"extentedProperties\">").ConfigureAwait( false );
+                await writer.WriteLineAsync(spacer + "<div class=\"extentedProperties\">").ConfigureAwait( false );
                 
                 foreach (var property in file.Properties)
                 {
@@ -415,7 +415,7 @@ namespace HDLG_winforms
 
                     }
                 }
-                await writer.WriteLineAsync(spacer + "</p>").ConfigureAwait( false );
+                await writer.WriteLineAsync(spacer + "</div>").ConfigureAwait( false );
             }
 
             await writer.WriteLineAsync( spacer + "</div>").ConfigureAwait( false );
