@@ -1,6 +1,6 @@
 ﻿namespace HDLG_winforms
 {
-    public class File : IEquatable<File>, IComparable, IComparable<File>
+    public class HdlgFile : IEquatable<HdlgFile>, IComparable, IComparable<HdlgFile>
     {
         public string Name { get; private set; }
 
@@ -14,7 +14,7 @@
 
         public Dictionary<string, IConvertible> Properties { get; private set; }
 
-        public File(string path, Dictionary<string, IConvertible> properties)
+        public HdlgFile(string path, Dictionary<string, IConvertible> properties)
         {
             Path = path;
             FileInfo info = new(Path);
@@ -41,14 +41,14 @@
 
         public override bool Equals(object? obj)
         {
-            if (obj is File file)
+            if (obj is HdlgFile file)
             {
                 return file.Equals(this);
             }
             return false;
         }
 
-        public bool Equals(File? other)
+        public bool Equals(HdlgFile? other)
         {
             if (other is not null)
             {
@@ -59,14 +59,14 @@
 
         public int CompareTo(object? obj)
         {
-            if (obj is File file)
+            if (obj is HdlgFile file)
             {
                 return CompareTo(file);
             }
             return -1;
         }
 
-        public int CompareTo(File? other)
+        public int CompareTo(HdlgFile? other)
         {
             if (other is not null)
             {
@@ -75,7 +75,7 @@
             return -1;
         }
 
-        public static bool operator ==(File left, File right)
+        public static bool operator ==(HdlgFile left, HdlgFile right)
         {
             if (left is null)
             {
@@ -85,27 +85,27 @@
             return left.Equals(right);
         }
 
-        public static bool operator !=(File left, File right)
+        public static bool operator !=(HdlgFile left, HdlgFile right)
         {
             return !(left == right);
         }
 
-        public static bool operator <(File left, File right)
+        public static bool operator <(HdlgFile left, HdlgFile right)
         {
             return left is null ? right is not null : left.CompareTo(right) < 0;
         }
 
-        public static bool operator <=(File left, File right)
+        public static bool operator <=(HdlgFile left, HdlgFile right)
         {
             return left is null || left.CompareTo(right) <= 0;
         }
 
-        public static bool operator >(File left, File right)
+        public static bool operator >(HdlgFile left, HdlgFile right)
         {
             return left is not null && left.CompareTo(right) > 0;
         }
 
-        public static bool operator >=(File left, File right)
+        public static bool operator >=(HdlgFile left, HdlgFile right)
         {
             return left is null ? right is null : left.CompareTo(right) >= 0;
         }

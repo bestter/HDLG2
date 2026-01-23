@@ -134,7 +134,7 @@ labelTotalTime.Hide();
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
 			{
 				log.Information( selecteDirectory );
-				Directory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, log );
+				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, log );
 #if DEBUG
 				Stopwatch stopwatch = Stopwatch.StartNew( );
 #endif
@@ -271,7 +271,7 @@ labelTotalTime.Hide();
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
 			{
 				log.Information( selecteDirectory );
-				Directory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, log );
+				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, log );
 				Stopwatch stopwatch = Stopwatch.StartNew( );
 				log.Debug( $"Ready to start {nameof( directory.Browse )}" );
 				directory.Browse( propertyBrowser );

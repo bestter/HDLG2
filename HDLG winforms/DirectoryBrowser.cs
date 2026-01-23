@@ -36,7 +36,7 @@ namespace HDLG_winforms
         /// <param name="filePath">Where to save the data</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public async Task SaveAsXMLAsync(string filePath, Directory directory)
+        public async Task SaveAsXMLAsync(string filePath, HdlgDirectory directory)
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
@@ -83,10 +83,10 @@ namespace HDLG_winforms
         /// </summary>
         /// <param name="directory"></param>
         /// <returns></returns>
-        private static long DirectoriesCount(Directory directory)
+        private static long DirectoriesCount(HdlgDirectory directory)
         {
             long count = directory.DirectoriesCount;
-            foreach (Directory d in directory.Directories)
+            foreach (HdlgDirectory d in directory.Directories)
             {
                 count += DirectoriesCount(d);
             }
@@ -98,10 +98,10 @@ namespace HDLG_winforms
         /// </summary>
         /// <param name="directory"></param>
         /// <returns></returns>
-        private static long FilesCount(Directory directory)
+        private static long FilesCount(HdlgDirectory directory)
         {
             long count = directory.FilesCount;
-            foreach (Directory d in directory.Directories)
+            foreach (HdlgDirectory d in directory.Directories)
             {
                 count += FilesCount(d);
             }
@@ -114,9 +114,9 @@ namespace HDLG_winforms
         /// <param name="writer"></param>
         /// <param name="directory"></param>
         /// <returns></returns>
-        private async Task WriteXmlDirectoryAsync(XmlWriter writer, Directory directory)
+        private async Task WriteXmlDirectoryAsync(XmlWriter writer, HdlgDirectory directory)
         {
-            log.Debug($"In {nameof(WriteXmlDirectoryAsync)} {nameof(Directory)} {directory}");
+            log.Debug($"In {nameof(WriteXmlDirectoryAsync)} {nameof(HdlgDirectory)} {directory}");
             await writer.WriteStartElementAsync(null, "Directory", null).ConfigureAwait( false );
             await writer.WriteElementStringAsync(null, "Name", null, directory.Name).ConfigureAwait( false );
             await writer.WriteElementStringAsync(null, "Path", null, directory.Path).ConfigureAwait( false );
@@ -124,7 +124,7 @@ namespace HDLG_winforms
             if (directory.Directories.Any())
             {
                 await writer.WriteStartElementAsync(null, "Directories", null).ConfigureAwait( false );
-                foreach (Directory d in directory.Directories)
+                foreach (HdlgDirectory d in directory.Directories)
                 {
                     await WriteXmlDirectoryAsync(writer, d).ConfigureAwait( false );
                 }
@@ -134,7 +134,7 @@ namespace HDLG_winforms
             if (directory.Files.Any())
             {
                 await writer.WriteStartElementAsync(null, "Files", null).ConfigureAwait( false );
-                foreach (File file in directory.Files)
+                foreach (HdlgFile file in directory.Files)
                 {
                     await WriteXmlFileAsync(writer, file).ConfigureAwait( false );
                 }
@@ -151,7 +151,7 @@ namespace HDLG_winforms
         /// <param name="file">File that content the data</param>
         /// <returns>A task</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        private async Task WriteXmlFileAsync(XmlWriter writer, File file)
+        private async Task WriteXmlFileAsync(XmlWriter writer, HdlgFile file)
         {
             if (writer is null)
             {
@@ -238,7 +238,7 @@ namespace HDLG_winforms
 
         }
 
-		public async Task SaveAsHTMLAsync (string filePath, Directory directory)
+		public async Task SaveAsHTMLAsync (string filePath, HdlgDirectory directory)
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
@@ -321,9 +321,9 @@ namespace HDLG_winforms
         /// <param name="writer"></param>
         /// <param name="directory"></param>
         /// <returns></returns>
-        private async Task WritHtmlDirectoryAsync(TextWriter writer, Directory directory, int depth)
+        private async Task WritHtmlDirectoryAsync(TextWriter writer, HdlgDirectory directory, int depth)
         {
-            log.Debug($"In {nameof(WritHtmlDirectoryAsync)} {nameof(Directory)} {directory}");
+            log.Debug($"In {nameof(WritHtmlDirectoryAsync)} {nameof(HdlgDirectory)} {directory}");
 			var spacerStrb = new StringBuilder( );
 			for (int i = 0; i < depth; i++)
 			{
@@ -337,7 +337,7 @@ namespace HDLG_winforms
 
             if (directory.Directories.Any())
             {                await writer.WriteLineAsync(spacerStrb.ToString()+ "<div class=\"directories\">").ConfigureAwait( false );
-                foreach (Directory d in directory.Directories)
+                foreach (HdlgDirectory d in directory.Directories)
                 {
                     await WritHtmlDirectoryAsync(writer, d, ++depth).ConfigureAwait( false );
                 }
@@ -347,7 +347,7 @@ namespace HDLG_winforms
             if (directory.Files.Any())
             {
                 await writer.WriteLineAsync(spacerStrb.ToString() + "<div class=\"files\">").ConfigureAwait( false );
-                foreach (File file in directory.Files)
+                foreach (HdlgFile file in directory.Files)
                 {
                     await WriteHtmlFileAsync(writer, file, spacerStrb.ToString()).ConfigureAwait( false );
                 }
@@ -364,7 +364,7 @@ namespace HDLG_winforms
         /// <param name="file">File that content the data</param>
         /// <returns>A task</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        private async Task WriteHtmlFileAsync(TextWriter writer, File file, string spacer)
+        private async Task WriteHtmlFileAsync(TextWriter writer, HdlgFile file, string spacer)
         {
             if (writer is null)
             {
