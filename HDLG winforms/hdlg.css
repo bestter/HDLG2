@@ -1,7 +1,7 @@
 ﻿body {
     font-family: 'Roboto Serif', serif;
-    background-color: #AE8799;
-    color: white;
+    background-color: #5DC9C4;
+    color: black;
 }
 
 /*test martin 1337*/
@@ -31,7 +31,7 @@ h1, h2, h3, h4, h5, h6, .directories {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    color: #FF7B54
+    color: #5D62C9;
 }
 
 
@@ -40,7 +40,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .directory .name {
-    color: #F3DFC1;
+    color: #C95D98;
 }
 
 .files {
@@ -73,7 +73,7 @@ span.headerContentTitle {
 }
 
 span.headerContentData {
-    color: #F3DFC1;
+    color: #C95D98;
 }
 
 details .file {
