@@ -65,6 +65,10 @@ namespace HdlgFileProperty
                     Logger?.Warning($"File {path} might be corrupted because {string.Join(",", f.CorruptionReasons)}");
                 }
             }
+            catch(IOException ioe)
+            {
+                Logger?.Error(ioe, $"Cannot read file {path}");
+            }
             catch (TagLib.UnsupportedFormatException ufe)
             {
                 Logger?.Warning(ufe, $"File {path} is not supported");

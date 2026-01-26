@@ -38,7 +38,7 @@ namespace HdlgFileProperty
                     if (fields.Any())
                     {
                         if (fields.TryGetValue("name", out var toSet))
-                        { 
+                        {
                             if (toSet != null)
                             {
                                 properties.Add("Title", toSet.GetValueAsString());
@@ -47,8 +47,11 @@ namespace HdlgFileProperty
                     }
                 }
             }
-            catch (System.IO.IOException)
-            { }
+            catch (System.IO.IOException ioe)
+            {
+                Logger?.Error(ioe, $"Cannot read file {path}");
+
+            }
             catch (iText.Kernel.Exceptions.BadPasswordException)
             { }
 
