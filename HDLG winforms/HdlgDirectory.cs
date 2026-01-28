@@ -1,11 +1,20 @@
-﻿using HdlgFileProperty;
+﻿/*
+ This file is part of HTML Directory List Generator.
+
+HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+HTML Directory List Generator is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
+ */
+using HdlgFileProperty;
 using Serilog.Core;
 using System.Collections.ObjectModel;
 
 namespace HDLG_winforms
 {
 
-    public class Directory : IEquatable<Directory>, IComparable, IComparable<Directory>
+    public class HdlgDirectory : IEquatable<HdlgDirectory>, IComparable, IComparable<HdlgDirectory>
     {
         public string Name { get; private set; }
 
@@ -15,17 +24,17 @@ namespace HDLG_winforms
 
         private readonly DirectoryInfo directoryInfo;
 
-        private readonly List<Directory> directories = new();
+		private readonly List<HdlgDirectory> directories = [];
 
         public bool IsTopDirectory { get; private set; }
 
         public bool BrowseSubdirectory { get; private set; }
 
-        public ReadOnlyCollection<Directory> Directories => directories.AsReadOnly();
+        public ReadOnlyCollection<HdlgDirectory> Directories => directories.AsReadOnly();
 
-        private readonly List<File> files = new();
+        private readonly List<HdlgFile> files = new();
 
-        public ReadOnlyCollection<File> Files => files.AsReadOnly();
+        public ReadOnlyCollection<HdlgFile> Files => files.AsReadOnly();
 
         public int DirectoriesCount => directories.Count;
         public int FilesCount => files.Count;
@@ -35,12 +44,12 @@ namespace HDLG_winforms
         /// </summary>
         private readonly Logger log;
 
-        public Directory(string path, bool isTopDirectory, bool browseSubdirectory, Logger log) : this(new DirectoryInfo(path), isTopDirectory, browseSubdirectory, log)
+        public HdlgDirectory(string path, bool isTopDirectory, bool browseSubdirectory, Logger log) : this(new DirectoryInfo(path), isTopDirectory, browseSubdirectory, log)
         {
 
         }
 
-        public Directory(DirectoryInfo directory, bool isTopDirectory, bool browseSubdirectory, Logger log)
+        public HdlgDirectory(DirectoryInfo directory, bool isTopDirectory, bool browseSubdirectory, Logger log)
         {
             directoryInfo = directory ?? throw new ArgumentNullException( nameof( directory ) );
             Path = directory.FullName;
@@ -65,7 +74,7 @@ namespace HDLG_winforms
             {
                 directoryInfo.EnumerateDirectories().ToList().ForEach(d =>
                 {
-                    directories.Add(new Directory(d.FullName, false, true, log));
+                    directories.Add(new HdlgDirectory(d.FullName, false, true, log));
                 });
                 directories.Sort();
             }
@@ -73,12 +82,12 @@ namespace HDLG_winforms
             directoryInfo.EnumerateFiles().ToList().ForEach(f =>
             {
                 var properties = propertyBrowser.GetFileProperty(f.FullName);
-                var file = new File(f.FullName, properties);
+                var file = new HdlgFile(f.FullName, properties);
                 files.Add(file);
             });
             files.Sort();
 
-            foreach (Directory d in directories)
+            foreach (HdlgDirectory d in directories)
             {
                 d.Browse(propertyBrowser);
             }
@@ -95,14 +104,14 @@ namespace HDLG_winforms
 
         public override bool Equals(object? obj)
         {
-            if (obj is Directory directory)
+            if (obj is HdlgDirectory directory)
             {
                 return directory.Equals(this);
             }
             return false;
         }
 
-        public bool Equals(Directory? other)
+        public bool Equals(HdlgDirectory? other)
         {
             if (other is not null)
             {
@@ -113,14 +122,14 @@ namespace HDLG_winforms
 
         public int CompareTo(object? obj)
         {
-            if (obj is Directory directory)
+            if (obj is HdlgDirectory directory)
             {
                 return CompareTo(directory);
             }
             return -1;
         }
 
-        public int CompareTo(Directory? other)
+        public int CompareTo(HdlgDirectory? other)
         {
             if (other is null)
             {
@@ -134,7 +143,7 @@ namespace HDLG_winforms
             return compareValue;
         }
 
-        public static bool operator ==(Directory left, Directory right)
+        public static bool operator ==(HdlgDirectory left, HdlgDirectory right)
         {
             if (left is null)
             {
@@ -144,27 +153,27 @@ namespace HDLG_winforms
             return left.Equals(right);
         }
 
-        public static bool operator !=(Directory left, Directory right)
+        public static bool operator !=(HdlgDirectory left, HdlgDirectory right)
         {
             return !(left == right);
         }
 
-        public static bool operator <(Directory left, Directory right)
+        public static bool operator <(HdlgDirectory left, HdlgDirectory right)
         {
             return left is null ? right is not null : left.CompareTo(right) < 0;
         }
 
-        public static bool operator <=(Directory left, Directory right)
+        public static bool operator <=(HdlgDirectory left, HdlgDirectory right)
         {
             return left is null || left.CompareTo(right) <= 0;
         }
 
-        public static bool operator >(Directory left, Directory right)
+        public static bool operator >(HdlgDirectory left, HdlgDirectory right)
         {
             return left is not null && left.CompareTo(right) > 0;
         }
 
-        public static bool operator >=(Directory left, Directory right)
+        public static bool operator >=(HdlgDirectory left, HdlgDirectory right)
         {
             return left is null ? right is null : left.CompareTo(right) >= 0;
         }

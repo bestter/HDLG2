@@ -1,7 +1,7 @@
 ﻿body {
     font-family: 'Roboto Serif', serif;
-    background-color: #AE8799;
-    color: white;
+    background-color: #5DC9C4;
+    color: black;
 }
 
 /*test martin 1337*/
@@ -31,7 +31,7 @@ h1, h2, h3, h4, h5, h6, .directories {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    color: #FF7B54
+    color: #5D62C9;
 }
 
 
@@ -40,11 +40,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .directory .name {
-    color: #F3DFC1;
+    color: #C95D98;
 }
 
 .files {
     border-bottom: 1.5em;
+}
+
+summary.file
+{
+    font-size: 1.25em;
 }
 
 .file {
@@ -68,7 +73,7 @@ span.headerContentTitle {
 }
 
 span.headerContentData {
-    color: #F3DFC1;
+    color: #C95D98;
 }
 
 details .file {
@@ -96,3 +101,22 @@ details[open] > summary > a {
     background-color: #717EC3;
     color: #AE8799;
   }
+
+.spacer
+{
+    display: block;
+    height: 4em;
+}
+
+.directoryList ul {
+    column-count: 3; /* nombre de colonnes */
+    column-gap: 20px; /* espace entre les colonnes */
+    list-style-type: disc; /* type de puce */
+}
+
+.directoryList ul > ul{
+    column-count: 2; /* nombre de colonnes */
+    column-gap: 20px; /* espace entre les colonnes */
+    list-style-type: disc; /* type de puce */
+}
+

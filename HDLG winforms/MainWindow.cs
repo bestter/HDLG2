@@ -1,4 +1,13 @@
-﻿using HdlgFileProperty;
+﻿/*
+ This file is part of HTML Directory List Generator.
+
+HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+HTML Directory List Generator is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
+ */
+using HdlgFileProperty;
 using Serilog;
 using Serilog.Core;
 using System.ComponentModel;
@@ -90,6 +99,13 @@ namespace HDLG_winforms
 					labelTotalTime.Text = string.Empty;
 					labelException.Text = string.Empty;
 
+#if !DEBUG
+labelBrowseTime.Hide();
+labelSaveTime.Hide();
+labelTotalTime.Hide();
+labelTotalTime.Hide();
+#endif
+
 					if (!string.IsNullOrWhiteSpace( selectedDirectory ))
 					{
 						DirectoryInfo di = new( selectedDirectory );
@@ -122,17 +138,22 @@ namespace HDLG_winforms
 
 		private void BackgroundWorkerDirectoryBrowse_DoWork (object sender, DoWorkEventArgs e)
 		{
-			Debug.Write( $"{nameof( BackgroundWorkerDirectoryBrowse_DoWork )} started at {DateTime.Now:T}" );
+			log.Debug( $"{nameof( BackgroundWorkerDirectoryBrowse_DoWork )} started at {DateTime.Now:T}" );
 			string? selecteDirectory = e.Argument as string;
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
 			{
 				log.Information( selecteDirectory );
-				Directory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, log );
+				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, log );
+#if DEBUG
 				Stopwatch stopwatch = Stopwatch.StartNew( );
+#endif
+
 				log.Debug( $"Ready to start {nameof( directory.Browse )}" );
 				directory.Browse( propertyBrowser );
 				log.Debug( $"{nameof( directory.Browse )} of directory {directory.Name} done" );
+#if DEBUG
 				TimeSpan browseTime = stopwatch.Elapsed;
+#endif
 				propertyBrowser.LogGetterStatistics( );
 
 				DirectoryBrowser db = new( log );
@@ -141,10 +162,16 @@ namespace HDLG_winforms
 				db.SaveAsXMLAsync( saveContentFileDialog.FileName, directory ).Wait( );
 
 				log.Debug( $"{nameof( DirectoryBrowser.SaveAsXMLAsync )} done" );
+#if DEBUG
 				stopwatch.Stop( );
+
 				TimeSpan saveTime = stopwatch.Elapsed - browseTime;
 
 				e.Result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
+#else
+				e.Result = new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
+#endif
+
 				log.Information( $"Done at {DateTime.Now:T}" );
 			}
 			else
@@ -253,7 +280,7 @@ namespace HDLG_winforms
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
 			{
 				log.Information( selecteDirectory );
-				Directory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, log );
+				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, log );
 				Stopwatch stopwatch = Stopwatch.StartNew( );
 				log.Debug( $"Ready to start {nameof( directory.Browse )}" );
 				directory.Browse( propertyBrowser );
@@ -303,6 +330,12 @@ namespace HDLG_winforms
 		private void SaveFileDialogHtml_FileOk (object sender, CancelEventArgs e)
 		{
 
+		}
+
+		private void creditToolStripMenuItem_Click (object sender, EventArgs e)
+		{
+			using Credit credit = new Credit( );
+			credit.ShowDialog( this );
 		}
 	}
 }
