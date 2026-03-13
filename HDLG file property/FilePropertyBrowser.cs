@@ -1,4 +1,4 @@
-﻿/*
+/*
  This file is part of HTML Directory List Generator.
 
 HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -22,18 +22,11 @@ namespace HdlgFileProperty
 
         public FilePropertyBrowser(Serilog.ILogger logger, params IFilePropertyGetter[] imagePropertyGetters)
         {
-            if (logger is null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
+            ArgumentNullException.ThrowIfNull(logger);
+            ArgumentNullException.ThrowIfNull(imagePropertyGetters);
 
             this.logger = logger;
-
-            if (imagePropertyGetters is null)
-            {
-                throw new ArgumentNullException(nameof(imagePropertyGetters));
-            }
-            filePropertyGetters = new();
+            filePropertyGetters = new(imagePropertyGetters.Length);
             TotalNumberOfFiles = 0;
 
             foreach (var propertyGetter in imagePropertyGetters)
@@ -46,10 +39,7 @@ namespace HdlgFileProperty
 
         public Dictionary<string, IConvertible> GetFileProperty(string path)
         {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentException($"'{nameof(path)}' ne peut pas avoir une valeur null ou être un espace blanc.", nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrWhiteSpace(path);
             TotalNumberOfFiles++;
             Dictionary<string, IConvertible> properties = new();
             foreach (var propertyGetters in filePropertyGetters)
