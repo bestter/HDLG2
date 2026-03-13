@@ -26,13 +26,11 @@
 			saveContentFileDialog = new SaveFileDialog( );
 			labelBrowseTime = new Label( );
 			labelSaveTime = new Label( );
-			backgroundWorkerDirectoryBrowseXml = new System.ComponentModel.BackgroundWorker( );
 			labelTotalTime = new Label( );
 			progressBar1 = new ProgressBar( );
 			labelException = new Label( );
 			tableLayoutPanelStart = new TableLayoutPanel( );
 			btnStartHtml = new Button( );
-			backgroundWorkerDirectoryBrowseHtml = new System.ComponentModel.BackgroundWorker( );
 			saveFileDialog1 = new SaveFileDialog( );
 			saveFileDialogHtml = new SaveFileDialog( );
 			menuStrip1 = new MenuStrip( );
@@ -118,11 +116,6 @@
 			labelSaveTime.TabIndex = 3;
 			labelSaveTime.Text = "SaveTime";
 			// 
-			// backgroundWorkerDirectoryBrowseXml
-			// 
-			backgroundWorkerDirectoryBrowseXml.DoWork += BackgroundWorkerDirectoryBrowse_DoWork;
-			backgroundWorkerDirectoryBrowseXml.RunWorkerCompleted += BackgroundWorkerDirectoryBrowse_RunWorkerCompleted;
-			// 
 			// labelTotalTime
 			// 
 			labelTotalTime.AutoSize = true;
@@ -171,11 +164,6 @@
 			btnStartHtml.Text = "HTML";
 			btnStartHtml.UseVisualStyleBackColor = true;
 			btnStartHtml.Click += BtnStartHtml_Click;
-			// 
-			// backgroundWorkerDirectoryBrowseHtml
-			// 
-			backgroundWorkerDirectoryBrowseHtml.DoWork += BackgroundWorkerDirectoryBrowseHtml_DoWork;
-			backgroundWorkerDirectoryBrowseHtml.RunWorkerCompleted += BackgroundWorkerDirectoryBrowseHtml_RunWorkerCompleted;
 			// 
 			// saveFileDialog1
 			// 
@@ -240,13 +228,11 @@
         private SaveFileDialog saveContentFileDialog;
         private Label labelBrowseTime;
         private Label labelSaveTime;
-        private System.ComponentModel.BackgroundWorker backgroundWorkerDirectoryBrowseXml;
         private Label labelTotalTime;
         private ProgressBar progressBar1;
         private Label labelException;
         private TableLayoutPanel tableLayoutPanelStart;
         private Button btnStartHtml;
-        private System.ComponentModel.BackgroundWorker backgroundWorkerDirectoryBrowseHtml;
         private SaveFileDialog saveFileDialog1;
         private SaveFileDialog saveFileDialogHtml;
         private CheckBox cbBrowseSubDirectory;

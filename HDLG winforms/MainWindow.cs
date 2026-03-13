@@ -1,4 +1,4 @@
-﻿/*
+/*
  This file is part of HTML Directory List Generator.
 
 HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -35,12 +35,15 @@ namespace HDLG_winforms
 		/// Property browser
 		/// </summary>
 		private readonly FilePropertyBrowser propertyBrowser;
+		
+		private static readonly string logDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.LocalApplicationData ), "HDLG", "logs" );
+		private static readonly string logFilePath = Path.Combine( logDirectory, "log.txt" );
 
 		/// <summary>
 		/// Logger
 		/// </summary>
 		private readonly Logger log = new LoggerConfiguration( )
-	.WriteTo.File( @"logs\log.txt", formatProvider: CultureInfo.CurrentCulture, rollingInterval: RollingInterval.Day, outputTemplate:
+	.WriteTo.File( logFilePath, formatProvider: CultureInfo.CurrentCulture, rollingInterval: RollingInterval.Day, outputTemplate:
 		"[{Timestamp:R} {Level:u3}] {Message:lj}{NewLine}{Exception}" ).MinimumLevel.Debug( )
 	.CreateLogger( );
 
@@ -87,45 +90,46 @@ namespace HDLG_winforms
 			saveFileDialogHtml.InitialDirectory = Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments );
 		}
 
-		private void BtnStart_Click (object sender, EventArgs e)
+		private async void BtnStart_Click (object sender, EventArgs e)
 		{
 			try
 			{
-				if (!backgroundWorkerDirectoryBrowseXml.IsBusy)
-				{
-					progressBar1.Value = 0;
-					labelBrowseTime.Text = string.Empty;
-					labelSaveTime.Text = string.Empty;
-					labelTotalTime.Text = string.Empty;
-					labelException.Text = string.Empty;
+				progressBar1.Value = 0;
+				labelBrowseTime.Text = string.Empty;
+				labelSaveTime.Text = string.Empty;
+				labelTotalTime.Text = string.Empty;
+				labelException.Text = string.Empty;
 
 #if !DEBUG
 labelBrowseTime.Hide();
 labelSaveTime.Hide();
 labelTotalTime.Hide();
-labelTotalTime.Hide();
 #endif
 
-					if (!string.IsNullOrWhiteSpace( selectedDirectory ))
+				if (!string.IsNullOrWhiteSpace( selectedDirectory ))
+				{
+					DirectoryInfo di = new( selectedDirectory );
+					saveContentFileDialog.FileName = $"{di.Name}.xml";
+					var result = saveContentFileDialog.ShowDialog( );
+					if (result == DialogResult.OK)
 					{
-						DirectoryInfo di = new( selectedDirectory );
-						saveContentFileDialog.FileName = $"{di.Name}.xml";
-						var result = saveContentFileDialog.ShowDialog( );
-						if (result == DialogResult.OK)
-						{
-							btnStartXml.Enabled = false;
-							btnStartHtml.Enabled = false;
-							UseWaitCursor = true;
-							log.Information( $"Start browse with {selectedDirectory}" );
-							backgroundWorkerDirectoryBrowseXml.RunWorkerAsync( selectedDirectory );
-							while (backgroundWorkerDirectoryBrowseXml.IsBusy)
-							{
-								progressBar1.Increment( 1 );
-								// Keep UI messages moving, so the form remains 
-								// responsive during the asynchronous operation.
-								Application.DoEvents( );
-							}
-						}
+						btnStartXml.Enabled = false;
+						btnStartHtml.Enabled = false;
+						UseWaitCursor = true;
+						log.Information( $"Start browse with {selectedDirectory}" );
+						
+						// Use an indeterminate progress bar if supported, or leave it at 0
+						progressBar1.Style = ProgressBarStyle.Marquee;
+
+						// Exécuter le travail dans un thread de fond sans bloquer l'UI
+						var perf = await Task.Run(() => PerformDirectoryBrowseXml(selectedDirectory, saveContentFileDialog.FileName)).ConfigureAwait(true);
+						
+						progressBar1.Style = ProgressBarStyle.Blocks;
+						progressBar1.Value = 100;
+
+						// Mettre à jour l'UI après le traitement
+						UpdateUIWithPerformance(perf);
+						OpenWithDefaultProgram(saveContentFileDialog.FileName);
 					}
 				}
 			}
@@ -136,12 +140,27 @@ labelTotalTime.Hide();
 				labelException.Text = ex.Message;
 				log.Fatal( ex, $"Error in {nameof( BtnStart_Click )}" );
 			}
+			finally
+			{
+				btnStartXml.Enabled = true;
+				btnStartHtml.Enabled = true;
+				UseWaitCursor = false;
+			}
 		}
 
-		private void BackgroundWorkerDirectoryBrowse_DoWork (object sender, DoWorkEventArgs e)
+		private void UpdateUIWithPerformance(PerformanceCount perf)
 		{
-			log.Debug( $"{nameof( BackgroundWorkerDirectoryBrowse_DoWork )} started at {DateTime.Now:T}" );
-			string? selecteDirectory = e.Argument as string;
+			if (perf.TotalTime != TimeSpan.MinValue)
+			{
+				labelBrowseTime.Text = perf.BrowseTime.ToString( "G", CultureInfo.CurrentCulture );
+				labelSaveTime.Text = perf.SaveTime.ToString( "G", CultureInfo.CurrentCulture );
+				labelTotalTime.Text = perf.TotalTime.ToString( "G", CultureInfo.CurrentCulture );
+			}
+		}
+
+		private PerformanceCount PerformDirectoryBrowseXml(string selecteDirectory, string saveFilePath)
+		{
+			log.Debug( $"{nameof( PerformDirectoryBrowseXml )} started at {DateTime.Now:T}" );
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
 			{
 				log.Information( selecteDirectory );
@@ -161,7 +180,7 @@ labelTotalTime.Hide();
 				DirectoryBrowser db = new( log );
 				log.Debug( $"Ready to start {nameof( DirectoryBrowser.SaveAsXMLAsync )}" );
 
-				db.SaveAsXMLAsync( saveContentFileDialog.FileName, directory ).Wait( );
+				db.SaveAsXMLAsync( saveFilePath, directory ).Wait( );
 
 				log.Debug( $"{nameof( DirectoryBrowser.SaveAsXMLAsync )} done" );
 #if DEBUG
@@ -169,37 +188,18 @@ labelTotalTime.Hide();
 
 				TimeSpan saveTime = stopwatch.Elapsed - browseTime;
 
-				e.Result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
+				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
 #else
-				e.Result = new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
+				var result = new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
 #endif
 
 				log.Information( $"Done at {DateTime.Now:T}" );
+				return result;
 			}
 			else
 			{
 				log.Information( $"No {nameof( selecteDirectory )}" );
-				e.Result = new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
-				e.Cancel = true;
-			}
-		}
-
-		private void BackgroundWorkerDirectoryBrowse_RunWorkerCompleted (object sender, RunWorkerCompletedEventArgs e)
-		{
-			Debug.Write( $"Completed at {DateTime.Now:T}" );
-			UseWaitCursor = false;
-			btnStartXml.Enabled = true;
-			btnStartHtml.Enabled = true;
-			PerformanceCount? perf = e.Result as PerformanceCount?;
-			if (perf != null)
-			{
-				labelBrowseTime.Text = perf.Value.BrowseTime.ToString( "G", CultureInfo.CurrentCulture );
-				labelSaveTime.Text = perf.Value.SaveTime.ToString( "G", CultureInfo.CurrentCulture );
-				labelTotalTime.Text = perf.Value.TotalTime.ToString( "G", CultureInfo.CurrentCulture );
-			}
-			if (saveContentFileDialog.FileName != null)
-			{
-				OpenWithDefaultProgram( saveContentFileDialog.FileName );
+				return new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
 			}
 		}
 
@@ -208,14 +208,15 @@ labelTotalTime.Hide();
 		/// </summary>
 		/// <param name="path"></param>
 		/// <remarks>https://stackoverflow.com/a/54275102/910741</remarks>
-		public static void OpenWithDefaultProgram (string path)
-		{
-			using Process fileopener = new( );
-
-			fileopener.StartInfo.FileName = "explorer";
-			fileopener.StartInfo.Arguments = "\"" + path + "\"";
-			fileopener.Start( );
-		}
+		public static void OpenWithDefaultProgram(string path)
+{
+    using Process fileopener = new();
+    fileopener.StartInfo = new ProcessStartInfo(path)
+    {
+        UseShellExecute = true
+    };
+    fileopener.Start();
+}
 
 		/// <summary>
 		/// Dispose
@@ -233,38 +234,37 @@ labelTotalTime.Hide();
 			base.Dispose( disposing );
 		}
 
-		private void BtnStartHtml_Click (object sender, EventArgs e)
+		private async void BtnStartHtml_Click (object sender, EventArgs e)
 		{
 			try
 			{
-				if (!backgroundWorkerDirectoryBrowseHtml.IsBusy)
-				{
-					progressBar1.Value = 0;
-					labelBrowseTime.Text = string.Empty;
-					labelSaveTime.Text = string.Empty;
-					labelTotalTime.Text = string.Empty;
-					labelException.Text = string.Empty;
+				progressBar1.Value = 0;
+				labelBrowseTime.Text = string.Empty;
+				labelSaveTime.Text = string.Empty;
+				labelTotalTime.Text = string.Empty;
+				labelException.Text = string.Empty;
 
-					if (!string.IsNullOrWhiteSpace( selectedDirectory ))
+				if (!string.IsNullOrWhiteSpace( selectedDirectory ))
+				{
+					DirectoryInfo di = new( selectedDirectory );
+					saveFileDialogHtml.FileName = $"{di.Name}.html";
+					var result = saveFileDialogHtml.ShowDialog( );
+					if (result == DialogResult.OK)
 					{
-						DirectoryInfo di = new( selectedDirectory );
-						saveFileDialogHtml.FileName = $"{di.Name}.html";
-						var result = saveFileDialogHtml.ShowDialog( );
-						if (result == DialogResult.OK)
-						{
-							btnStartXml.Enabled = false;
-							btnStartHtml.Enabled = false;
-							UseWaitCursor = true;
-							log.Information( $"Start browse with {selectedDirectory}" );
-							backgroundWorkerDirectoryBrowseHtml.RunWorkerAsync( selectedDirectory );
-							while (backgroundWorkerDirectoryBrowseHtml.IsBusy)
-							{
-								progressBar1.Increment( 1 );
-								// Keep UI messages moving, so the form remains 
-								// responsive during the asynchronous operation.
-								Application.DoEvents( );
-							}
-						}
+						btnStartXml.Enabled = false;
+						btnStartHtml.Enabled = false;
+						UseWaitCursor = true;
+						log.Information( $"Start browse with {selectedDirectory}" );
+						
+						progressBar1.Style = ProgressBarStyle.Marquee;
+
+						var perf = await Task.Run(() => PerformDirectoryBrowseHtml(selectedDirectory, saveFileDialogHtml.FileName)).ConfigureAwait( true );
+						
+						progressBar1.Style = ProgressBarStyle.Blocks;
+						progressBar1.Value = 100;
+
+						UpdateUIWithPerformance(perf);
+						OpenWithDefaultProgram(saveFileDialogHtml.FileName);
 					}
 				}
 			}
@@ -273,14 +273,19 @@ labelTotalTime.Hide();
 #pragma warning restore CA1031
 			{
 				labelException.Text = ex.Message;
-				log.Fatal( ex, $"Error in {nameof( BtnStart_Click )}" );
+				log.Fatal( ex, $"Error in {nameof( BtnStartHtml_Click )}" );
+			}
+			finally
+			{
+				btnStartXml.Enabled = true;
+				btnStartHtml.Enabled = true;
+				UseWaitCursor = false;
 			}
 		}
 
-		private void BackgroundWorkerDirectoryBrowseHtml_DoWork (object sender, DoWorkEventArgs e)
+		private PerformanceCount PerformDirectoryBrowseHtml(string selecteDirectory, string saveFilePath)
 		{
-			Debug.Write( $"{nameof( BackgroundWorkerDirectoryBrowseHtml_DoWork )} started at {DateTime.Now:T}" );
-			string? selecteDirectory = e.Argument as string;
+			Debug.Write( $"{nameof( PerformDirectoryBrowseHtml )} started at {DateTime.Now:T}" );
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
 			{
 				log.Information( selecteDirectory );
@@ -295,39 +300,20 @@ labelTotalTime.Hide();
 				DirectoryBrowser db = new( log );
 				log.Debug( $"Ready to start {nameof( DirectoryBrowser.SaveAsHTMLAsync )}" );
 
-				db.SaveAsHTMLAsync( saveFileDialogHtml.FileName, directory ).Wait( );
+				db.SaveAsHTMLAsync( saveFilePath, directory ).Wait( );
 
 				log.Debug( $"{nameof( DirectoryBrowser.SaveAsHTMLAsync )} done" );
 				stopwatch.Stop( );
 				TimeSpan saveTime = stopwatch.Elapsed - browseTime;
 
-				e.Result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
+				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
 				log.Information( $"Done at {DateTime.Now:T}" );
+				return result;
 			}
 			else
 			{
 				log.Information( $"No {nameof( selecteDirectory )}" );
-				e.Result = new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
-				e.Cancel = true;
-			}
-		}
-
-		private void BackgroundWorkerDirectoryBrowseHtml_RunWorkerCompleted (object sender, RunWorkerCompletedEventArgs e)
-		{
-			Debug.Write( $"Completed at {DateTime.Now:T}" );
-			UseWaitCursor = false;
-			btnStartXml.Enabled = true;
-			btnStartHtml.Enabled = true;
-			PerformanceCount? perf = e.Result as PerformanceCount?;
-			if (perf != null)
-			{
-				labelBrowseTime.Text = perf.Value.BrowseTime.ToString( "G", CultureInfo.CurrentCulture );
-				labelSaveTime.Text = perf.Value.SaveTime.ToString( "G", CultureInfo.CurrentCulture );
-				labelTotalTime.Text = perf.Value.TotalTime.ToString( "G", CultureInfo.CurrentCulture );
-			}
-			if (saveFileDialogHtml.FileName != null)
-			{
-				OpenWithDefaultProgram( saveFileDialogHtml.FileName );
+				return new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
 			}
 		}
 
