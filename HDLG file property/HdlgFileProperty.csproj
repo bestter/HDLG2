@@ -16,6 +16,14 @@
     <AnalysisLevel>6.0-all</AnalysisLevel>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+
   <ItemGroup>
     <EditorConfigFiles Include="..\HDLG winforms\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
