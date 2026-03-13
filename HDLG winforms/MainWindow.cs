@@ -29,6 +29,8 @@ namespace HDLG_winforms
 		public PdfPropertyGetter PdfPropertyGetter;
 
 		public Mp3PropertyGetter Mp3PropertyGetter;
+
+		private Logger Logger;
 		#endregion
 
 		/// <summary>
@@ -36,19 +38,16 @@ namespace HDLG_winforms
 		/// </summary>
 		private readonly FilePropertyBrowser propertyBrowser;
 		
-		private static readonly string logDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.LocalApplicationData ), "HDLG", "logs" );
-		private static readonly string logFilePath = Path.Combine( logDirectory, "log.txt" );
-
-		/// <summary>
-		/// Logger
-		/// </summary>
-		private readonly Logger log = new LoggerConfiguration( )
-	.WriteTo.File( logFilePath, formatProvider: CultureInfo.CurrentCulture, rollingInterval: RollingInterval.Day, outputTemplate:
-		"[{Timestamp:R} {Level:u3}] {Message:lj}{NewLine}{Exception}" ).MinimumLevel.Debug( )
-	.CreateLogger( );
+	//	/// <summary>
+	//	/// Logger
+	//	/// </summary>
+	//	private readonly Logger log = new LoggerConfiguration( )
+	//.WriteTo.File( logFilePath, formatProvider: CultureInfo.CurrentCulture, rollingInterval: RollingInterval.Day, outputTemplate:
+	//	"[{Timestamp:R} {Level:u3}] {Message:lj}{NewLine}{Exception}" ).MinimumLevel.Debug( )
+	//.CreateLogger( );
 
 
-		public MainWindow (ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter, PdfPropertyGetter pdfPropertyGetter, Mp3PropertyGetter mp3PropertyGetter)
+		public MainWindow (ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter, PdfPropertyGetter pdfPropertyGetter, Mp3PropertyGetter mp3PropertyGetter, Logger logger)
 		{
 			InitializeComponent( );
 			ImagePropertyGetter = imagePropertyGetter;
@@ -56,7 +55,8 @@ namespace HDLG_winforms
 			ExcelPropertyGetter = excelPropertyGetter;
 			PdfPropertyGetter = pdfPropertyGetter;
 			Mp3PropertyGetter = mp3PropertyGetter;
-			propertyBrowser = new( log, imagePropertyGetter, wordPropertyGetter, excelPropertyGetter, pdfPropertyGetter, mp3PropertyGetter );
+			Logger = logger;
+			propertyBrowser = new( logger, imagePropertyGetter, wordPropertyGetter, excelPropertyGetter, pdfPropertyGetter, mp3PropertyGetter );
 		}
 
 		private string? selectedDirectory;
@@ -116,7 +116,7 @@ labelTotalTime.Hide();
 						btnStartXml.Enabled = false;
 						btnStartHtml.Enabled = false;
 						UseWaitCursor = true;
-						log.Information( $"Start browse with {selectedDirectory}" );
+						Logger.Information( $"Start browse with {selectedDirectory}" );
 						
 						// Use an indeterminate progress bar if supported, or leave it at 0
 						progressBar1.Style = ProgressBarStyle.Marquee;
@@ -138,7 +138,7 @@ labelTotalTime.Hide();
 #pragma warning restore CA1031
 			{
 				labelException.Text = ex.Message;
-				log.Fatal( ex, $"Error in {nameof( BtnStart_Click )}" );
+				Logger.Fatal( ex, $"Error in {nameof( BtnStart_Click )}" );
 			}
 			finally
 			{
@@ -160,29 +160,29 @@ labelTotalTime.Hide();
 
 		private PerformanceCount PerformDirectoryBrowseXml(string selecteDirectory, string saveFilePath)
 		{
-			log.Debug( $"{nameof( PerformDirectoryBrowseXml )} started at {DateTime.Now:T}" );
+			Logger.Debug( $"{nameof( PerformDirectoryBrowseXml )} started at {DateTime.Now:T}" );
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
 			{
-				log.Information( selecteDirectory );
-				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, log );
+				Logger.Information( selecteDirectory );
+				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
 #if DEBUG
 				Stopwatch stopwatch = Stopwatch.StartNew( );
 #endif
 
-				log.Debug( $"Ready to start {nameof( directory.Browse )}" );
+				Logger.Debug( $"Ready to start {nameof( directory.Browse )}" );
 				directory.Browse( propertyBrowser );
-				log.Debug( $"{nameof( directory.Browse )} of directory {directory.Name} done" );
+				Logger.Debug( $"{nameof( directory.Browse )} of directory {directory.Name} done" );
 #if DEBUG
 				TimeSpan browseTime = stopwatch.Elapsed;
 #endif
 				propertyBrowser.LogGetterStatistics( );
 
-				DirectoryBrowser db = new( log );
-				log.Debug( $"Ready to start {nameof( DirectoryBrowser.SaveAsXMLAsync )}" );
+				DirectoryBrowser db = new( Logger );
+				Logger.Debug( $"Ready to start {nameof( DirectoryBrowser.SaveAsXMLAsync )}" );
 
 				db.SaveAsXMLAsync( saveFilePath, directory ).Wait( );
 
-				log.Debug( $"{nameof( DirectoryBrowser.SaveAsXMLAsync )} done" );
+				Logger.Debug( $"{nameof( DirectoryBrowser.SaveAsXMLAsync )} done" );
 #if DEBUG
 				stopwatch.Stop( );
 
@@ -193,12 +193,12 @@ labelTotalTime.Hide();
 				var result = new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
 #endif
 
-				log.Information( $"Done at {DateTime.Now:T}" );
+				Logger.Information( $"Done at {DateTime.Now:T}" );
 				return result;
 			}
 			else
 			{
-				log.Information( $"No {nameof( selecteDirectory )}" );
+				Logger.Information( $"No {nameof( selecteDirectory )}" );
 				return new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
 			}
 		}
@@ -228,7 +228,7 @@ labelTotalTime.Hide();
 			{
 				components?.Dispose( );
 
-				log.Dispose( );
+				Logger.Dispose( );
 			}
 
 			base.Dispose( disposing );
@@ -254,7 +254,7 @@ labelTotalTime.Hide();
 						btnStartXml.Enabled = false;
 						btnStartHtml.Enabled = false;
 						UseWaitCursor = true;
-						log.Information( $"Start browse with {selectedDirectory}" );
+						Logger.Information( $"Start browse with {selectedDirectory}" );
 						
 						progressBar1.Style = ProgressBarStyle.Marquee;
 
@@ -273,7 +273,7 @@ labelTotalTime.Hide();
 #pragma warning restore CA1031
 			{
 				labelException.Text = ex.Message;
-				log.Fatal( ex, $"Error in {nameof( BtnStartHtml_Click )}" );
+				Logger.Fatal( ex, $"Error in {nameof( BtnStartHtml_Click )}" );
 			}
 			finally
 			{
@@ -288,31 +288,31 @@ labelTotalTime.Hide();
 			Debug.Write( $"{nameof( PerformDirectoryBrowseHtml )} started at {DateTime.Now:T}" );
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
 			{
-				log.Information( selecteDirectory );
-				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, log );
+				Logger.Information( selecteDirectory );
+				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
 				Stopwatch stopwatch = Stopwatch.StartNew( );
-				log.Debug( $"Ready to start {nameof( directory.Browse )}" );
+				Logger.Debug( $"Ready to start {nameof( directory.Browse )}" );
 				directory.Browse( propertyBrowser );
-				log.Debug( $"{nameof( directory.Browse )} of directory {directory.Name} done" );
+				Logger.Debug( $"{nameof( directory.Browse )} of directory {directory.Name} done" );
 				TimeSpan browseTime = stopwatch.Elapsed;
 				propertyBrowser.LogGetterStatistics( );
 
-				DirectoryBrowser db = new( log );
-				log.Debug( $"Ready to start {nameof( DirectoryBrowser.SaveAsHTMLAsync )}" );
+				DirectoryBrowser db = new( Logger );
+				Logger.Debug( $"Ready to start {nameof( DirectoryBrowser.SaveAsHTMLAsync )}" );
 
 				db.SaveAsHTMLAsync( saveFilePath, directory ).Wait( );
 
-				log.Debug( $"{nameof( DirectoryBrowser.SaveAsHTMLAsync )} done" );
+				Logger.Debug( $"{nameof( DirectoryBrowser.SaveAsHTMLAsync )} done" );
 				stopwatch.Stop( );
 				TimeSpan saveTime = stopwatch.Elapsed - browseTime;
 
 				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
-				log.Information( $"Done at {DateTime.Now:T}" );
+				Logger.Information( $"Done at {DateTime.Now:T}" );
 				return result;
 			}
 			else
 			{
-				log.Information( $"No {nameof( selecteDirectory )}" );
+				Logger.Information( $"No {nameof( selecteDirectory )}" );
 				return new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
 			}
 		}

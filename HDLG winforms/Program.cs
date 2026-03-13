@@ -1,4 +1,4 @@
-﻿/*
+/*
  This file is part of HTML Directory List Generator.
 
  HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -22,7 +22,7 @@ namespace HDLG_winforms
 		public static IServiceProvider? ServiceProvider { get; private set; }
 
 		private static string logDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.LocalApplicationData ), "HDLG", "logs" );
-		private static string logFilePath = Path.Combine( logDirectory, "Programlog.txt" );
+		private static string logFilePath = Path.Combine( logDirectory, "log.txt" );
 
 		/// <summary>
 		/// Logger
@@ -42,6 +42,7 @@ namespace HDLG_winforms
 					services.AddTransient<ExcelPropertyGetter, ExcelPropertyGetter>( );
 					services.AddTransient<PdfPropertyGetter, PdfPropertyGetter>( );
 					services.AddTransient<Mp3PropertyGetter, Mp3PropertyGetter>( );
+					services.AddSingleton<Logger>(log);
 					services.AddTransient<MainWindow>( );
 				} );
 		}
