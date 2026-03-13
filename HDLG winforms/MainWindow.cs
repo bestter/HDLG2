@@ -129,7 +129,9 @@ labelTotalTime.Hide();
 					}
 				}
 			}
+#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
 			catch (Exception ex)
+#pragma warning restore CA1031
 			{
 				labelException.Text = ex.Message;
 				log.Fatal( ex, $"Error in {nameof( BtnStart_Click )}" );
@@ -266,7 +268,9 @@ labelTotalTime.Hide();
 					}
 				}
 			}
+#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
 			catch (Exception ex)
+#pragma warning restore CA1031
 			{
 				labelException.Text = ex.Message;
 				log.Fatal( ex, $"Error in {nameof( BtnStart_Click )}" );
@@ -332,7 +336,7 @@ labelTotalTime.Hide();
 
 		}
 
-		private void creditToolStripMenuItem_Click (object sender, EventArgs e)
+		private void CreditToolStripMenuItem_Click (object sender, EventArgs e)
 		{
 			using Credit credit = new Credit( );
 			credit.ShowDialog( this );

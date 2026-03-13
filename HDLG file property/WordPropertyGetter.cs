@@ -51,8 +51,8 @@ namespace HdlgFileProperty
         public bool IsSupportedFile(string path)
         {
             FileInfo fileInfo = new(path);
-            var extension = fileInfo.Extension.ToLowerInvariant();
-            return extension == ".docx";
+            var extension = fileInfo.Extension.ToUpperInvariant();
+            return extension == ".DOCX";
         }
     }
 }

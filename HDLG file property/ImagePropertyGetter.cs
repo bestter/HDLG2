@@ -55,9 +55,9 @@ namespace HdlgFileProperty
         public bool IsSupportedFile(string path)
         {
             FileInfo fileInfo = new(path);
-            var isSupported = fileInfo.Extension.ToLowerInvariant() switch
+            var isSupported = fileInfo.Extension.ToUpperInvariant() switch
             {
-                ".jpg" or ".jpeg" or ".png" or ".gif" => true,
+                ".JPG" or ".JPEG" or ".PNG" or ".GIF" => true,
                 _ => false,
             };
             return isSupported;

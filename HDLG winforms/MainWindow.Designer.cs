@@ -36,7 +36,7 @@
 			saveFileDialog1 = new SaveFileDialog( );
 			saveFileDialogHtml = new SaveFileDialog( );
 			menuStrip1 = new MenuStrip( );
-			creditToolStripMenuItem = new ToolStripMenuItem( );
+			CreditToolStripMenuItem = new ToolStripMenuItem( );
 			gbDirectory.SuspendLayout( );
 			tableLayoutPanelStart.SuspendLayout( );
 			menuStrip1.SuspendLayout( );
@@ -189,19 +189,19 @@
 			// 
 			// menuStrip1
 			// 
-			menuStrip1.Items.AddRange( new ToolStripItem [ ] { creditToolStripMenuItem } );
+			menuStrip1.Items.AddRange( new ToolStripItem [ ] { CreditToolStripMenuItem } );
 			menuStrip1.Location = new Point( 0, 0 );
 			menuStrip1.Name = "menuStrip1";
 			menuStrip1.Size = new Size( 800, 24 );
 			menuStrip1.TabIndex = 7;
 			menuStrip1.Text = "menuStrip1";
 			// 
-			// creditToolStripMenuItem
+			// CreditToolStripMenuItem
 			// 
-			creditToolStripMenuItem.Name = "creditToolStripMenuItem";
-			creditToolStripMenuItem.Size = new Size( 51, 20 );
-			creditToolStripMenuItem.Text = "Credit";
-			creditToolStripMenuItem.Click += creditToolStripMenuItem_Click;
+			CreditToolStripMenuItem.Name = "CreditToolStripMenuItem";
+			CreditToolStripMenuItem.Size = new Size( 51, 20 );
+			CreditToolStripMenuItem.Text = "Credit";
+			CreditToolStripMenuItem.Click += CreditToolStripMenuItem_Click;
 			// 
 			// MainWindow
 			// 
@@ -251,6 +251,6 @@
         private SaveFileDialog saveFileDialogHtml;
         private CheckBox cbBrowseSubDirectory;
 		private MenuStrip menuStrip1;
-		private ToolStripMenuItem creditToolStripMenuItem;
+		private ToolStripMenuItem CreditToolStripMenuItem;
 	}
 }
