@@ -24,7 +24,7 @@ namespace HdlgFileProperty
 
         public Dictionary<string, IConvertible> GetFileProperties(string path)
         {
-            Dictionary<string, IConvertible> properties = new();
+            Dictionary<string, IConvertible> properties = [];
             using (SpreadsheetDocument excelDoc = SpreadsheetDocument.Open(path, false))
             {
                 if (!string.IsNullOrWhiteSpace(excelDoc.PackageProperties.Title))
