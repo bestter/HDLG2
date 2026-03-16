@@ -73,10 +73,10 @@ namespace HDLG_winforms
 			Text = $"{an.Name} {an.Version?.ToString( )}";
 			selectedDirectory = null;
 			selectedDirectoryLabel.Text = string.Empty;
-			labelBrowseTime.Text = string.Empty;
-			labelSaveTime.Text = string.Empty;
-			labelTotalTime.Text = string.Empty;
-			labelException.Text = string.Empty;
+			toolStripStatusLabelBrowseTime.Text = string.Empty;
+			toolStripStatusLabelSaveTime.Text = string.Empty;
+			toolStripStatusLabelTotalTime.Text = string.Empty;
+			toolStripStatusLabelException.Text = string.Empty;
 			saveContentFileDialog.InitialDirectory = Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments );
 			saveFileDialogHtml.InitialDirectory = Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments );
 		}
@@ -86,15 +86,15 @@ namespace HDLG_winforms
 			try
 			{
 				progressBar1.Value = 0;
-				labelBrowseTime.Text = string.Empty;
-				labelSaveTime.Text = string.Empty;
-				labelTotalTime.Text = string.Empty;
-				labelException.Text = string.Empty;
+				toolStripStatusLabelBrowseTime.Text = string.Empty;
+				toolStripStatusLabelSaveTime.Text = string.Empty;
+				toolStripStatusLabelTotalTime.Text = string.Empty;
+				toolStripStatusLabelException.Text = string.Empty;
 
 #if !DEBUG
-labelBrowseTime.Hide();
-labelSaveTime.Hide();
-labelTotalTime.Hide();
+toolStripStatusLabelBrowseTime.Visible = false;
+toolStripStatusLabelSaveTime.Visible = false;
+toolStripStatusLabelTotalTime.Visible = false;
 #endif
 
 				if (!string.IsNullOrWhiteSpace( selectedDirectory ))
@@ -128,7 +128,7 @@ labelTotalTime.Hide();
 			catch (Exception ex)
 #pragma warning restore CA1031
 			{
-				labelException.Text = ex.Message;
+				toolStripStatusLabelException.Text = ex.Message;
 				Logger.Fatal( ex, $"Error in {nameof( BtnStart_Click )}" );
 			}
 			finally
@@ -143,9 +143,9 @@ labelTotalTime.Hide();
 		{
 			if (perf.TotalTime != TimeSpan.MinValue)
 			{
-				labelBrowseTime.Text = perf.BrowseTime.ToString( "G", CultureInfo.CurrentCulture );
-				labelSaveTime.Text = perf.SaveTime.ToString( "G", CultureInfo.CurrentCulture );
-				labelTotalTime.Text = perf.TotalTime.ToString( "G", CultureInfo.CurrentCulture );
+				toolStripStatusLabelBrowseTime.Text = $"Browse: {perf.BrowseTime.ToString( "G", CultureInfo.CurrentCulture )}";
+				toolStripStatusLabelSaveTime.Text = $"Save: {perf.SaveTime.ToString( "G", CultureInfo.CurrentCulture )}";
+				toolStripStatusLabelTotalTime.Text = $"Total: {perf.TotalTime.ToString( "G", CultureInfo.CurrentCulture )}";
 			}
 		}
 
@@ -230,10 +230,10 @@ labelTotalTime.Hide();
 			try
 			{
 				progressBar1.Value = 0;
-				labelBrowseTime.Text = string.Empty;
-				labelSaveTime.Text = string.Empty;
-				labelTotalTime.Text = string.Empty;
-				labelException.Text = string.Empty;
+				toolStripStatusLabelBrowseTime.Text = string.Empty;
+				toolStripStatusLabelSaveTime.Text = string.Empty;
+				toolStripStatusLabelTotalTime.Text = string.Empty;
+				toolStripStatusLabelException.Text = string.Empty;
 
 				if (!string.IsNullOrWhiteSpace( selectedDirectory ))
 				{
@@ -263,7 +263,7 @@ labelTotalTime.Hide();
 			catch (Exception ex)
 #pragma warning restore CA1031
 			{
-				labelException.Text = ex.Message;
+				toolStripStatusLabelException.Text = ex.Message;
 				Logger.Fatal( ex, $"Error in {nameof( BtnStartHtml_Click )}" );
 			}
 			finally
