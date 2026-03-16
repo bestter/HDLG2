@@ -61,8 +61,8 @@ namespace HdlgFileProperty
         public bool IsSupportedFile(string path)
         {
             FileInfo fileInfo = new(path);
-            var extension = fileInfo.Extension.ToLowerInvariant();
-            return extension == ".pdf";
+            var extension = fileInfo.Extension.ToUpperInvariant();
+            return extension == ".PDF";
         }
     }
 }

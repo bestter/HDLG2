@@ -1,4 +1,4 @@
-﻿/*
+/*
  This file is part of HTML Directory List Generator.
 
 HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -183,10 +183,9 @@ namespace HDLG_winforms
 				{
 					if (!string.IsNullOrWhiteSpace( property.Key ) && property.Value != null)
 					{
-						DateTime? dtValue = property.Value as DateTime?;
-						if (dtValue != null && dtValue.HasValue)
+						if (property.Value is DateTime dtValue)
 						{
-							await writer.WriteElementStringAsync( null, property.Key, null, dtValue.Value.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
+							await writer.WriteElementStringAsync( null, property.Key, null, dtValue.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
 						}
 						else
 						{
@@ -206,11 +205,9 @@ namespace HDLG_winforms
 
 		private static string GetGoogleFontHeader ()
 		{
-			StringBuilder builder = new( );
-			builder.AppendLine( @"<link rel=""preconnect"" href=""https://fonts.googleapis.com"">" );
-			builder.AppendLine( @"<link rel=""preconnect"" href=""https://fonts.gstatic.com"" crossorigin>" );
-			builder.AppendLine( @"<link href=""https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,opsz,wght@0,8..144,400;0,8..144,700;1,8..144,400;1,8..144,700&family=Source+Sans+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap"" rel=""stylesheet"">" );
-			return builder.ToString( ).Trim( );
+			return @"<link rel=""preconnect"" href=""https://fonts.googleapis.com"">
+<link rel=""preconnect"" href=""https://fonts.gstatic.com"" crossorigin>
+<link href=""https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,opsz,wght@0,8..144,400;0,8..144,700;1,8..144,400;1,8..144,700&family=Source+Sans+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap"" rel=""stylesheet"">";
 		}
 
 		private string GetCss ()
@@ -221,19 +218,13 @@ namespace HDLG_winforms
 				FileInfo cssFile = new( Path.Combine( directory ?? string.Empty, "hdlg.css" ) );
 				if (cssFile.Exists)
 				{
-					StringBuilder stringBuilder = new( );
-
 					using FileStream stream = cssFile.OpenRead( );
 					using StreamReader reader = new( stream );
 					var iCss = reader.ReadToEnd( ).Trim( );
 
 					if (!string.IsNullOrWhiteSpace( iCss ))
 					{
-						stringBuilder.AppendLine( "<style>" );
-						stringBuilder.AppendLine( iCss );
-						stringBuilder.AppendLine( "</style>" );
-						var css = stringBuilder.ToString( ).Trim( );
-						CssContent = css;
+						CssContent = $"<style>\n{iCss}\n</style>";
 					}
 				}
 				else
@@ -336,28 +327,19 @@ namespace HDLG_winforms
 
 		private static async Task WriteDirectoriesListContainAsync (TextWriter writer, HdlgDirectory directory, int depth)
 		{
+			string spacer = new string( ' ', depth );
 
-			var spacerStrb = new StringBuilder( );
-			for (int i = 0; i < depth; i++)
-			{
-				spacerStrb.Append( ' ' );
-			}
-
-			await writer.WriteLineAsync( spacerStrb.ToString( ) + "<ul>" ).ConfigureAwait( false );
+			await writer.WriteLineAsync( spacer + "<ul>" ).ConfigureAwait( false );
 
 			await WriteDirectoryListContainAsync( writer, directory, depth ).ConfigureAwait( false );
 
-			await writer.WriteLineAsync( spacerStrb.ToString( ) + "</ul>" ).ConfigureAwait( false );
+			await writer.WriteLineAsync( spacer + "</ul>" ).ConfigureAwait( false );
 		}
 
 		private static async Task WriteDirectoryListContainAsync (TextWriter writer, HdlgDirectory directory, int depth)
 		{
-			var spacerStrb = new StringBuilder( );
-			for (int i = 0; i < (depth+1); i++)
-			{
-				spacerStrb.Append( ' ' );
-			}
-			await writer.WriteLineAsync( $"{spacerStrb}<li><a href=\"#{directory.Path}\">{directory.Name}</a></li>" ).ConfigureAwait( false );
+			string spacer = new string( ' ', depth + 1 );
+			await writer.WriteLineAsync( $"{spacer}<li><a href=\"#{directory.Path}\">{directory.Name}</a></li>" ).ConfigureAwait( false );
 
 			if (directory.Directories.Count > 0)
 			{
@@ -366,7 +348,7 @@ namespace HDLG_winforms
 				{
 					await WriteDirectoriesListContainAsync( writer, d, inDepth ).ConfigureAwait( false );
 				}
-				
+
 			}
 		}
 
@@ -379,41 +361,37 @@ namespace HDLG_winforms
 		private async Task WritHtmlDirectoryAsync (TextWriter writer, HdlgDirectory directory, int depth)
 		{
 			log.Debug( $"In {nameof( WritHtmlDirectoryAsync )} {nameof( HdlgDirectory )} {directory}" );
-			var spacerStrb = new StringBuilder( );
-			for (int i = 0; i < depth; i++)
-			{
-				spacerStrb.Append( ' ' );
-			}
+			string spacer = new string( ' ', depth );
 
-			await writer.WriteLineAsync( spacerStrb.ToString( ) + $"<div class=\"directory\" id=\"{directory.Path}\">" ).ConfigureAwait( false );
-			await writer.WriteLineAsync( $"{spacerStrb}<span class=\"name\">{directory.Name}</span>" ).ConfigureAwait( false );
-			await writer.WriteLineAsync( $"{spacerStrb}<span class=\"path\">{directory.Path}</span>" ).ConfigureAwait( false );
-			await writer.WriteLineAsync( $"{spacerStrb}<span class=\"creationTime\">{directory.CreationTime.ToString( "F", CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
+			await writer.WriteLineAsync( spacer + $"<div class=\"directory\" id=\"{directory.Path}\">" ).ConfigureAwait( false );
+			await writer.WriteLineAsync( $"{spacer}<span class=\"name\">{directory.Name}</span>" ).ConfigureAwait( false );
+			await writer.WriteLineAsync( $"{spacer}<span class=\"path\">{directory.Path}</span>" ).ConfigureAwait( false );
+			await writer.WriteLineAsync( $"{spacer}<span class=\"creationTime\">{directory.CreationTime.ToString( "F", CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
 
-			await writer.WriteLineAsync( $"{spacerStrb}<a href=\"#directoryList\">⬆️</a>" ).ConfigureAwait( false );
+			await writer.WriteLineAsync( $"{spacer}<a href=\"#directoryList\">⬆️</a>" ).ConfigureAwait( false );
 
 			if (directory.Directories.Any( ))
 			{
-				await writer.WriteLineAsync( spacerStrb.ToString( ) + "<div class=\"directories\">" ).ConfigureAwait( false );
+				await writer.WriteLineAsync( spacer + "<div class=\"directories\">" ).ConfigureAwait( false );
 				var inDepth = depth + 1;
 				foreach (HdlgDirectory d in directory.Directories)
 				{
 					await WritHtmlDirectoryAsync( writer, d, inDepth ).ConfigureAwait( false );
 				}
-				await writer.WriteLineAsync( spacerStrb.ToString( ) + "</div>" ).ConfigureAwait( false );
+				await writer.WriteLineAsync( spacer + "</div>" ).ConfigureAwait( false );
 			}
 
 			if (directory.Files.Any( ))
 			{
-				await writer.WriteLineAsync( spacerStrb.ToString( ) + "<div class=\"files\">" ).ConfigureAwait( false );
+				await writer.WriteLineAsync( spacer + "<div class=\"files\">" ).ConfigureAwait( false );
 				foreach (HdlgFile file in directory.Files)
 				{
-					await WriteHtmlFileAsync( writer, file, spacerStrb.ToString( ) ).ConfigureAwait( false );
+					await WriteHtmlFileAsync( writer, file, spacer ).ConfigureAwait( false );
 				}
-				await writer.WriteLineAsync( spacerStrb.ToString( ) + "</div>" ).ConfigureAwait( false );
+				await writer.WriteLineAsync( spacer + "</div>" ).ConfigureAwait( false );
 			}
 
-			await writer.WriteLineAsync( spacerStrb.ToString( ) + "</div>" ).ConfigureAwait( false );
+			await writer.WriteLineAsync( spacer + "</div>" ).ConfigureAwait( false );
 		}
 
 		/// <summary>
@@ -432,30 +410,29 @@ namespace HDLG_winforms
 
 			log.Verbose( $"{nameof( WriteHtmlFileAsync )} {file}" );
 
-			await writer.WriteLineAsync( spacer + "<div class=\"file\">" ).ConfigureAwait( false );
+			await writer.WriteLineAsync( spacer + "<ul class=\"file\">" ).ConfigureAwait( false );
 
-			await writer.WriteLineAsync( spacer + $"<summary class=\"file\">{file.Name}</summary>" ).ConfigureAwait( false );
+			
+			await writer.WriteLineAsync( $"{spacer}<li><a href=\"file:///{file.Path}\" download=\"{file.Name}\" referrerpolicy=\"strict-origin\">{file.Name}</a></li>" ).ConfigureAwait( false );
 
-			await writer.WriteLineAsync( $"{spacer}<a href=\"file:///{file.Path}\" download=\"{file.Name}\" referrerpolicy=\"strict-origin\">{file.Name}</a>" ).ConfigureAwait( false );
 
-			await writer.WriteLineAsync( spacer + "<div>" ).ConfigureAwait( false );
-			await writer.WriteLineAsync( $"{spacer}<span class=\"size\">{file.Size.ToString( CultureInfo.CurrentCulture )} kb</span>" ).ConfigureAwait( false );
-			await writer.WriteLineAsync( $"{spacer}<span class=\"creationTime\">{file.CreationTime.ToString( "F", CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
-			if (file.Properties != null)
+			await writer.WriteLineAsync( $"{spacer}<li class=\"size\">{file.Size.ToString( CultureInfo.CurrentCulture )} kb</li>" ).ConfigureAwait( false );
+			await writer.WriteLineAsync( $"{spacer}<li class=\"creationTime\">{file.CreationTime.ToString( "F", CultureInfo.CurrentCulture )}</li>" ).ConfigureAwait( false );
+			if (file.Properties != null && file.Properties.Count > 0)
 			{
-				await writer.WriteLineAsync( spacer + "<div class=\"extentedProperties\">" ).ConfigureAwait( false );
+				await writer.WriteLineAsync( spacer + "<li>" ).ConfigureAwait( false );
+				await writer.WriteLineAsync( spacer + "<ol class=\"extentedProperties\">" ).ConfigureAwait( false );
 
 				foreach (var property in file.Properties)
 				{
 					if (!string.IsNullOrWhiteSpace( property.Key ) && property.Value != null)
 					{
-						await writer.WriteLineAsync( spacer + "\t<p class=\"extentedProperty\">" ).ConfigureAwait( false );
+						await writer.WriteLineAsync( spacer + "\t<li class=\"extentedProperty\">" ).ConfigureAwait( false );
 						await writer.WriteLineAsync( $"{spacer}\t\t<span>{property.Key}</span>" ).ConfigureAwait( false );
 
-						DateTime? dtValue = property.Value as DateTime?;
-						if (dtValue != null && dtValue.HasValue)
+						if (property.Value is DateTime dtValue)
 						{
-							await writer.WriteLineAsync( $"{spacer}\t\t<span>{dtValue.Value.ToString( "F", CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
+							await writer.WriteLineAsync( $"{spacer}\t\t<span>{dtValue.ToString( "F", CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
 						}
 						else
 						{
@@ -463,15 +440,15 @@ namespace HDLG_winforms
 							await writer.WriteLineAsync( $"{spacer}\t\t<span>{value}</span>" ).ConfigureAwait( false );
 						}
 
-						await writer.WriteLineAsync( spacer + "\t</p>" ).ConfigureAwait( false );
+						await writer.WriteLineAsync( spacer + "\t</li>" ).ConfigureAwait( false );
 
 					}
 				}
-				await writer.WriteLineAsync( spacer + "</div>" ).ConfigureAwait( false );
+				await writer.WriteLineAsync( spacer + "</ol>" ).ConfigureAwait( false );
+				await writer.WriteLineAsync( spacer + "</li>" ).ConfigureAwait( false );
 			}
 
-			await writer.WriteLineAsync( spacer + "</div>" ).ConfigureAwait( false );
-			await writer.WriteLineAsync( spacer + "</details>" ).ConfigureAwait( false );
+			await writer.WriteLineAsync( spacer + "</ul>" ).ConfigureAwait( false );
 		}
 
 		#endregion

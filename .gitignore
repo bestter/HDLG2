@@ -348,3 +348,28 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+# ==============================================================================
+# EXCLUSIONS AJOUTÉES POUR L'OPTIMISATION DE L'IA (Antigravity / Tokens)
+# ==============================================================================
+
+# --- Médias et Fichiers Binaires Lourds ---
+# Empêche l'IA d'essayer de "lire" les images/vidéos en tant que texte
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.mp4
+*.mov
+
+# --- Fichiers système OS ---
+.DS_Store
+Thumbs.db
+
+# --- Autres IDEs et Outils de build ---
+.vscode/
+.idea/
+.bit/
+dist/
+build/

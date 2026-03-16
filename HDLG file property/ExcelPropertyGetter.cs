@@ -1,4 +1,4 @@
-﻿/*
+/*
  This file is part of HTML Directory List Generator.
 
 HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -24,22 +24,32 @@ namespace HdlgFileProperty
 
         public Dictionary<string, IConvertible> GetFileProperties(string path)
         {
-            Dictionary<string, IConvertible> properties = new();
-            using (SpreadsheetDocument excelDoc = SpreadsheetDocument.Open(path, false))
+            Dictionary<string, IConvertible> properties = new(3);
+            try
             {
-                if (!string.IsNullOrWhiteSpace(excelDoc.PackageProperties.Title))
+                using FileStream stream = new(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using SpreadsheetDocument excelDoc = SpreadsheetDocument.Open(stream, false);
+                var packageProperties = excelDoc.PackageProperties;
+
+                if (!string.IsNullOrWhiteSpace(packageProperties.Title))
                 {
-                    properties.Add("Title", excelDoc.PackageProperties.Title);
+                    properties.Add("Title", packageProperties.Title);
                 }
-                DateTime? created = excelDoc.PackageProperties.Created;
+
+                DateTime? created = packageProperties.Created;
                 if (created != null)
                 {
                     properties.Add("Created", created.Value);
                 }
-                if (!string.IsNullOrWhiteSpace(excelDoc.PackageProperties.Creator))
+
+                if (!string.IsNullOrWhiteSpace(packageProperties.Creator))
                 {
-                    properties.Add("Creator", excelDoc.PackageProperties.Creator);
+                    properties.Add("Creator", packageProperties.Creator);
                 }
+            }
+            catch (Exception ex) when (ex is IOException || ex is InvalidDataException || ex is OpenXmlPackageException)
+            {
+                Logger?.Warning(ex, "Could not open Excel file or extract properties for {Path}", path);
             }
 
             return properties;
@@ -47,9 +57,8 @@ namespace HdlgFileProperty
 
         public bool IsSupportedFile(string path)
         {
-            FileInfo fileInfo = new(path);
-            var extension = fileInfo.Extension.ToLowerInvariant();
-            return extension == ".xlsx";
+            ArgumentException.ThrowIfNullOrWhiteSpace(path);
+            return path.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

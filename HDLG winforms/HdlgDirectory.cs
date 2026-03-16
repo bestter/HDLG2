@@ -1,4 +1,4 @@
-﻿/*
+/*
  This file is part of HTML Directory List Generator.
 
 HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -30,11 +30,11 @@ namespace HDLG_winforms
 
         public bool BrowseSubdirectory { get; private set; }
 
-        public ReadOnlyCollection<HdlgDirectory> Directories => directories.AsReadOnly();
+        public IReadOnlyList<HdlgDirectory> Directories => directories;
 
-        private readonly List<HdlgFile> files = new();
+        private readonly List<HdlgFile> files = [];
 
-        public ReadOnlyCollection<HdlgFile> Files => files.AsReadOnly();
+        public IReadOnlyList<HdlgFile> Files => files;
 
         public int DirectoriesCount => directories.Count;
         public int FilesCount => files.Count;
@@ -72,19 +72,19 @@ namespace HDLG_winforms
 
             if (BrowseSubdirectory)
             {
-                directoryInfo.EnumerateDirectories().ToList().ForEach(d =>
+                foreach (var d in directoryInfo.EnumerateDirectories())
                 {
-                    directories.Add(new HdlgDirectory(d.FullName, false, true, log));
-                });
+                    directories.Add(new HdlgDirectory(d, false, true, log));
+                }
                 directories.Sort();
             }
 
-            directoryInfo.EnumerateFiles().ToList().ForEach(f =>
+            foreach (var f in directoryInfo.EnumerateFiles())
             {
                 var properties = propertyBrowser.GetFileProperty(f.FullName);
                 var file = new HdlgFile(f.FullName, properties);
                 files.Add(file);
-            });
+            }
             files.Sort();
 
             foreach (HdlgDirectory d in directories)
@@ -106,7 +106,7 @@ namespace HDLG_winforms
         {
             if (obj is HdlgDirectory directory)
             {
-                return directory.Equals(this);
+                return Equals(directory);
             }
             return false;
         }
@@ -122,18 +122,19 @@ namespace HDLG_winforms
 
         public int CompareTo(object? obj)
         {
+            if (obj is null) return 1;
             if (obj is HdlgDirectory directory)
             {
                 return CompareTo(directory);
             }
-            return -1;
+            throw new ArgumentException("Object is not a HdlgDirectory");
         }
 
         public int CompareTo(HdlgDirectory? other)
         {
             if (other is null)
             {
-                return -1;
+                return 1;
             }
             int compareValue = other.IsTopDirectory.CompareTo(IsTopDirectory);
             if (compareValue == 0)
