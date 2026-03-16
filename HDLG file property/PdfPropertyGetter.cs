@@ -1,4 +1,4 @@
-﻿/*
+/*
  This file is part of HTML Directory List Generator.
 
 HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -7,10 +7,8 @@ HTML Directory List Generator is distributed in the hope that it will be useful,
 
 You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
  */
-using iText.Forms;
-using iText.Forms.Fields;
-using iText.Kernel.Pdf;
 using Serilog;
+using UglyToad.PdfPig;
 
 namespace HdlgFileProperty
 {
@@ -26,45 +24,38 @@ namespace HdlgFileProperty
         public Dictionary<string, IConvertible> GetFileProperties(string path)
         {
             Dictionary<string, IConvertible> properties = new();
+#pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
             try
             {
-                DocumentProperties documentProperties = new();
-                using var reader = new PdfReader(path);
-                using PdfDocument pdfDoc = new(reader, documentProperties);
-                PdfAcroForm form = PdfAcroForm.GetAcroForm(pdfDoc, false);
-                if (form != null)
+                using PdfDocument document = PdfDocument.Open(path);
+                string? title = document.Information.Title;
+                
+                if (!string.IsNullOrWhiteSpace(title))
                 {
-                    IDictionary<string, PdfFormField> fields = form.GetAllFormFields();
-                    if (fields.Any())
-                    {
-                        if (fields.TryGetValue("name", out var toSet))
-                        {
-                            if (toSet != null)
-                            {
-                                properties.Add("Title", toSet.GetValueAsString());
-                            }
-                        }
-                    }
+                    properties.Add("Title", title);
                 }
             }
             catch (IOException ioe)
             {
                 Logger?.Error(ioe, $"Cannot read file {path}");
-
             }
-            catch (iText.Kernel.Exceptions.BadPasswordException e)
-            { 
+            catch (Exception e) when (e.GetType().Name.Contains("PdfDocumentEncryptedException", StringComparison.InvariantCultureIgnoreCase))
+            {
                 Logger?.Warning(e, $"File {path} is password protected and cannot be read");
             }
+            catch (Exception e)
+            {
+                Logger?.Warning(e, $"Cannot read properties from file {path}");
+            }
+#pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
 
             return properties;
         }
 
         public bool IsSupportedFile(string path)
         {
-            FileInfo fileInfo = new(path);
-            var extension = fileInfo.Extension.ToUpperInvariant();
-            return extension == ".PDF";
+            ArgumentException.ThrowIfNullOrWhiteSpace(path);
+            return path.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
