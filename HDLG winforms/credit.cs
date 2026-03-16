@@ -1,4 +1,4 @@
-﻿/*
+/*
  This file is part of HTML Directory List Generator.
 
 HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -24,14 +24,9 @@ namespace HDLG_winforms
 			//Version version = Assembly.GetExecutingAssembly( ).GetName( ).Version;
 			lblTitle.Text = "HTML Directory List Generator " + typeof( Credit ).Assembly?.GetName( )?.Version?.ToString( );
 
-			lblTitle.Left = (ClientSize.Width - lblTitle.Width) / 2;
-			labelCopyright.Left = (ClientSize.Width - labelCopyright.Width) / 2;
-			labelIconCredit.Left = (ClientSize.Width - labelIconCredit.Width) / 2;
-			labelGPL.Left = (ClientSize.Width - labelGPL.Width) / 2;
-
 		}
 
-		private void labelIconCredit_Click (object sender, EventArgs e)
+		private void labelIconCredit_LinkClicked (object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			// Source - https://stackoverflow.com/a
 			// Posted by Daniel
@@ -46,7 +41,7 @@ namespace HDLG_winforms
 
 		}
 
-		private void labelGPL_Click (object sender, EventArgs e)
+		private void labelGPL_LinkClicked (object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			ProcessStartInfo psInfo = new( )
 			{
