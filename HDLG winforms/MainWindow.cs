@@ -106,6 +106,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 					{
 						btnStartXml.Enabled = false;
 						btnStartHtml.Enabled = false;
+						if (btnStartUi != null) btnStartUi.Enabled = false;
 						UseWaitCursor = true;
 						Logger.Information( $"Start browse with {selectedDirectory}" );
 						
@@ -135,6 +136,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			{
 				btnStartXml.Enabled = true;
 				btnStartHtml.Enabled = true;
+				if (btnStartUi != null) btnStartUi.Enabled = true;
 				UseWaitCursor = false;
 			}
 		}
@@ -244,6 +246,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 					{
 						btnStartXml.Enabled = false;
 						btnStartHtml.Enabled = false;
+						if (btnStartUi != null) btnStartUi.Enabled = false;
 						UseWaitCursor = true;
 						Logger.Information( $"Start browse with {selectedDirectory}" );
 						
@@ -270,6 +273,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			{
 				btnStartXml.Enabled = true;
 				btnStartHtml.Enabled = true;
+				if (btnStartUi != null) btnStartUi.Enabled = true;
 				UseWaitCursor = false;
 			}
 		}
@@ -311,6 +315,30 @@ toolStripStatusLabelTotalTime.Visible = false;
 		private void SaveFileDialogHtml_FileOk (object sender, CancelEventArgs e)
 		{
 
+		}
+
+		private void BtnStartUi_Click (object sender, EventArgs e)
+		{
+			if (string.IsNullOrWhiteSpace( selectedDirectory ))
+			{
+				MessageBox.Show( this, "Please choose a directory first.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
+				return;
+			}
+
+			try
+			{
+				UseWaitCursor = true;
+				using BrowserForm form = new BrowserForm( selectedDirectory, propertyBrowser, Logger );
+				UseWaitCursor = false;
+				form.ShowDialog( this );
+			}
+			catch (Exception ex)
+			{
+				UseWaitCursor = false;
+				toolStripStatusLabelException.Text = ex.Message;
+				Logger.Fatal( ex, $"Error opening UI Explorer" );
+				MessageBox.Show( this, $"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+			}
 		}
 
 		private void CreditToolStripMenuItem_Click (object sender, EventArgs e)

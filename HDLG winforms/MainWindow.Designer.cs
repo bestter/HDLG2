@@ -27,6 +27,7 @@ namespace HDLG_winforms
 			progressBar1 = new ProgressBar( );
 			tableLayoutPanelStart = new TableLayoutPanel( );
 			btnStartHtml = new Button( );
+			btnStartUi = new Button( );
 			saveFileDialog1 = new SaveFileDialog( );
 			saveFileDialogHtml = new SaveFileDialog( );
 			menuStrip1 = new MenuStrip( );
@@ -115,29 +116,43 @@ namespace HDLG_winforms
 			// tableLayoutPanelStart
 			// 
 			tableLayoutPanelStart.Anchor = AnchorStyles.Top;
-			tableLayoutPanelStart.ColumnCount = 2;
-			tableLayoutPanelStart.ColumnStyles.Add( new ColumnStyle( SizeType.Percent, 50F ) );
-			tableLayoutPanelStart.ColumnStyles.Add( new ColumnStyle( SizeType.Percent, 50F ) );
+			tableLayoutPanelStart.ColumnCount = 3;
+			tableLayoutPanelStart.ColumnStyles.Add( new ColumnStyle( SizeType.Percent, 33.33F ) );
+			tableLayoutPanelStart.ColumnStyles.Add( new ColumnStyle( SizeType.Percent, 33.33F ) );
+			tableLayoutPanelStart.ColumnStyles.Add( new ColumnStyle( SizeType.Percent, 33.33F ) );
+			tableLayoutPanelStart.Controls.Add( btnStartUi, 2, 0 );
 			tableLayoutPanelStart.Controls.Add( btnStartHtml, 1, 0 );
 			tableLayoutPanelStart.Controls.Add( btnStartXml, 0, 0 );
-			tableLayoutPanelStart.Location = new Point( 271, 275 );
+			tableLayoutPanelStart.Location = new Point( 200, 275 );
 			tableLayoutPanelStart.Name = "tableLayoutPanelStart";
 			tableLayoutPanelStart.RowCount = 1;
 			tableLayoutPanelStart.RowStyles.Add( new RowStyle( SizeType.Percent, 100F ) );
-			tableLayoutPanelStart.Size = new Size( 259, 40 );
+			tableLayoutPanelStart.Size = new Size( 400, 40 );
 			tableLayoutPanelStart.TabIndex = 6;
 			// 
 			// btnStartHtml
 			// 
 			btnStartHtml.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 			btnStartHtml.FlatStyle = FlatStyle.System;
-			btnStartHtml.Location = new Point( 132, 3 );
+			btnStartHtml.Location = new Point( 136, 3 );
 			btnStartHtml.Name = "btnStartHtml";
-			btnStartHtml.Size = new Size( 124, 34 );
+			btnStartHtml.Size = new Size( 127, 34 );
 			btnStartHtml.TabIndex = 7;
 			btnStartHtml.Text = "HTML";
 			btnStartHtml.UseVisualStyleBackColor = true;
 			btnStartHtml.Click += BtnStartHtml_Click;
+			// 
+			// btnStartUi
+			// 
+			btnStartUi.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+			btnStartUi.FlatStyle = FlatStyle.System;
+			btnStartUi.Location = new Point( 269, 3 );
+			btnStartUi.Name = "btnStartUi";
+			btnStartUi.Size = new Size( 128, 34 );
+			btnStartUi.TabIndex = 8;
+			btnStartUi.Text = "UI Explorer";
+			btnStartUi.UseVisualStyleBackColor = true;
+			btnStartUi.Click += BtnStartUi_Click;
 			// 
 			// saveFileDialog1
 			// 
@@ -248,5 +263,6 @@ namespace HDLG_winforms
 		private ToolStripStatusLabel toolStripStatusLabelSaveTime;
 		private ToolStripStatusLabel toolStripStatusLabelTotalTime;
 		private ToolStripStatusLabel toolStripStatusLabelException;
+		private Button btnStartUi;
 	}
 }
