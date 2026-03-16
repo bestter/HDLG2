@@ -1,4 +1,4 @@
-﻿/*
+/*
  This file is part of HTML Directory List Generator.
 
 HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -39,17 +39,17 @@ namespace HdlgFileProperty
                         properties.Add(nameof(f.Tag.Album), f.Tag.Album);
                         properties.Add(nameof(f.Tag.Year), f.Tag.Year);
 
-                        if (f.Tag.Performers != null && f.Tag.Performers.Any())
+                        if (f.Tag.Performers is { Length: > 0 })
                         {
                             properties.Add(nameof(f.Tag.Performers), string.Join(", ", f.Tag.Performers));
                         }
 
-                        if (f.Tag.AlbumArtists != null && f.Tag.AlbumArtists.Any())
+                        if (f.Tag.AlbumArtists is { Length: > 0 })
                         {
                             properties.Add(nameof(f.Tag.AlbumArtists), string.Join(", ", f.Tag.AlbumArtists));
                         }
 
-                        if (f.Tag.Composers != null && f.Tag.Composers.Any())
+                        if (f.Tag.Composers is { Length: > 0 })
                         {
                             properties.Add(nameof(f.Tag.Composers), string.Join(", ", f.Tag.Composers));
                         }
@@ -80,14 +80,16 @@ namespace HdlgFileProperty
             return properties;
         }
 
+        private static readonly HashSet<string> _supportedExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".MKV", ".OGV", ".AVI", ".WMV", ".ASF", ".MP4", ".M4P", ".M4V", ".MPEG", ".MPG", ".MPE", ".MPV", ".M2V",
+            ".AA", ".AAX", ".AAC", ".AIFF", ".APE", ".DSF", ".FLAC", ".M4A", ".M4B", ".MP3", ".MPC", ".MPP", ".OGG", ".OGA", ".WAV", ".WMA", ".WV", ".WEBM"
+        };
+
         public bool IsSupportedFile(string path)
         {
-            FileInfo fileInfo = new(path);
-            var extension = fileInfo.Extension.ToUpperInvariant();
-            string[] extensions = { ".MKV", ".OGV", ".AVI", ".WMV", ".ASF", ".MP4", ".M4P", ".M4V", ".MPEG", ".MPG", ".MPE", ".MPV", ".MPG", ".M2V",
-            ".AA", ".AAX", ".AAC", ".AIFF", ".APE", ".DSF", ".FLAC", ".M4A", ".M4B", ".M4P", ".MP3", ".MPC", ".MPP", ".OGG", ".OGA", ".WAV", ".WMA", ".WV", ".WEBM"};
-
-            return extensions.Contains(extension);
+            var extension = Path.GetExtension(path);
+            return extension != null && _supportedExtensions.Contains(extension);
         }
     }
 }
