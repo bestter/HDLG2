@@ -37,15 +37,6 @@ namespace HDLG_winforms
 		/// Property browser
 		/// </summary>
 		private readonly FilePropertyBrowser propertyBrowser;
-		
-	//	/// <summary>
-	//	/// Logger
-	//	/// </summary>
-	//	private readonly Logger log = new LoggerConfiguration( )
-	//.WriteTo.File( logFilePath, formatProvider: CultureInfo.CurrentCulture, rollingInterval: RollingInterval.Day, outputTemplate:
-	//	"[{Timestamp:R} {Level:u3}] {Message:lj}{NewLine}{Exception}" ).MinimumLevel.Debug( )
-	//.CreateLogger( );
-
 
 		public MainWindow (ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter, PdfPropertyGetter pdfPropertyGetter, Mp3PropertyGetter mp3PropertyGetter, Logger logger)
 		{
