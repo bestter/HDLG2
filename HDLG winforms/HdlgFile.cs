@@ -1,4 +1,4 @@
-﻿/*
+/*
  This file is part of HTML Directory List Generator.
 
 HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -11,33 +11,38 @@ namespace HDLG_winforms
 {
 	public class HdlgFile : IEquatable<HdlgFile>, IComparable, IComparable<HdlgFile>
 	{
-		public string Name { get; private set; }
+		public string Name { get; }
 
-		public string Path { get; private set; }
+		public string Path { get; }
 
-		public string Extension { get; private set; }
+		public string Extension { get; }
 
-		public long Size { get; private set; }
+		public long Size { get; }
 
-		public DateTime CreationTime { get; private set; }
+		public DateTime CreationTime { get; }
 
-		public Dictionary<string, IConvertible> Properties { get; private set; }
+		public IReadOnlyDictionary<string, IConvertible> Properties { get; }
 
-		public HdlgFile (string path, Dictionary<string, IConvertible> properties)
+		public HdlgFile (string path, Dictionary<string, IConvertible>? properties)
 		{
+			ArgumentNullException.ThrowIfNull(path);
+			
 			Path = path;
 			FileInfo info = new( Path );
+			
 			if (info.Exists)
 			{
 				Name = info.Name;
 				Extension = info.Extension;
 				Size = info.Length;
 				CreationTime = info.CreationTime;
-				Properties = new Dictionary<string, IConvertible>( properties );
+				Properties = properties != null 
+					? new Dictionary<string, IConvertible>( properties ) 
+					: new Dictionary<string, IConvertible>();
 			}
 			else
 			{
-				throw new NotSupportedException( $"Fichier {Path} n'existe pas" );
+				throw new FileNotFoundException( $"Le fichier {Path} n'existe pas", Path );
 			}
 		}
 
@@ -50,41 +55,50 @@ namespace HDLG_winforms
 
 		public override bool Equals (object? obj)
 		{
-			if (obj is HdlgFile file)
-			{
-				return file.Equals( this );
-			}
-			return false;
+			return Equals( obj as HdlgFile );
 		}
 
 		public bool Equals (HdlgFile? other)
 		{
-			if (other is not null)
+			if (other is null)
 			{
-				return string.Equals( Path, other.Path, StringComparison.OrdinalIgnoreCase );
+				return false;
 			}
-			return false;
+			
+			if (ReferenceEquals( this, other ))
+			{
+				return true;
+			}
+			
+			return string.Equals( Path, other.Path, StringComparison.OrdinalIgnoreCase );
 		}
 
 		public int CompareTo (object? obj)
 		{
+			if (obj is null)
+			{
+				return 1;
+			}
+			
 			if (obj is HdlgFile file)
 			{
 				return CompareTo( file );
 			}
-			return -1;
+			
+			throw new ArgumentException( "L'objet doit être de type HdlgFile", nameof(obj) );
 		}
 
 		public int CompareTo (HdlgFile? other)
 		{
-			if (other is not null)
+			if (other is null)
 			{
-				return string.Compare( Path, other.Path, StringComparison.OrdinalIgnoreCase );
+				return 1;
 			}
-			return -1;
+			
+			return string.Compare( Path, other.Path, StringComparison.OrdinalIgnoreCase );
 		}
 
-		public static bool operator == (HdlgFile left, HdlgFile right)
+		public static bool operator == (HdlgFile? left, HdlgFile? right)
 		{
 			if (left is null)
 			{
@@ -94,29 +108,29 @@ namespace HDLG_winforms
 			return left.Equals( right );
 		}
 
-		public static bool operator != (HdlgFile left, HdlgFile right)
+		public static bool operator != (HdlgFile? left, HdlgFile? right)
 		{
 			return !(left == right);
 		}
 
-		public static bool operator < (HdlgFile left, HdlgFile right)
+		public static bool operator < (HdlgFile? left, HdlgFile? right)
 		{
-			return left is null ? right is not null : left.CompareTo( right ) < 0;
+			return Comparer<HdlgFile>.Default.Compare( left, right ) < 0;
 		}
 
-		public static bool operator <= (HdlgFile left, HdlgFile right)
+		public static bool operator <= (HdlgFile? left, HdlgFile? right)
 		{
-			return left is null || left.CompareTo( right ) <= 0;
+			return Comparer<HdlgFile>.Default.Compare( left, right ) <= 0;
 		}
 
-		public static bool operator > (HdlgFile left, HdlgFile right)
+		public static bool operator > (HdlgFile? left, HdlgFile? right)
 		{
-			return left is not null && left.CompareTo( right ) > 0;
+			return Comparer<HdlgFile>.Default.Compare( left, right ) > 0;
 		}
 
-		public static bool operator >= (HdlgFile left, HdlgFile right)
+		public static bool operator >= (HdlgFile? left, HdlgFile? right)
 		{
-			return left is null ? right is null : left.CompareTo( right ) >= 0;
+			return Comparer<HdlgFile>.Default.Compare( left, right ) >= 0;
 		}
 	}
 }
