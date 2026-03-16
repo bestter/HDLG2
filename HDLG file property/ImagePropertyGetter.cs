@@ -62,6 +62,36 @@ namespace HdlgFileProperty
             return properties;
         }
 
+        private static readonly HashSet<string> _supportedImageExtensions = new(StringComparer.OrdinalIgnoreCase)
+{
+    // JPEG
+    ".JPG", ".JPEG", ".JFIF", ".PJPEG", ".PJP",
+    
+    // PNG
+    ".PNG", ".APNG",
+    
+    // GIF
+    ".GIF",
+    
+    // WEBP
+    ".WEBP",
+    
+    // BMP
+    ".BMP", ".DIB",
+    
+    // TIFF
+    ".TIF", ".TIFF",
+    
+    // TGA
+    ".TGA", ".VDA", ".ICB", ".VST",
+    
+    // NETPBM
+    ".PBM", ".PGM", ".PPM", ".PNM",
+    
+    // FORMATS SPÉCIALISÉS (GAMING / MODERNE)
+    ".DDS", ".QOI"
+};
+
         /// <summary>
         /// Is this file is supported
         /// </summary>
@@ -69,13 +99,8 @@ namespace HdlgFileProperty
         /// <returns></returns>
         public bool IsSupportedFile(string path)
         {
-            FileInfo fileInfo = new(path);
-            var isSupported = fileInfo.Extension.ToUpperInvariant() switch
-            {
-                ".JPG" or ".JPEG" or ".PNG" or ".GIF" => true,
-                _ => false,
-            };
-            return isSupported;
+            var extension = Path.GetExtension(path);
+            return extension != null && _supportedImageExtensions.Contains(extension);
         }
     }
 }
