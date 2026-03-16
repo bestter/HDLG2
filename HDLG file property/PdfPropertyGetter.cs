@@ -47,13 +47,15 @@ namespace HdlgFileProperty
                     }
                 }
             }
-            catch (System.IO.IOException ioe)
+            catch (IOException ioe)
             {
                 Logger?.Error(ioe, $"Cannot read file {path}");
 
             }
-            catch (iText.Kernel.Exceptions.BadPasswordException)
-            { }
+            catch (iText.Kernel.Exceptions.BadPasswordException e)
+            { 
+                Logger?.Warning(e, $"File {path} is password protected and cannot be read");
+            }
 
             return properties;
         }

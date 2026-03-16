@@ -47,13 +47,15 @@ namespace HdlgFileProperty
                     }
                 }
             }
-            catch (UnknownImageFormatException)
+            catch (UnknownImageFormatException e    )
             {
                 //The stream does not have a valid image format.
+                Logger?.Warning(e, "Unsupported image format for file: {FilePath}", path);
             }
-            catch (InvalidImageContentException)
+            catch (InvalidImageContentException e)
             {
-                //The image content is corrupted or invalid.
+                //The image content is corrupted or invalid.                
+                Logger?.Warning(e,"Invalid image content for file: {FilePath}", path);
             }
             catch (Exception)
             {
