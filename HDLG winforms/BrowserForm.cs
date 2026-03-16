@@ -38,9 +38,11 @@ namespace HDLG_winforms
                 treeView1.Nodes.Add(rootNode);
                 rootNode.Expand();
             }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "Error loading root directory in BrowserForm");
+#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
+			catch (Exception ex)
+#pragma warning restore CA1031
+			{
+				logger.Error(ex, "Error loading root directory in BrowserForm");
                 MessageBox.Show(this, "An error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -89,9 +91,11 @@ namespace HDLG_winforms
                     logger.Warning(ex, $"Access denied to directory: {info.Path}");
                     e.Node.Nodes.Add(new TreeNode("Access Denied"));
                 }
-                catch (Exception ex)
-                {
-                    logger.Error(ex, $"Error loading directory: {info.Path}");
+#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
+				catch (Exception ex)
+#pragma warning restore CA1031
+				{
+					logger.Error(ex, $"Error loading directory: {info.Path}");
                     e.Node.Nodes.Add(new TreeNode("Error"));
                 }
                 finally
@@ -144,9 +148,11 @@ namespace HDLG_winforms
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                logger.Error(ex, $"Error reading properties for file: {info.Path}");
+#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
+			catch (Exception ex)
+#pragma warning restore CA1031
+			{
+				logger.Error(ex, $"Error reading properties for file: {info.Path}");
                 AddPropertyToListView("Error", ex.Message);
             }
             finally

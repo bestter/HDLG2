@@ -332,7 +332,9 @@ toolStripStatusLabelTotalTime.Visible = false;
 				UseWaitCursor = false;
 				form.ShowDialog( this );
 			}
+#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
 			catch (Exception ex)
+#pragma warning restore CA1031
 			{
 				UseWaitCursor = false;
 				toolStripStatusLabelException.Text = ex.Message;
