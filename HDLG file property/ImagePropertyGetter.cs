@@ -1,4 +1,4 @@
-﻿/*
+/*
  This file is part of HTML Directory List Generator.
 
 HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -8,7 +8,8 @@ HTML Directory List Generator is distributed in the hope that it will be useful,
 You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
  */
 using Serilog;
-using System.Drawing;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Metadata.Profiles.Exif;
 
 namespace HdlgFileProperty
 {
@@ -26,19 +27,33 @@ namespace HdlgFileProperty
             Dictionary<string, IConvertible> properties = new();
             try
             {
-                using var file = File.OpenRead(path);
-                var img = Image.FromStream(file, false, false);
+                var imageInfo = Image.Identify(path);
+                if (imageInfo != null)
+                {
+                    properties.Add(nameof(imageInfo.Width), imageInfo.Width);
+                    properties.Add(nameof(imageInfo.Height), imageInfo.Height);
 
-                properties.Add(nameof(img.Width), img.Width);
-                properties.Add(nameof(img.Height), img.Height);
+                    var exifProfile = imageInfo.Metadata?.ExifProfile;
+                    if (exifProfile != null)
+                    {
+                        if (exifProfile.TryGetValue(ExifTag.Model, out var cameraModel) && cameraModel.Value != null)
+                        {
+                            var modelStr = cameraModel.Value.ToString()?.Trim().Replace("\0", string.Empty, StringComparison.InvariantCultureIgnoreCase);
+                            if (!string.IsNullOrWhiteSpace(modelStr))
+                            {
+                                properties.Add("CameraModel", modelStr);
+                            }
+                        }
+                    }
+                }
             }
-            catch (ArgumentException)
+            catch (UnknownImageFormatException)
             {
                 //The stream does not have a valid image format.
             }
-            catch (OutOfMemoryException)
+            catch (InvalidImageContentException)
             {
-                //The stream does not have a valid image format.
+                //The image content is corrupted or invalid.
             }
             catch (Exception)
             {
