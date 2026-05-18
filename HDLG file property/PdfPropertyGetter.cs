@@ -1,4 +1,13 @@
-﻿using iText.Forms;
+﻿/*
+ This file is part of HTML Directory List Generator.
+
+HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+HTML Directory List Generator is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
+ */
+using iText.Forms;
 using iText.Forms.Fields;
 using iText.Kernel.Pdf;
 using Serilog;
@@ -20,7 +29,8 @@ namespace HdlgFileProperty
             try
             {
                 DocumentProperties documentProperties = new();
-                using PdfDocument pdfDoc = new(new PdfReader(path), documentProperties);
+                using var reader = new PdfReader(path);
+                using PdfDocument pdfDoc = new(reader, documentProperties);
                 PdfAcroForm form = PdfAcroForm.GetAcroForm(pdfDoc, false);
                 if (form != null)
                 {
@@ -37,8 +47,11 @@ namespace HdlgFileProperty
                     }
                 }
             }
-            catch (System.IO.IOException)
-            { }
+            catch (System.IO.IOException ioe)
+            {
+                Logger?.Error(ioe, $"Cannot read file {path}");
+
+            }
             catch (iText.Kernel.Exceptions.BadPasswordException)
             { }
 
@@ -48,8 +61,8 @@ namespace HdlgFileProperty
         public bool IsSupportedFile(string path)
         {
             FileInfo fileInfo = new(path);
-            var extension = fileInfo.Extension.ToLowerInvariant();
-            return extension == ".pdf";
+            var extension = fileInfo.Extension.ToUpperInvariant();
+            return extension == ".PDF";
         }
     }
 }

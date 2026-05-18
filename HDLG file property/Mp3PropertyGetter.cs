@@ -1,4 +1,13 @@
-﻿using Serilog;
+/*
+ This file is part of HTML Directory List Generator.
+
+HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+HTML Directory List Generator is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
+ */
+using Serilog;
 using System.Globalization;
 
 namespace HdlgFileProperty
@@ -56,6 +65,10 @@ namespace HdlgFileProperty
                     Logger?.Warning($"File {path} might be corrupted because {string.Join(",", f.CorruptionReasons)}");
                 }
             }
+            catch(IOException ioe)
+            {
+                Logger?.Error(ioe, $"Cannot read file {path}");
+            }
             catch (TagLib.UnsupportedFormatException ufe)
             {
                 Logger?.Warning(ufe, $"File {path} is not supported");
@@ -66,6 +79,12 @@ namespace HdlgFileProperty
             }
             return properties;
         }
+
+        private static readonly HashSet<string> _supportedExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".MKV", ".OGV", ".AVI", ".WMV", ".ASF", ".MP4", ".M4P", ".M4V", ".MPEG", ".MPG", ".MPE", ".MPV", ".M2V",
+            ".AA", ".AAX", ".AAC", ".AIFF", ".APE", ".DSF", ".FLAC", ".M4A", ".M4B", ".MP3", ".MPC", ".MPP", ".OGG", ".OGA", ".WAV", ".WMA", ".WV", ".WEBM"
+        };
 
         public bool IsSupportedFile(string path)
         {

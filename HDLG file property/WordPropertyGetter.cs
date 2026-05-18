@@ -1,4 +1,13 @@
-﻿using DocumentFormat.OpenXml.Packaging;
+/*
+ This file is part of HTML Directory List Generator.
+
+HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+HTML Directory List Generator is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
+ */
+using DocumentFormat.OpenXml.Packaging;
 using Serilog;
 
 namespace HdlgFileProperty
@@ -14,26 +23,32 @@ namespace HdlgFileProperty
 
         public Dictionary<string, IConvertible> GetFileProperties(string path)
         {
-            Dictionary<string, IConvertible> properties = new();
+            Dictionary<string, IConvertible> properties = new(3);
             try
             {
-                using WordprocessingDocument wordDoc = WordprocessingDocument.Open(path, false);
-                if (!string.IsNullOrWhiteSpace(wordDoc.PackageProperties.Title))
+                using FileStream stream = new(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using WordprocessingDocument wordDoc = WordprocessingDocument.Open(stream, false);
+                var packageProperties = wordDoc.PackageProperties;
+
+                if (!string.IsNullOrWhiteSpace(packageProperties.Title))
                 {
-                    properties.Add("Title", wordDoc.PackageProperties.Title);
+                    properties.Add("Title", packageProperties.Title);
                 }
-                DateTime? created = wordDoc.PackageProperties.Created;
+
+                DateTime? created = packageProperties.Created;
                 if (created != null)
                 {
                     properties.Add("Created", created.Value);
                 }
-                if (!string.IsNullOrWhiteSpace(wordDoc.PackageProperties.Creator))
+
+                if (!string.IsNullOrWhiteSpace(packageProperties.Creator))
                 {
-                    properties.Add("Creator", wordDoc.PackageProperties.Creator);
+                    properties.Add("Creator", packageProperties.Creator);
                 }
             }
-            catch (IOException)
+            catch (Exception ex) when (ex is IOException || ex is InvalidDataException || ex is OpenXmlPackageException)
             {
+                Logger?.Warning(ex, "Could not open Word file or extract properties for {Path}", path);
             }
 
             return properties;
@@ -41,9 +56,8 @@ namespace HdlgFileProperty
 
         public bool IsSupportedFile(string path)
         {
-            FileInfo fileInfo = new(path);
-            var extension = fileInfo.Extension.ToLowerInvariant();
-            return extension == ".docx";
+            ArgumentException.ThrowIfNullOrWhiteSpace(path);
+            return path.EndsWith(".docx", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

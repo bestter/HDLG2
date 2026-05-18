@@ -1,4 +1,4 @@
-﻿namespace HDLG_winforms
+namespace HDLG_winforms
 {
     partial class MainWindow
     {
@@ -8,222 +8,261 @@
         private System.ComponentModel.IContainer components = null;
 
 
-        #region Windows Form Designer generated code
+		#region Windows Form Designer generated code
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
-        {
-            gbDirectory = new GroupBox();
-            btnChooseFolder = new Button();
-            selectedDirectoryLabel = new Label();
-            selectedDirectoryBrowser = new FolderBrowserDialog();
-            btnStartXml = new Button();
-            saveContentFileDialog = new SaveFileDialog();
-            labelBrowseTime = new Label();
-            labelSaveTime = new Label();
-            backgroundWorkerDirectoryBrowseXml = new System.ComponentModel.BackgroundWorker();
-            labelTotalTime = new Label();
-            progressBar1 = new ProgressBar();
-            labelException = new Label();
-            tableLayoutPanelStart = new TableLayoutPanel();
-            btnStartHtml = new Button();
-            backgroundWorkerDirectoryBrowseHtml = new System.ComponentModel.BackgroundWorker();
-            saveFileDialog1 = new SaveFileDialog();
-            saveFileDialogHtml = new SaveFileDialog();
-            cbBrowseSubDirectory = new CheckBox();
-            gbDirectory.SuspendLayout();
-            tableLayoutPanelStart.SuspendLayout();
-            SuspendLayout();
-            // 
-            // gbDirectory
-            // 
-            gbDirectory.Controls.Add(cbBrowseSubDirectory);
-            gbDirectory.Controls.Add(btnChooseFolder);
-            gbDirectory.Controls.Add(selectedDirectoryLabel);
-            gbDirectory.Location = new Point(95, 176);
-            gbDirectory.Name = "gbDirectory";
-            gbDirectory.Size = new Size(610, 99);
-            gbDirectory.TabIndex = 0;
-            gbDirectory.TabStop = false;
-            gbDirectory.Text = "Directory";
-            // 
-            // btnChooseFolder
-            // 
-            btnChooseFolder.Location = new Point(249, 20);
-            btnChooseFolder.Name = "btnChooseFolder";
-            btnChooseFolder.Size = new Size(112, 23);
-            btnChooseFolder.TabIndex = 0;
-            btnChooseFolder.Text = "Choose folder";
-            btnChooseFolder.UseVisualStyleBackColor = true;
-            btnChooseFolder.Click += BtnChooseFolder_Click;
-            // 
-            // selectedDirectoryLabel
-            // 
-            selectedDirectoryLabel.AutoSize = true;
-            selectedDirectoryLabel.Location = new Point(255, 63);
-            selectedDirectoryLabel.Name = "selectedDirectoryLabel";
-            selectedDirectoryLabel.Size = new Size(101, 15);
-            selectedDirectoryLabel.TabIndex = 1;
-            selectedDirectoryLabel.Text = "Selected directory";
-            // 
-            // btnStartXml
-            // 
-            btnStartXml.Location = new Point(3, 3);
-            btnStartXml.Name = "btnStartXml";
-            btnStartXml.Size = new Size(112, 23);
-            btnStartXml.TabIndex = 1;
-            btnStartXml.Text = "XML";
-            btnStartXml.UseVisualStyleBackColor = true;
-            btnStartXml.Click += BtnStart_Click;
-            // 
-            // saveContentFileDialog
-            // 
-            saveContentFileDialog.DefaultExt = "xml";
-            saveContentFileDialog.Filter = "Fichiers XML|*.xml|Tous les fichiers|*.*";
-            // 
-            // labelBrowseTime
-            // 
-            labelBrowseTime.AutoSize = true;
-            labelBrowseTime.Location = new Point(682, 411);
-            labelBrowseTime.Name = "labelBrowseTime";
-            labelBrowseTime.Size = new Size(71, 15);
-            labelBrowseTime.TabIndex = 2;
-            labelBrowseTime.Text = "BrowseTime";
-            // 
-            // labelSaveTime
-            // 
-            labelSaveTime.AutoSize = true;
-            labelSaveTime.Location = new Point(682, 426);
-            labelSaveTime.Name = "labelSaveTime";
-            labelSaveTime.Size = new Size(57, 15);
-            labelSaveTime.TabIndex = 3;
-            labelSaveTime.Text = "SaveTime";
-            // 
-            // backgroundWorkerDirectoryBrowseXml
-            // 
-            backgroundWorkerDirectoryBrowseXml.DoWork += BackgroundWorkerDirectoryBrowse_DoWork;
-            backgroundWorkerDirectoryBrowseXml.RunWorkerCompleted += BackgroundWorkerDirectoryBrowse_RunWorkerCompleted;
-            // 
-            // labelTotalTime
-            // 
-            labelTotalTime.AutoSize = true;
-            labelTotalTime.Location = new Point(682, 444);
-            labelTotalTime.Name = "labelTotalTime";
-            labelTotalTime.Size = new Size(59, 15);
-            labelTotalTime.TabIndex = 4;
-            labelTotalTime.Text = "Total time";
-            // 
-            // progressBar1
-            // 
-            progressBar1.Location = new Point(95, 322);
-            progressBar1.Name = "progressBar1";
-            progressBar1.Size = new Size(610, 23);
-            progressBar1.TabIndex = 2;
-            // 
-            // labelException
-            // 
-            labelException.AutoSize = true;
-            labelException.Location = new Point(12, 369);
-            labelException.Name = "labelException";
-            labelException.Size = new Size(59, 15);
-            labelException.TabIndex = 5;
-            labelException.Text = "Exception";
-            // 
-            // tableLayoutPanelStart
-            // 
-            tableLayoutPanelStart.ColumnCount = 2;
-            tableLayoutPanelStart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanelStart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanelStart.Controls.Add(btnStartHtml, 1, 0);
-            tableLayoutPanelStart.Controls.Add(btnStartXml, 0, 0);
-            tableLayoutPanelStart.Location = new Point(271, 281);
-            tableLayoutPanelStart.Name = "tableLayoutPanelStart";
-            tableLayoutPanelStart.RowCount = 1;
-            tableLayoutPanelStart.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanelStart.Size = new Size(259, 30);
-            tableLayoutPanelStart.TabIndex = 6;
-            // 
-            // btnStartHtml
-            // 
-            btnStartHtml.Location = new Point(132, 3);
-            btnStartHtml.Name = "btnStartHtml";
-            btnStartHtml.Size = new Size(112, 23);
-            btnStartHtml.TabIndex = 7;
-            btnStartHtml.Text = "HTML";
-            btnStartHtml.UseVisualStyleBackColor = true;
-            btnStartHtml.Click += BtnStartHtml_Click;
-            // 
-            // backgroundWorkerDirectoryBrowseHtml
-            // 
-            backgroundWorkerDirectoryBrowseHtml.DoWork += BackgroundWorkerDirectoryBrowseHtml_DoWork;
-            backgroundWorkerDirectoryBrowseHtml.RunWorkerCompleted += BackgroundWorkerDirectoryBrowseHtml_RunWorkerCompleted;
-            // 
-            // saveFileDialog1
-            // 
-            saveFileDialog1.DefaultExt = "xml";
-            saveFileDialog1.Filter = "Fichiers XML|*.xml|Tous les fichiers|*.*";
-            // 
-            // saveFileDialogHtml
-            // 
-            saveFileDialogHtml.Filter = "Fichiers HTML|*.html|Tous les fichiers|*.*";
-            saveFileDialogHtml.FileOk += SaveFileDialogHtml_FileOk;
-            // 
-            // cbBrowseSubDirectory
-            // 
-            cbBrowseSubDirectory.AutoSize = true;
-            cbBrowseSubDirectory.Checked = true;
-            cbBrowseSubDirectory.CheckState = CheckState.Checked;
-            cbBrowseSubDirectory.Location = new Point(398, 22);
-            cbBrowseSubDirectory.Name = "cbBrowseSubDirectory";
-            cbBrowseSubDirectory.Size = new Size(138, 19);
-            cbBrowseSubDirectory.TabIndex = 2;
-            cbBrowseSubDirectory.Text = "Browse sub-directory";
-            cbBrowseSubDirectory.UseVisualStyleBackColor = true;
-            // 
-            // MainWindow
-            // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 472);
-            Controls.Add(tableLayoutPanelStart);
-            Controls.Add(labelException);
-            Controls.Add(progressBar1);
-            Controls.Add(labelTotalTime);
-            Controls.Add(labelSaveTime);
-            Controls.Add(labelBrowseTime);
-            Controls.Add(gbDirectory);
-            Name = "MainWindow";
-            Text = "MainWindow";
-            Load += MainWindow_Load;
-            gbDirectory.ResumeLayout(false);
-            gbDirectory.PerformLayout();
-            tableLayoutPanelStart.ResumeLayout(false);
-            ResumeLayout(false);
-            PerformLayout();
-        }
+		/// <summary>
+		/// Required method for Designer support - do not modify
+		/// the contents of this method with the code editor.
+		/// </summary>
+		private void InitializeComponent ()
+		{
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager( typeof( MainWindow ) );
+			gbDirectory = new GroupBox( );
+			cbBrowseSubDirectory = new CheckBox( );
+			btnChooseFolder = new Button( );
+			selectedDirectoryLabel = new Label( );
+			selectedDirectoryBrowser = new FolderBrowserDialog( );
+			btnStartXml = new Button( );
+			saveContentFileDialog = new SaveFileDialog( );
+			progressBar1 = new ProgressBar( );
+			tableLayoutPanelStart = new TableLayoutPanel( );
+			btnStartHtml = new Button( );
+			btnStartUi = new Button( );
+			saveFileDialog1 = new SaveFileDialog( );
+			saveFileDialogHtml = new SaveFileDialog( );
+			menuStrip1 = new MenuStrip( );
+			CreditToolStripMenuItem = new ToolStripMenuItem( );
+			statusStrip1 = new StatusStrip();
+			toolStripStatusLabelBrowseTime = new ToolStripStatusLabel();
+			toolStripStatusLabelSaveTime = new ToolStripStatusLabel();
+			toolStripStatusLabelTotalTime = new ToolStripStatusLabel();
+			toolStripStatusLabelException = new ToolStripStatusLabel();
+			gbDirectory.SuspendLayout( );
+			tableLayoutPanelStart.SuspendLayout( );
+			menuStrip1.SuspendLayout( );
+			statusStrip1.SuspendLayout( );
+			SuspendLayout( );
+			// 
+			// gbDirectory
+			// 
+			gbDirectory.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+			gbDirectory.Controls.Add( cbBrowseSubDirectory );
+			gbDirectory.Controls.Add( btnChooseFolder );
+			gbDirectory.Controls.Add( selectedDirectoryLabel );
+			gbDirectory.Location = new Point( 95, 176 );
+			gbDirectory.Name = "gbDirectory";
+			gbDirectory.Size = new Size( 610, 99 );
+			gbDirectory.TabIndex = 0;
+			gbDirectory.TabStop = false;
+			gbDirectory.Text = "Directory";
+			// 
+			// cbBrowseSubDirectory
+			// 
+			cbBrowseSubDirectory.AutoSize = true;
+			cbBrowseSubDirectory.Checked = true;
+			cbBrowseSubDirectory.CheckState = CheckState.Checked;
+			cbBrowseSubDirectory.Location = new Point( 398, 22 );
+			cbBrowseSubDirectory.Name = "cbBrowseSubDirectory";
+			cbBrowseSubDirectory.Size = new Size( 151, 21 );
+			cbBrowseSubDirectory.TabIndex = 2;
+			cbBrowseSubDirectory.Text = "Browse sub-directory";
+			cbBrowseSubDirectory.UseVisualStyleBackColor = true;
+			// 
+			// btnChooseFolder
+			// 
+			btnChooseFolder.FlatStyle = FlatStyle.System;
+			btnChooseFolder.Location = new Point( 249, 20 );
+			btnChooseFolder.Name = "btnChooseFolder";
+			btnChooseFolder.Size = new Size( 112, 26 );
+			btnChooseFolder.TabIndex = 0;
+			btnChooseFolder.Text = "Choose folder";
+			btnChooseFolder.UseVisualStyleBackColor = true;
+			btnChooseFolder.Click += BtnChooseFolder_Click;
+			// 
+			// selectedDirectoryLabel
+			// 
+			selectedDirectoryLabel.AutoSize = true;
+			selectedDirectoryLabel.Location = new Point( 255, 63 );
+			selectedDirectoryLabel.Name = "selectedDirectoryLabel";
+			selectedDirectoryLabel.Size = new Size( 112, 17 );
+			selectedDirectoryLabel.TabIndex = 1;
+			selectedDirectoryLabel.Text = "Selected directory";
+			// 
+			// btnStartXml
+			// 
+			btnStartXml.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+			btnStartXml.FlatStyle = FlatStyle.System;
+			btnStartXml.Location = new Point( 3, 3 );
+			btnStartXml.Name = "btnStartXml";
+			btnStartXml.Size = new Size( 123, 34 );
+			btnStartXml.TabIndex = 1;
+			btnStartXml.Text = "XML";
+			btnStartXml.UseVisualStyleBackColor = true;
+			btnStartXml.Click += BtnStart_Click;
+			// 
+			// saveContentFileDialog
+			// 
+			saveContentFileDialog.DefaultExt = "xml";
+			saveContentFileDialog.Filter = "Fichiers XML|*.xml|Tous les fichiers|*.*";
+			// 
+			// progressBar1
+			// 
+			progressBar1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+			progressBar1.Location = new Point( 95, 322 );
+			progressBar1.Name = "progressBar1";
+			progressBar1.Size = new Size( 610, 23 );
+			progressBar1.TabIndex = 2;
+			// 
+			// tableLayoutPanelStart
+			// 
+			tableLayoutPanelStart.Anchor = AnchorStyles.Top;
+			tableLayoutPanelStart.ColumnCount = 3;
+			tableLayoutPanelStart.ColumnStyles.Add( new ColumnStyle( SizeType.Percent, 33.33F ) );
+			tableLayoutPanelStart.ColumnStyles.Add( new ColumnStyle( SizeType.Percent, 33.33F ) );
+			tableLayoutPanelStart.ColumnStyles.Add( new ColumnStyle( SizeType.Percent, 33.33F ) );
+			tableLayoutPanelStart.Controls.Add( btnStartUi, 2, 0 );
+			tableLayoutPanelStart.Controls.Add( btnStartHtml, 1, 0 );
+			tableLayoutPanelStart.Controls.Add( btnStartXml, 0, 0 );
+			tableLayoutPanelStart.Location = new Point( 200, 275 );
+			tableLayoutPanelStart.Name = "tableLayoutPanelStart";
+			tableLayoutPanelStart.RowCount = 1;
+			tableLayoutPanelStart.RowStyles.Add( new RowStyle( SizeType.Percent, 100F ) );
+			tableLayoutPanelStart.Size = new Size( 400, 40 );
+			tableLayoutPanelStart.TabIndex = 6;
+			// 
+			// btnStartHtml
+			// 
+			btnStartHtml.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+			btnStartHtml.FlatStyle = FlatStyle.System;
+			btnStartHtml.Location = new Point( 136, 3 );
+			btnStartHtml.Name = "btnStartHtml";
+			btnStartHtml.Size = new Size( 127, 34 );
+			btnStartHtml.TabIndex = 7;
+			btnStartHtml.Text = "HTML";
+			btnStartHtml.UseVisualStyleBackColor = true;
+			btnStartHtml.Click += BtnStartHtml_Click;
+			// 
+			// btnStartUi
+			// 
+			btnStartUi.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+			btnStartUi.FlatStyle = FlatStyle.System;
+			btnStartUi.Location = new Point( 269, 3 );
+			btnStartUi.Name = "btnStartUi";
+			btnStartUi.Size = new Size( 128, 34 );
+			btnStartUi.TabIndex = 8;
+			btnStartUi.Text = "UI Explorer";
+			btnStartUi.UseVisualStyleBackColor = true;
+			btnStartUi.Click += BtnStartUi_Click;
+			// 
+			// saveFileDialog1
+			// 
+			saveFileDialog1.DefaultExt = "xml";
+			saveFileDialog1.Filter = "Fichiers XML|*.xml|Tous les fichiers|*.*";
+			// 
+			// saveFileDialogHtml
+			// 
+			saveFileDialogHtml.Filter = "Fichiers HTML|*.html|Tous les fichiers|*.*";
+			saveFileDialogHtml.FileOk += SaveFileDialogHtml_FileOk;
+			// 
+			// menuStrip1
+			// 
+			menuStrip1.Items.AddRange( new ToolStripItem [ ] { CreditToolStripMenuItem } );
+			menuStrip1.Location = new Point( 0, 0 );
+			menuStrip1.Name = "menuStrip1";
+			menuStrip1.Size = new Size( 800, 24 );
+			menuStrip1.TabIndex = 7;
+			menuStrip1.Text = "menuStrip1";
+			// 
+			// CreditToolStripMenuItem
+			// 
+			CreditToolStripMenuItem.Name = "CreditToolStripMenuItem";
+			CreditToolStripMenuItem.Size = new Size( 51, 20 );
+			CreditToolStripMenuItem.Text = "Credit";
+			CreditToolStripMenuItem.Click += CreditToolStripMenuItem_Click;
+			// 
+			// statusStrip1
+			// 
+			statusStrip1.Items.AddRange(new ToolStripItem[] {
+            toolStripStatusLabelBrowseTime,
+            toolStripStatusLabelSaveTime,
+            toolStripStatusLabelTotalTime,
+            toolStripStatusLabelException});
+			statusStrip1.Location = new Point(0, 450);
+			statusStrip1.Name = "statusStrip1";
+			statusStrip1.Size = new Size(800, 22);
+			statusStrip1.TabIndex = 8;
+			statusStrip1.Text = "statusStrip1";
+			// 
+			// toolStripStatusLabelBrowseTime
+			// 
+			toolStripStatusLabelBrowseTime.Name = "toolStripStatusLabelBrowseTime";
+			toolStripStatusLabelBrowseTime.Size = new Size(0, 17);
+			// 
+			// toolStripStatusLabelSaveTime
+			// 
+			toolStripStatusLabelSaveTime.Name = "toolStripStatusLabelSaveTime";
+			toolStripStatusLabelSaveTime.Size = new Size(0, 17);
+			// 
+			// toolStripStatusLabelTotalTime
+			// 
+			toolStripStatusLabelTotalTime.Name = "toolStripStatusLabelTotalTime";
+			toolStripStatusLabelTotalTime.Size = new Size(0, 17);
+			// 
+			// toolStripStatusLabelException
+			// 
+			toolStripStatusLabelException.Name = "toolStripStatusLabelException";
+			toolStripStatusLabelException.Size = new Size(0, 17);
+			toolStripStatusLabelException.ForeColor = Color.Red;
+			// 
+			// MainWindow
+			// 
+			AutoScaleDimensions = new SizeF( 7F, 17F );
+			AutoScaleMode = AutoScaleMode.Font;
+			ClientSize = new Size( 800, 472 );
+			Controls.Add( tableLayoutPanelStart );
+			Controls.Add( progressBar1 );
+			Controls.Add( gbDirectory );
+			Controls.Add( statusStrip1 );
+			Controls.Add( menuStrip1 );
+			Font = new Font( "Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point );
+			Icon = (Icon) resources.GetObject( "$this.Icon" );
+			MainMenuStrip = menuStrip1;
+			Name = "MainWindow";
+			StartPosition = FormStartPosition.CenterScreen;
+			Text = "MainWindow";
+			Load += MainWindow_Load;
+			gbDirectory.ResumeLayout( false );
+			gbDirectory.PerformLayout( );
+			tableLayoutPanelStart.ResumeLayout( false );
+			menuStrip1.ResumeLayout( false );
+			menuStrip1.PerformLayout( );
+			statusStrip1.ResumeLayout( false );
+			statusStrip1.PerformLayout( );
+			ResumeLayout( false );
+			PerformLayout( );
+		}
 
-        #endregion
+		#endregion
 
-        private GroupBox gbDirectory;
+		private GroupBox gbDirectory;
         private Button btnChooseFolder;
         private FolderBrowserDialog selectedDirectoryBrowser;
         private Label selectedDirectoryLabel;
         private Button btnStartXml;
         private SaveFileDialog saveContentFileDialog;
-        private Label labelBrowseTime;
-        private Label labelSaveTime;
-        private System.ComponentModel.BackgroundWorker backgroundWorkerDirectoryBrowseXml;
-        private Label labelTotalTime;
         private ProgressBar progressBar1;
-        private Label labelException;
         private TableLayoutPanel tableLayoutPanelStart;
         private Button btnStartHtml;
-        private System.ComponentModel.BackgroundWorker backgroundWorkerDirectoryBrowseHtml;
         private SaveFileDialog saveFileDialog1;
         private SaveFileDialog saveFileDialogHtml;
         private CheckBox cbBrowseSubDirectory;
-    }
+		private MenuStrip menuStrip1;
+		private ToolStripMenuItem CreditToolStripMenuItem;
+		private StatusStrip statusStrip1;
+		private ToolStripStatusLabel toolStripStatusLabelBrowseTime;
+		private ToolStripStatusLabel toolStripStatusLabelSaveTime;
+		private ToolStripStatusLabel toolStripStatusLabelTotalTime;
+		private ToolStripStatusLabel toolStripStatusLabelException;
+		private Button btnStartUi;
+	}
 }

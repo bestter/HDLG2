@@ -1,4 +1,15 @@
-﻿using Serilog;
+/*
+ This file is part of HTML Directory List Generator.
+
+HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+HTML Directory List Generator is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
+ */
+using Serilog;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Metadata.Profiles.Exif;
 using System.Drawing;
 
 namespace HdlgFileProperty
@@ -17,18 +28,33 @@ namespace HdlgFileProperty
             Dictionary<string, IConvertible> properties = new();
             try
             {
-                var img = Image.FromStream(File.OpenRead(path), false, false);
+                var imageInfo = Image.Identify(path);
+                if (imageInfo != null)
+                {
+                    properties.Add(nameof(imageInfo.Width), imageInfo.Width);
+                    properties.Add(nameof(imageInfo.Height), imageInfo.Height);
 
-                properties.Add(nameof(img.Width), img.Width);
-                properties.Add(nameof(img.Height), img.Height);
+                    var exifProfile = imageInfo.Metadata?.ExifProfile;
+                    if (exifProfile != null)
+                    {
+                        if (exifProfile.TryGetValue(ExifTag.Model, out var cameraModel) && cameraModel.Value != null)
+                        {
+                            var modelStr = cameraModel.Value.ToString()?.Trim().Replace("\0", string.Empty, StringComparison.InvariantCultureIgnoreCase);
+                            if (!string.IsNullOrWhiteSpace(modelStr))
+                            {
+                                properties.Add("CameraModel", modelStr);
+                            }
+                        }
+                    }
+                }
             }
-            catch (ArgumentException)
+            catch (UnknownImageFormatException)
             {
                 //The stream does not have a valid image format.
             }
-            catch (OutOfMemoryException)
+            catch (InvalidImageContentException)
             {
-                //The stream does not have a valid image format.
+                //The image content is corrupted or invalid.
             }
             catch (Exception)
             {
@@ -37,6 +63,36 @@ namespace HdlgFileProperty
             return properties;
         }
 
+        private static readonly HashSet<string> _supportedImageExtensions = new(StringComparer.OrdinalIgnoreCase)
+{
+    // JPEG
+    ".JPG", ".JPEG", ".JFIF", ".PJPEG", ".PJP",
+    
+    // PNG
+    ".PNG", ".APNG",
+    
+    // GIF
+    ".GIF",
+    
+    // WEBP
+    ".WEBP",
+    
+    // BMP
+    ".BMP", ".DIB",
+    
+    // TIFF
+    ".TIF", ".TIFF",
+    
+    // TGA
+    ".TGA", ".VDA", ".ICB", ".VST",
+    
+    // NETPBM
+    ".PBM", ".PGM", ".PPM", ".PNM",
+    
+    // FORMATS SPÉCIALISÉS (GAMING / MODERNE)
+    ".DDS", ".QOI"
+};
+
         /// <summary>
         /// Is this file is supported
         /// </summary>
@@ -44,13 +100,8 @@ namespace HdlgFileProperty
         /// <returns></returns>
         public bool IsSupportedFile(string path)
         {
-            FileInfo fileInfo = new(path);
-            var isSupported = fileInfo.Extension.ToLowerInvariant() switch
-            {
-                ".jpg" or ".jpeg" or ".png" or ".gif" => true,
-                _ => false,
-            };
-            return isSupported;
+            var extension = Path.GetExtension(path);
+            return extension != null && _supportedImageExtensions.Contains(extension);
         }
     }
 }

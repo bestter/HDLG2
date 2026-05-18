@@ -1,4 +1,13 @@
-﻿using HdlgFileProperty;
+/*
+ This file is part of HTML Directory List Generator.
+
+HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+HTML Directory List Generator is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
+ */
+using HdlgFileProperty;
 using Serilog;
 using Serilog.Core;
 using System.ComponentModel;
@@ -20,7 +29,10 @@ namespace HDLG_winforms
 		public PdfPropertyGetter PdfPropertyGetter;
 
 		public Mp3PropertyGetter Mp3PropertyGetter;
+
+		private Logger Logger;
 		#endregion
+
 
 		/// <summary>
 		/// Property browser
@@ -47,6 +59,7 @@ namespace HDLG_winforms
 			}
 
 		private string? selectedDirectory;
+		
 
 		private void BtnChooseFolder_Click(object sender, EventArgs e)
 			{
@@ -63,19 +76,19 @@ namespace HDLG_winforms
 				}
 			}
 
-		private void MainWindow_Load(object sender, EventArgs e)
-			{
+		private void MainWindow_Load (object sender, EventArgs e)
+		{
 			AssemblyName an = typeof( MainWindow ).Assembly.GetName( );
 			Text = $"{an.Name} {an.Version?.ToString( )}";
 			selectedDirectory = null;
 			selectedDirectoryLabel.Text = string.Empty;
-			labelBrowseTime.Text = string.Empty;
-			labelSaveTime.Text = string.Empty;
-			labelTotalTime.Text = string.Empty;
-			labelException.Text = string.Empty;
+			toolStripStatusLabelBrowseTime.Text = string.Empty;
+			toolStripStatusLabelSaveTime.Text = string.Empty;
+			toolStripStatusLabelTotalTime.Text = string.Empty;
+			toolStripStatusLabelException.Text = string.Empty;
 			saveContentFileDialog.InitialDirectory = Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments );
 			saveFileDialogHtml.InitialDirectory = Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments );
-			}
+		}
 
 		private void BtnStart_Click(object sender, EventArgs e)
 			{
@@ -137,41 +150,28 @@ namespace HDLG_winforms
 				DirectoryBrowser db = new( log );
 				log.Debug( $"Ready to start {nameof( DirectoryBrowser.SaveAsXMLAsync )}" );
 
-				db.SaveAsXMLAsync( saveContentFileDialog.FileName, directory ).Wait( );
+				db.SaveAsXMLAsync( saveFilePath, directory ).Wait( );
 
-				log.Debug( $"{nameof( DirectoryBrowser.SaveAsXMLAsync )} done" );
+				Logger.Debug( $"{nameof( DirectoryBrowser.SaveAsXMLAsync )} done" );
+#if DEBUG
 				stopwatch.Stop( );
+
 				TimeSpan saveTime = stopwatch.Elapsed - browseTime;
 
-				e.Result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
-				log.Information( $"Done at {DateTime.Now.ToLongTimeString( )}" );
-				}
-			else
-				{
-				log.Information( $"No {nameof( selecteDirectory )}" );
-				e.Result = new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
-				e.Cancel = true;
-				}
-			}
+				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
+#else
+				var result = new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
+#endif
 
-		private void BackgroundWorkerDirectoryBrowse_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-			{
-			Debug.Write( $"Completed at {DateTime.Now.ToLongTimeString( )}" );
-			UseWaitCursor = false;
-			btnStartXml.Enabled = true;
-			btnStartHtml.Enabled = true;
-			PerformanceCount? perf = e.Result as PerformanceCount?;
-			if (perf != null)
-				{
-				labelBrowseTime.Text = perf.Value.BrowseTime.ToString( "G", CultureInfo.CurrentCulture );
-				labelSaveTime.Text = perf.Value.SaveTime.ToString( "G", CultureInfo.CurrentCulture );
-				labelTotalTime.Text = perf.Value.TotalTime.ToString( "G", CultureInfo.CurrentCulture );
-				}
-			if (saveContentFileDialog.FileName != null)
-				{
-				OpenWithDefaultProgram( saveContentFileDialog.FileName );
-				}
+				Logger.Information( $"Done at {DateTime.Now:T}" );
+				return result;
 			}
+			else
+			{
+				Logger.Information( $"No {nameof( selecteDirectory )}" );
+				return new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
+			}
+		}
 
 		/// <summary>
 		/// Open file
@@ -179,14 +179,24 @@ namespace HDLG_winforms
 		/// <param name="path"></param>
 		/// <remarks>https://stackoverflow.com/a/54275102/910741</remarks>
 		public static void OpenWithDefaultProgram(string path)
+{
+    using Process fileopener = new();
+    fileopener.StartInfo = new ProcessStartInfo(path)
+    {
+        UseShellExecute = true
+    };
+    fileopener.Start();
+}
+
+		/// <summary>
+		/// Dispose
+		/// </summary>
+		/// <param name="disposing"></param>
+		protected override void Dispose (bool disposing)
+		{
+			if (disposing)
 			{
-			using Process fileopener = new( );
-
-			fileopener.StartInfo.FileName = "explorer";
-			fileopener.StartInfo.Arguments = "\"" + path + "\"";
-			fileopener.Start( );
-			}
-
+				components?.Dispose( );
 		/// <summary>
 		/// Dispose
 		/// </summary>
@@ -197,11 +207,11 @@ namespace HDLG_winforms
 				{
 				components?.Dispose( );
 
-				log.Dispose( );
-				}
+				Logger.Dispose( );
+			}
 
 			base.Dispose( disposing );
-			}
+		}
 
 		private void BtnStartHtml_Click(object sender, EventArgs e)
 			{
