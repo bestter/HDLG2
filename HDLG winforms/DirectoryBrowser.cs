@@ -128,7 +128,7 @@ namespace HDLG_winforms
 			await writer.WriteElementStringAsync( null, "Name", null, directory.Name ).ConfigureAwait( false );
 			await writer.WriteElementStringAsync( null, "Path", null, directory.Path ).ConfigureAwait( false );
 			await writer.WriteElementStringAsync( null, "CreationTime", null, directory.CreationTime.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
-			if (directory.Directories.Any( ))
+			if (directory.Directories.Count > 0)
 			{
 				await writer.WriteStartElementAsync( null, "Directories", null ).ConfigureAwait( false );
 				foreach (HdlgDirectory d in directory.Directories)
@@ -138,7 +138,7 @@ namespace HDLG_winforms
 				await writer.WriteEndElementAsync( ).ConfigureAwait( false );
 			}
 
-			if (directory.Files.Any( ))
+			if (directory.Files.Count > 0)
 			{
 				await writer.WriteStartElementAsync( null, "Files", null ).ConfigureAwait( false );
 				foreach (HdlgFile file in directory.Files)
@@ -370,7 +370,7 @@ namespace HDLG_winforms
 
 			await writer.WriteLineAsync( $"{spacer}<a href=\"#directoryList\">⬆️</a>" ).ConfigureAwait( false );
 
-			if (directory.Directories.Any( ))
+			if (directory.Directories.Count > 0)
 			{
 				await writer.WriteLineAsync( spacer + "<div class=\"directories\">" ).ConfigureAwait( false );
 				var inDepth = depth + 1;
@@ -381,7 +381,7 @@ namespace HDLG_winforms
 				await writer.WriteLineAsync( spacer + "</div>" ).ConfigureAwait( false );
 			}
 
-			if (directory.Files.Any( ))
+			if (directory.Files.Count > 0)
 			{
 				await writer.WriteLineAsync( spacer + "<div class=\"files\">" ).ConfigureAwait( false );
 				foreach (HdlgFile file in directory.Files)
