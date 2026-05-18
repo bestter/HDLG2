@@ -96,3 +96,38 @@ details[open] > summary > a {
     background-color: #717EC3;
     color: #AE8799;
   }
+
+.directoryId
+{
+    font-size: smaller;
+
+}
+
+a.directoryId
+{
+    text-decoration: none;
+}
+
+/*.directory {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}*/
+
+    /*.directory > span, .directory > a {
+        
+    }*/
+.directories {
+    display: flex;
+    flex-direction: row;
+    gap: 3px;
+    
+}
+/*
+.directories .files{
+    flex-grow: 1;
+    gap: 5px;
+}
+*/

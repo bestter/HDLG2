@@ -1,8 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Serilog.Core;
-using System.Diagnostics;
-using System.Globalization;
-using System.Runtime.Intrinsics.X86;
+﻿using System.Globalization;
 
 namespace HdlgFileProperty
 {
@@ -16,18 +12,12 @@ namespace HdlgFileProperty
 
         public FilePropertyBrowser(Serilog.ILogger logger, params IFilePropertyGetter[] imagePropertyGetters)
         {
-            if (logger is null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
+            ArgumentNullException.ThrowIfNull(logger);
 
             this.logger = logger;
 
-            if (imagePropertyGetters is null)
-            {
-                throw new ArgumentNullException(nameof(imagePropertyGetters));
-            }
-            filePropertyGetters = new();
+            ArgumentNullException.ThrowIfNull(imagePropertyGetters);
+            filePropertyGetters = [];
             TotalNumberOfFiles = 0;
 
             foreach (var propertyGetter in imagePropertyGetters)
@@ -45,7 +35,7 @@ namespace HdlgFileProperty
                 throw new ArgumentException($"'{nameof(path)}' ne peut pas avoir une valeur null ou être un espace blanc.", nameof(path));
             }
             TotalNumberOfFiles++;
-            Dictionary<string, IConvertible> properties = new();
+            Dictionary<string, IConvertible> properties = [];
             foreach (var propertyGetters in filePropertyGetters)
             {
                 if (propertyGetters.FilePropertyGetter.IsSupportedFile(path))

@@ -1,6 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Packaging;
 using Serilog;
-using System.Globalization;
 
 namespace HdlgFileProperty
 {

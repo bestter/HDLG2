@@ -1,6 +1,5 @@
 ﻿using Serilog;
 using System.Drawing;
-using System.Globalization;
 
 namespace HdlgFileProperty
 {

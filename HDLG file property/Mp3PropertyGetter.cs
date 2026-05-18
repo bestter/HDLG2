@@ -1,5 +1,4 @@
 ﻿using Serilog;
-using Serilog.Core;
 using System.Globalization;
 
 namespace HdlgFileProperty
@@ -26,22 +25,22 @@ namespace HdlgFileProperty
                     {
                         properties.Add(nameof(f.Tag.Title), f.Tag.Title);
 
-                        properties.Add(nameof(f.Properties.Duration), f.Properties.Duration.ToString("G", CultureInfo.CurrentCulture));                        
+                        properties.Add(nameof(f.Properties.Duration), f.Properties.Duration.ToString("G", CultureInfo.CurrentCulture));
 
                         properties.Add(nameof(f.Tag.Album), f.Tag.Album);
                         properties.Add(nameof(f.Tag.Year), f.Tag.Year);
 
-                        if (f.Tag.Performers != null && f.Tag.Performers.Any())
+                        if (f.Tag.Performers != null && f.Tag.Performers.Length != 0)
                         {
                             properties.Add(nameof(f.Tag.Performers), string.Join(", ", f.Tag.Performers));
                         }
 
-                        if (f.Tag.AlbumArtists != null && f.Tag.AlbumArtists.Any())
+                        if (f.Tag.AlbumArtists != null && f.Tag.AlbumArtists.Length != 0)
                         {
                             properties.Add(nameof(f.Tag.AlbumArtists), string.Join(", ", f.Tag.AlbumArtists));
                         }
 
-                        if (f.Tag.Composers != null && f.Tag.Composers.Any())
+                        if (f.Tag.Composers != null && f.Tag.Composers.Length != 0)
                         {
                             properties.Add(nameof(f.Tag.Composers), string.Join(", ", f.Tag.Composers));
                         }
@@ -72,8 +71,8 @@ namespace HdlgFileProperty
         {
             FileInfo fileInfo = new(path);
             var extension = fileInfo.Extension.ToLowerInvariant();
-            string[] extensions = { ".mkv", ".ogv", ".avi", ".wmv", ".asf", ".mp4", ".m4p", ".m4v", ".mpeg", ".mpg", ".mpe", ".mpv", ".mpg", ".m2v",
-            ".aa", ".aax", ".aac", ".aiff", ".ape", ".dsf", ".flac", ".m4a", ".m4b", ".m4p", ".mp3", ".mpc", ".mpp", ".ogg", ".oga", ".wav", ".wma", ".wv", ".webm"};
+            string[] extensions = [ ".mkv", ".ogv", ".avi", ".wmv", ".asf", ".mp4", ".m4p", ".m4v", ".mpeg", ".mpg", ".mpe", ".mpv", ".mpg", ".m2v",
+            ".aa", ".aax", ".aac", ".aiff", ".ape", ".dsf", ".flac", ".m4a", ".m4b", ".m4p", ".mp3", ".mpc", ".mpp", ".ogg", ".oga", ".wav", ".wma", ".wv", ".webm"];
 
             return extensions.Contains(extension);
         }

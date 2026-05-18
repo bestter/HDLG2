@@ -28,7 +28,7 @@ namespace HdlgFileProperty
                     if (fields.Any())
                     {
                         if (fields.TryGetValue("name", out var toSet))
-                        { 
+                        {
                             if (toSet != null)
                             {
                                 properties.Add("Title", toSet.GetValueAsString());
