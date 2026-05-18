@@ -34,7 +34,7 @@ namespace HdlgFileProperty
                     {
                         properties.Add(nameof(f.Tag.Title), f.Tag.Title);
 
-                        properties.Add(nameof(f.Properties.Duration), f.Properties.Duration.ToString("G", CultureInfo.CurrentCulture));                        
+                        properties.Add(nameof(f.Properties.Duration), f.Properties.Duration.ToString("G", CultureInfo.CurrentCulture));
 
                         properties.Add(nameof(f.Tag.Album), f.Tag.Album);
                         properties.Add(nameof(f.Tag.Year), f.Tag.Year);
@@ -65,7 +65,7 @@ namespace HdlgFileProperty
                     Logger?.Warning($"File {path} might be corrupted because {string.Join(",", f.CorruptionReasons)}");
                 }
             }
-            catch(IOException ioe)
+            catch (IOException ioe)
             {
                 Logger?.Error(ioe, $"Cannot read file {path}");
             }

@@ -25,20 +25,20 @@ namespace HDLG_winforms
 
 		public HdlgFile (string path, Dictionary<string, IConvertible>? properties)
 		{
-			ArgumentNullException.ThrowIfNull(path);
-			
+			ArgumentNullException.ThrowIfNull( path );
+
 			Path = path;
 			FileInfo info = new( Path );
-			
+
 			if (info.Exists)
 			{
 				Name = info.Name;
 				Extension = info.Extension;
 				Size = info.Length;
 				CreationTime = info.CreationTime;
-				Properties = properties != null 
-					? new Dictionary<string, IConvertible>( properties ) 
-					: new Dictionary<string, IConvertible>();
+				Properties = properties != null
+					? new Dictionary<string, IConvertible>( properties )
+					: new Dictionary<string, IConvertible>( );
 			}
 			else
 			{
@@ -64,12 +64,12 @@ namespace HDLG_winforms
 			{
 				return false;
 			}
-			
+
 			if (ReferenceEquals( this, other ))
 			{
 				return true;
 			}
-			
+
 			return string.Equals( Path, other.Path, StringComparison.OrdinalIgnoreCase );
 		}
 
@@ -79,13 +79,13 @@ namespace HDLG_winforms
 			{
 				return 1;
 			}
-			
+
 			if (obj is HdlgFile file)
 			{
 				return CompareTo( file );
 			}
-			
-			throw new ArgumentException( "L'objet doit être de type HdlgFile", nameof(obj) );
+
+			throw new ArgumentException( "L'objet doit être de type HdlgFile", nameof( obj ) );
 		}
 
 		public int CompareTo (HdlgFile? other)
@@ -94,7 +94,7 @@ namespace HDLG_winforms
 			{
 				return 1;
 			}
-			
+
 			return string.Compare( Path, other.Path, StringComparison.OrdinalIgnoreCase );
 		}
 

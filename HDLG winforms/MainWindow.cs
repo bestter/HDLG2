@@ -109,19 +109,19 @@ toolStripStatusLabelTotalTime.Visible = false;
 						if (btnStartUi != null) btnStartUi.Enabled = false;
 						UseWaitCursor = true;
 						Logger.Information( $"Start browse with {selectedDirectory}" );
-						
+
 						// Use an indeterminate progress bar if supported, or leave it at 0
 						progressBar1.Style = ProgressBarStyle.Marquee;
 
 						// Exécuter le travail dans un thread de fond sans bloquer l'UI
-						var perf = await Task.Run(() => PerformDirectoryBrowseXml(selectedDirectory, saveContentFileDialog.FileName)).ConfigureAwait(true);
-						
+						var perf = await Task.Run( () => PerformDirectoryBrowseXml( selectedDirectory, saveContentFileDialog.FileName ) ).ConfigureAwait( true );
+
 						progressBar1.Style = ProgressBarStyle.Blocks;
 						progressBar1.Value = 100;
 
 						// Mettre à jour l'UI après le traitement
-						UpdateUIWithPerformance(perf);
-						OpenWithDefaultProgram(saveContentFileDialog.FileName);
+						UpdateUIWithPerformance( perf );
+						OpenWithDefaultProgram( saveContentFileDialog.FileName );
 					}
 				}
 			}
@@ -141,7 +141,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private void UpdateUIWithPerformance(PerformanceCount perf)
+		private void UpdateUIWithPerformance (PerformanceCount perf)
 		{
 			if (perf.TotalTime != TimeSpan.MinValue)
 			{
@@ -151,7 +151,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private PerformanceCount PerformDirectoryBrowseXml(string selecteDirectory, string saveFilePath)
+		private PerformanceCount PerformDirectoryBrowseXml (string selecteDirectory, string saveFilePath)
 		{
 			Logger.Debug( $"{nameof( PerformDirectoryBrowseXml )} started at {DateTime.Now:T}" );
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
@@ -201,15 +201,15 @@ toolStripStatusLabelTotalTime.Visible = false;
 		/// </summary>
 		/// <param name="path"></param>
 		/// <remarks>https://stackoverflow.com/a/54275102/910741</remarks>
-		public static void OpenWithDefaultProgram(string path)
-{
-    using Process fileopener = new();
-    fileopener.StartInfo = new ProcessStartInfo(path)
-    {
-        UseShellExecute = true
-    };
-    fileopener.Start();
-}
+		public static void OpenWithDefaultProgram (string path)
+		{
+			using Process fileopener = new( );
+			fileopener.StartInfo = new ProcessStartInfo( path )
+			{
+				UseShellExecute = true
+			};
+			fileopener.Start( );
+		}
 
 		/// <summary>
 		/// Dispose
@@ -249,16 +249,16 @@ toolStripStatusLabelTotalTime.Visible = false;
 						if (btnStartUi != null) btnStartUi.Enabled = false;
 						UseWaitCursor = true;
 						Logger.Information( $"Start browse with {selectedDirectory}" );
-						
+
 						progressBar1.Style = ProgressBarStyle.Marquee;
 
-						var perf = await Task.Run(() => PerformDirectoryBrowseHtml(selectedDirectory, saveFileDialogHtml.FileName)).ConfigureAwait( true );
-						
+						var perf = await Task.Run( () => PerformDirectoryBrowseHtml( selectedDirectory, saveFileDialogHtml.FileName ) ).ConfigureAwait( true );
+
 						progressBar1.Style = ProgressBarStyle.Blocks;
 						progressBar1.Value = 100;
 
-						UpdateUIWithPerformance(perf);
-						OpenWithDefaultProgram(saveFileDialogHtml.FileName);
+						UpdateUIWithPerformance( perf );
+						OpenWithDefaultProgram( saveFileDialogHtml.FileName );
 					}
 				}
 			}
@@ -278,7 +278,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private PerformanceCount PerformDirectoryBrowseHtml(string selecteDirectory, string saveFilePath)
+		private PerformanceCount PerformDirectoryBrowseHtml (string selecteDirectory, string saveFilePath)
 		{
 			Debug.Write( $"{nameof( PerformDirectoryBrowseHtml )} started at {DateTime.Now:T}" );
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))

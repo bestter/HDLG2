@@ -10,12 +10,12 @@ You should have received a copy of the GNU General Public License along with Foo
 
 namespace HDLG_winforms
 {
-    internal struct PerformanceCount
-    {
-        public TimeSpan BrowseTime;
-        public TimeSpan SaveTime;
-        public TimeSpan TotalTime;
-    }
+	internal struct PerformanceCount
+	{
+		public TimeSpan BrowseTime;
+		public TimeSpan SaveTime;
+		public TimeSpan TotalTime;
+	}
 
 
 }
