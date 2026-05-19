@@ -20,7 +20,7 @@ namespace HDLG_winforms
     public partial class MainWindow : Form
     {
         #region PropertyGetter
-        private Logger Logger;
+        private Serilog.ILogger Logger;
         #endregion
 
 
@@ -37,7 +37,7 @@ namespace HDLG_winforms
         //	"[{Timestamp:R} {Level:u3}] {Message:lj}{NewLine}{Exception}" ).MinimumLevel.Debug( )
         //.CreateLogger( );
 
-        public MainWindow(ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter, PdfPropertyGetter pdfPropertyGetter, Mp3PropertyGetter mp3PropertyGetter, Logger logger)
+        public MainWindow(ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter, PdfPropertyGetter pdfPropertyGetter, Mp3PropertyGetter mp3PropertyGetter, Serilog.ILogger logger)
         {
             InitializeComponent();
             Logger = logger;
@@ -213,7 +213,7 @@ toolStripStatusLabelTotalTime.Visible = false;
             {
                 components?.Dispose();
 
-                Logger.Dispose();
+                (Logger as IDisposable)?.Dispose();
             }
 
             base.Dispose(disposing);

@@ -42,14 +42,14 @@ namespace HDLG_winforms
         /// <summary>
         /// Logger
         /// </summary>
-        private readonly Logger log;
+        private readonly Serilog.ILogger log;
 
-        public HdlgDirectory(string path, bool isTopDirectory, bool browseSubdirectory, Logger log) : this(new DirectoryInfo(path), isTopDirectory, browseSubdirectory, log)
+        public HdlgDirectory(string path, bool isTopDirectory, bool browseSubdirectory, Serilog.ILogger log) : this(new DirectoryInfo(path), isTopDirectory, browseSubdirectory, log)
         {
 
         }
 
-        public HdlgDirectory(DirectoryInfo directory, bool isTopDirectory, bool browseSubdirectory, Logger log)
+        public HdlgDirectory(DirectoryInfo directory, bool isTopDirectory, bool browseSubdirectory, Serilog.ILogger log)
         {
             directoryInfo = directory ?? throw new ArgumentNullException(nameof(directory));
             Path = directory.FullName;
