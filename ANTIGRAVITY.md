@@ -3,7 +3,7 @@
 ## 1. Analyse de Contexte Minimale
 * Ne relis pas l'intégralité du projet pour des modifications locales. 
 * Avant de scanner un dossier, demande-moi si c'est nécessaire.
-* Priorise la lecture des fichiers `.cs` et `.tsx` spécifiquement mentionnés.
+* Priorise la lecture des fichiers `.cs` spécifiquement mentionnés.
 
 ## 2. Optimisation des Réponses
 * **Code seulement :** Si la modification est évidente, fournis uniquement le snippet de code sans explications exhaustives.
