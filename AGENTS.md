@@ -2,27 +2,27 @@
 
 Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
-**Version** : 1.1.0
-**Dernière mise à jour** : 19 mai 2026
+**Version** : 1.1.0  
+**Dernière mise à jour** : 19 mai 2026  
 **Propriétaire** : Martin Labelle (@bestter)
 
 ---
 
 ## Golden Rules – Règles Absolues (Ne jamais transgresser)
 
-1. **Ne modifie jamais les fichiers AGENTS.md, ANTIGRAVITY.md et .editorconfig sans autorisation explicite**
-   Ces fichiers sont la source de vérité pour l'agent IA.
+1. **Ne modifie jamais les fichiers AGENTS.md, ANTIGRAVITY.md et .editorconfig sans autorisation explicite**  
+   Ces fichiers sont la source de vérité pour l'agent IA.  
    **Toute modification nécessite une autorisation claire et explicite du propriétaire du projet** (exemple : « Tu peux réécrire AGENTS.md » ou « Mets à jour la section X »). Sans cette autorisation, tu n'y touches pas.
 
-2. **Minimalisme extrême**
-   Priorise toujours un code fonctionnel, durable et facilement maintenable.
+2. **Minimalisme extrême**  
+   Priorise toujours un code fonctionnel, durable et facilement maintenable.  
    **Aucune nouvelle dépendance** (NuGet ou autre) ne doit être ajoutée sans validation explicite, même pour des utilitaires « petits ».
 
-3. **Demande avant d'improviser**
+3. **Demande avant d'improviser**  
    Si une fonctionnalité, un pattern ou une décision d'architecture n'est pas clairement documenté dans `AGENTS.md` ou `ANTIGRAVITY.md` → **pose la question** au lieu de deviner.
 
-4. **Respecte .editorconfig + langue dans le code**
-   Avant de générer ou de modifier du code, analyse et respecte **impérativement** les règles des fichiers `.editorconfig` (racine **et** `HDLG winforms\.editorconfig`).
+4. **Respecte .editorconfig + langue dans le code**  
+   Avant de générer ou de modifier du code, analyse et respecte **impérativement** les règles des fichiers `.editorconfig` (racine **et** `HDLG winforms\.editorconfig`).  
    Tous les commentaires de code, messages de commit et documentation technique doivent être rédigés **en anglais**, à l'exception des fichiers `AGENTS.md` et `ANTIGRAVITY.md` qui doivent rester en français.
 
 ---
@@ -116,7 +116,7 @@ La solution `HDLG.sln` contient **deux projets** :
 
 Pour toute modification de l'interface utilisateur :
 
-1. **Les fichiers `.Designer.cs` ne doivent JAMAIS être modifiés manuellement.**
+1. **Les fichiers `.Designer.cs` ne doivent JAMAIS être modifiés manuellement.**  
    Le layout est géré exclusivement par le Designer Visual Studio via `InitializeComponent()`.
 
 2. **La logique événementielle reste dans les fichiers `.cs` correspondants** (ex: `MainWindow.cs`, `BrowserForm.cs`).

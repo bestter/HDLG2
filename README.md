@@ -30,7 +30,7 @@
 
 The solution consists of two primary layers:
 
-1. **`HDLG winforms` (Desktop GUI App)**:
+1. **`HDLG winforms` (Desktop GUI App)**: 
    - Manages the Windows Forms layout, progress metrics, and output generation orchestrators.
    - Built on `Microsoft.Extensions.Hosting` utilizing full Dependency Injection (DI) and robust background threading (`Task.Run`) to keep the UI perfectly responsive.
 2. **`HdlgFileProperty` (Extraction Engine)**:
