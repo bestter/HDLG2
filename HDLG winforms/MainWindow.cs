@@ -278,7 +278,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 
         private PerformanceCount PerformDirectoryBrowseHtml(string selecteDirectory, string saveFilePath)
         {
-            Debug.Write($"{nameof(PerformDirectoryBrowseHtml)} started at {DateTime.Now:T}");
+            Logger.Debug($"{nameof(PerformDirectoryBrowseHtml)} started at {DateTime.Now:T}");
             TimeSpan saveTime = TimeSpan.Zero;
             TimeSpan browseTime = TimeSpan.Zero;
             if (!string.IsNullOrWhiteSpace(selecteDirectory))
@@ -325,7 +325,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 
         private void BackgroundWorkerDirectoryBrowseHtml_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            Debug.Write($"Completed at {DateTime.Now.ToLongTimeString()}");
+            Logger.Debug($"Completed at {DateTime.Now.ToLongTimeString()}");
             UseWaitCursor = false;
             btnStartXml.Enabled = true;
             btnStartHtml.Enabled = true;
