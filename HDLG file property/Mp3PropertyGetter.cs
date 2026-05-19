@@ -39,17 +39,17 @@ namespace HdlgFileProperty
                         properties.Add(nameof(f.Tag.Album), f.Tag.Album);
                         properties.Add(nameof(f.Tag.Year), f.Tag.Year);
 
-                        if (f.Tag.Performers is { Length: > 0 })
+                        if (f.Tag.Performers != null && f.Tag.Performers.Length != 0)
                         {
                             properties.Add(nameof(f.Tag.Performers), string.Join(", ", f.Tag.Performers));
                         }
 
-                        if (f.Tag.AlbumArtists is { Length: > 0 })
+                        if (f.Tag.AlbumArtists != null && f.Tag.AlbumArtists.Length != 0)
                         {
                             properties.Add(nameof(f.Tag.AlbumArtists), string.Join(", ", f.Tag.AlbumArtists));
                         }
 
-                        if (f.Tag.Composers is { Length: > 0 })
+                        if (f.Tag.Composers != null && f.Tag.Composers.Length != 0)
                         {
                             properties.Add(nameof(f.Tag.Composers), string.Join(", ", f.Tag.Composers));
                         }
@@ -88,8 +88,10 @@ namespace HdlgFileProperty
 
         public bool IsSupportedFile(string path)
         {
-            var extension = Path.GetExtension(path);
-            return extension != null && _supportedExtensions.Contains(extension);
+            FileInfo fileInfo = new(path);
+            var extension = fileInfo.Extension.ToUpperInvariant();            
+
+            return _supportedExtensions.Contains(extension);
         }
     }
 }

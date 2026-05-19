@@ -13,12 +13,12 @@ using System.Text;
 using System.Xml;
 
 namespace HDLG_winforms
-{
+	{
 	/// <summary>
 	/// Directory browser
 	/// </summary>
 	public class DirectoryBrowser
-	{
+		{
 		/// <summary>
 		/// Logger
 		/// </summary>
@@ -29,11 +29,11 @@ namespace HDLG_winforms
 		/// </summary>
 		private string? CssContent;
 
-		public DirectoryBrowser (Logger log)
-		{
+		public DirectoryBrowser(Logger log)
+			{
 			this.log = log ?? throw new ArgumentNullException( nameof( log ) );
 			CssContent = null;
-		}
+			}
 
 		#region XML
 
@@ -43,12 +43,12 @@ namespace HDLG_winforms
 		/// <param name="filePath">Where to save the data</param>
 		/// <returns></returns>
 		/// <exception cref="ArgumentException"></exception>
-		public async Task SaveAsXMLAsync (string filePath, HdlgDirectory directory)
-		{
-			if (string.IsNullOrWhiteSpace( filePath ))
+		public async Task SaveAsXMLAsync(string filePath, HdlgDirectory directory)
 			{
+			if (string.IsNullOrWhiteSpace( filePath ))
+				{
 				throw new ArgumentException( $"'{nameof( filePath )}' ne peut pas avoir une valeur null ou être un espace blanc.", nameof( filePath ) );
-			}
+				}
 
 			ArgumentNullException.ThrowIfNull( directory );
 			FileInfo fileInfo = new( filePath );
@@ -56,16 +56,16 @@ namespace HDLG_winforms
 			var encoding = Encoding.UTF8;
 
 			XmlWriterSettings settings = new( )
-			{
+				{
 				Indent = true,
 				Encoding = encoding,
 				Async = true,
 				IndentChars = "\t"
-			};
+				};
 			using FileStream fileStream = new( fileInfo.FullName, FileMode.Create, FileAccess.Write, FileShare.None );
 			using StreamWriter sw = new( fileStream, encoding, 4096, false );
 			using (XmlWriter writer = XmlWriter.Create( sw, settings ))
-			{
+				{
 				await writer.WriteStartDocumentAsync( ).ConfigureAwait( false );
 
 				await writer.WriteStartElementAsync( null, "Hdlg", null ).ConfigureAwait( false );
@@ -81,39 +81,39 @@ namespace HDLG_winforms
 				await writer.WriteEndElementAsync( ).ConfigureAwait( false );
 
 				await writer.WriteEndDocumentAsync( ).ConfigureAwait( false );
-			}
+				}
 			await sw.FlushAsync( ).ConfigureAwait( false );
-		}
+			}
 
 		/// <summary>
 		/// Count the total numbers of directories into <paramref name="directory"/> and is children
 		/// </summary>
 		/// <param name="directory"></param>
 		/// <returns></returns>
-		private static long DirectoriesCount (HdlgDirectory directory)
-		{
+		private static long DirectoriesCount(HdlgDirectory directory)
+			{
 			long count = directory.DirectoriesCount;
 			foreach (HdlgDirectory d in directory.Directories)
-			{
+				{
 				count += DirectoriesCount( d );
-			}
+				}
 			return count;
-		}
+			}
 
 		/// <summary>
 		/// Count the total numbers of files into <paramref name="directory"/> and is children
 		/// </summary>
 		/// <param name="directory"></param>
 		/// <returns></returns>
-		private static long FilesCount (HdlgDirectory directory)
-		{
+		private static long FilesCount(HdlgDirectory directory)
+			{
 			long count = directory.FilesCount;
 			foreach (HdlgDirectory d in directory.Directories)
-			{
+				{
 				count += FilesCount( d );
-			}
+				}
 			return count;
-		}
+			}
 
 		/// <summary>
 		/// Write the content of a directory
@@ -121,35 +121,35 @@ namespace HDLG_winforms
 		/// <param name="writer"></param>
 		/// <param name="directory"></param>
 		/// <returns></returns>
-		private async Task WriteXmlDirectoryAsync (XmlWriter writer, HdlgDirectory directory)
-		{
+		private async Task WriteXmlDirectoryAsync(XmlWriter writer, HdlgDirectory directory)
+			{
 			log.Debug( $"In {nameof( WriteXmlDirectoryAsync )} {nameof( HdlgDirectory )} {directory}" );
 			await writer.WriteStartElementAsync( null, "Directory", null ).ConfigureAwait( false );
 			await writer.WriteElementStringAsync( null, "Name", null, directory.Name ).ConfigureAwait( false );
 			await writer.WriteElementStringAsync( null, "Path", null, directory.Path ).ConfigureAwait( false );
 			await writer.WriteElementStringAsync( null, "CreationTime", null, directory.CreationTime.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
 			if (directory.Directories.Count > 0)
-			{
+				{
 				await writer.WriteStartElementAsync( null, "Directories", null ).ConfigureAwait( false );
 				foreach (HdlgDirectory d in directory.Directories)
-				{
+					{
 					await WriteXmlDirectoryAsync( writer, d ).ConfigureAwait( false );
-				}
+					}
 				await writer.WriteEndElementAsync( ).ConfigureAwait( false );
-			}
+				}
 
 			if (directory.Files.Count > 0)
-			{
+				{
 				await writer.WriteStartElementAsync( null, "Files", null ).ConfigureAwait( false );
 				foreach (HdlgFile file in directory.Files)
-				{
+					{
 					await WriteXmlFileAsync( writer, file ).ConfigureAwait( false );
-				}
+					}
 				await writer.WriteEndElementAsync( ).ConfigureAwait( false );
-			}
+				}
 
 			await writer.WriteEndElementAsync( ).ConfigureAwait( false );
-		}
+			}
 
 		/// <summary>
 		/// Write the content of a <paramref name="file"/> to the <paramref name="writer"/>
@@ -158,12 +158,12 @@ namespace HDLG_winforms
 		/// <param name="file">File that content the data</param>
 		/// <returns>A task</returns>
 		/// <exception cref="ArgumentNullException"></exception>
-		private async Task WriteXmlFileAsync (XmlWriter writer, HdlgFile file)
-		{
-			if (writer is null)
+		private async Task WriteXmlFileAsync(XmlWriter writer, HdlgFile file)
 			{
+			if (writer is null)
+				{
 				throw new ArgumentNullException( nameof( writer ) );
-			}
+				}
 
 			log.Verbose( $"{nameof( WriteXmlFileAsync )} {file}" );
 
@@ -177,71 +177,71 @@ namespace HDLG_winforms
 
 
 			if (file.Properties != null)
-			{
+				{
 				await writer.WriteStartElementAsync( null, "ExtentedProperties", null ).ConfigureAwait( false );
 				foreach (var property in file.Properties)
-				{
-					if (!string.IsNullOrWhiteSpace( property.Key ) && property.Value != null)
 					{
+					if (!string.IsNullOrWhiteSpace( property.Key ) && property.Value != null)
+						{
 						if (property.Value is DateTime dtValue)
-						{
+							{
 							await writer.WriteElementStringAsync( null, property.Key, null, dtValue.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
-						}
+							}
 						else
-						{
+							{
 							var value = property.Value.ToString( CultureInfo.InvariantCulture );
 							await writer.WriteElementStringAsync( null, property.Key, null, value ).ConfigureAwait( false );
+							}
 						}
 					}
-				}
 				await writer.WriteEndElementAsync( ).ConfigureAwait( false );
-			}
+				}
 
 			await writer.WriteEndElementAsync( ).ConfigureAwait( false );
-		}
+			}
 		#endregion
 
 		#region HTML
 
-		private static string GetGoogleFontHeader ()
-		{
+		private static string GetGoogleFontHeader()
+			{
 			return @"<link rel=""preconnect"" href=""https://fonts.googleapis.com"">
 <link rel=""preconnect"" href=""https://fonts.gstatic.com"" crossorigin>
 <link href=""https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,opsz,wght@0,8..144,400;0,8..144,700;1,8..144,400;1,8..144,700&family=Source+Sans+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap"" rel=""stylesheet"">";
-		}
+			}
 
-		private async Task<string> GetCssAsync ()
-		{
-			if (string.IsNullOrEmpty( CssContent ))
+		private async Task<string> GetCssAsync()
 			{
+			if (string.IsNullOrEmpty( CssContent ))
+				{
 				var directory = Path.GetDirectoryName( Application.ExecutablePath );
 				FileInfo cssFile = new( Path.Combine( directory ?? string.Empty, "hdlg.css" ) );
 				if (cssFile.Exists)
-				{
+					{
 					using FileStream stream = new( cssFile.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, useAsync: true );
 					using StreamReader reader = new( stream );
 					var iCss = (await reader.ReadToEndAsync( ).ConfigureAwait( false )).Trim( );
 
 					if (!string.IsNullOrWhiteSpace( iCss ))
-					{
+						{
 						CssContent = $"<style>\n{iCss}\n</style>";
+						}
+					}
+				else
+					{
+					log.Warning( $"CSS file does not exist at path {directory}" );
 					}
 				}
-				else
-				{
-					log.Warning( $"CSS file does not exist at path {directory}" );
-				}
-			}
 			return CssContent ?? string.Empty;
 
-		}
-
-		public async Task SaveAsHTMLAsync (string filePath, HdlgDirectory directory)
-		{
-			if (string.IsNullOrWhiteSpace( filePath ))
-			{
-				throw new ArgumentException( $"'{nameof( filePath )}' ne peut pas avoir une valeur null ou être un espace blanc.", nameof( filePath ) );
 			}
+
+		public async Task SaveAsHTMLAsync(string filePath, HdlgDirectory directory)
+			{
+			if (string.IsNullOrWhiteSpace( filePath ))
+				{
+				throw new ArgumentException( $"'{nameof( filePath )}' ne peut pas avoir une valeur null ou être un espace blanc.", nameof( filePath ) );
+				}
 
 			ArgumentNullException.ThrowIfNull( directory );
 
@@ -314,19 +314,19 @@ namespace HDLG_winforms
 			await sw.WriteAsync( "</html>" ).ConfigureAwait( false );
 
 			await sw.FlushAsync( ).ConfigureAwait( false );
-		}
+			}
 
-		private static async Task WriteDirectoriesListAsync (TextWriter writer, HdlgDirectory directory)
-		{
+		private static async Task WriteDirectoriesListAsync(TextWriter writer, HdlgDirectory directory)
+			{
 			await writer.WriteLineAsync( "<div class=\"directoryList\" id=\"directoryList\">" ).ConfigureAwait( false );
 
 			await WriteDirectoriesListContainAsync( writer, directory, 0 ).ConfigureAwait( false );
 
 			await writer.WriteLineAsync( "</div" ).ConfigureAwait( false );
-		}
+			}
 
-		private static async Task WriteDirectoriesListContainAsync (TextWriter writer, HdlgDirectory directory, int depth)
-		{
+		private static async Task WriteDirectoriesListContainAsync(TextWriter writer, HdlgDirectory directory, int depth)
+			{
 			string spacer = new string( ' ', depth );
 
 			await writer.WriteLineAsync( spacer + "<ul>" ).ConfigureAwait( false );
@@ -334,23 +334,23 @@ namespace HDLG_winforms
 			await WriteDirectoryListContainAsync( writer, directory, depth ).ConfigureAwait( false );
 
 			await writer.WriteLineAsync( spacer + "</ul>" ).ConfigureAwait( false );
-		}
+			}
 
-		private static async Task WriteDirectoryListContainAsync (TextWriter writer, HdlgDirectory directory, int depth)
-		{
+		private static async Task WriteDirectoryListContainAsync(TextWriter writer, HdlgDirectory directory, int depth)
+			{
 			string spacer = new string( ' ', depth + 1 );
 			await writer.WriteLineAsync( $"{spacer}<li><a href=\"#{directory.Path}\">{directory.Name}</a></li>" ).ConfigureAwait( false );
 
 			if (directory.Directories.Count > 0)
-			{
+				{
 				var inDepth = depth + 2;
 				foreach (HdlgDirectory d in directory.Directories)
-				{
+					{
 					await WriteDirectoriesListContainAsync( writer, d, inDepth ).ConfigureAwait( false );
-				}
+					}
 
+				}
 			}
-		}
 
 		/// <summary>
 		/// Write the content of a directory
@@ -358,8 +358,8 @@ namespace HDLG_winforms
 		/// <param name="writer"></param>
 		/// <param name="directory"></param>
 		/// <returns></returns>
-		private async Task WritHtmlDirectoryAsync (TextWriter writer, HdlgDirectory directory, int depth)
-		{
+		private async Task WritHtmlDirectoryAsync(TextWriter writer, HdlgDirectory directory, int depth)
+			{
 			log.Debug( $"In {nameof( WritHtmlDirectoryAsync )} {nameof( HdlgDirectory )} {directory}" );
 			string spacer = new string( ' ', depth );
 
@@ -371,28 +371,28 @@ namespace HDLG_winforms
 			await writer.WriteLineAsync( $"{spacer}<a href=\"#directoryList\">⬆️</a>" ).ConfigureAwait( false );
 
 			if (directory.Directories.Count > 0)
-			{
+				{
 				await writer.WriteLineAsync( spacer + "<div class=\"directories\">" ).ConfigureAwait( false );
 				var inDepth = depth + 1;
 				foreach (HdlgDirectory d in directory.Directories)
-				{
+					{
 					await WritHtmlDirectoryAsync( writer, d, inDepth ).ConfigureAwait( false );
-				}
+					}
 				await writer.WriteLineAsync( spacer + "</div>" ).ConfigureAwait( false );
-			}
+				}
 
 			if (directory.Files.Count > 0)
-			{
+				{
 				await writer.WriteLineAsync( spacer + "<div class=\"files\">" ).ConfigureAwait( false );
 				foreach (HdlgFile file in directory.Files)
-				{
+					{
 					await WriteHtmlFileAsync( writer, file, spacer ).ConfigureAwait( false );
-				}
+					}
 				await writer.WriteLineAsync( spacer + "</div>" ).ConfigureAwait( false );
-			}
+				}
 
 			await writer.WriteLineAsync( spacer + "</div>" ).ConfigureAwait( false );
-		}
+			}
 
 		/// <summary>
 		/// Write the content of a <paramref name="file"/> to the <paramref name="writer"/>
@@ -401,12 +401,12 @@ namespace HDLG_winforms
 		/// <param name="file">File that content the data</param>
 		/// <returns>A task</returns>
 		/// <exception cref="ArgumentNullException"></exception>
-		private async Task WriteHtmlFileAsync (TextWriter writer, HdlgFile file, string spacer)
-		{
-			if (writer is null)
+		private async Task WriteHtmlFileAsync(TextWriter writer, HdlgFile file, string spacer)
 			{
+			if (writer is null)
+				{
 				throw new ArgumentNullException( nameof( writer ) );
-			}
+				}
 
 			log.Verbose( $"{nameof( WriteHtmlFileAsync )} {file}" );
 
@@ -419,38 +419,38 @@ namespace HDLG_winforms
 			await writer.WriteLineAsync( $"{spacer}<li class=\"size\">{file.Size.ToString( CultureInfo.CurrentCulture )} kb</li>" ).ConfigureAwait( false );
 			await writer.WriteLineAsync( $"{spacer}<li class=\"creationTime\">{file.CreationTime.ToString( "F", CultureInfo.CurrentCulture )}</li>" ).ConfigureAwait( false );
 			if (file.Properties != null && file.Properties.Count > 0)
-			{
+				{
 				await writer.WriteLineAsync( spacer + "<li>" ).ConfigureAwait( false );
 				await writer.WriteLineAsync( spacer + "<ol class=\"extentedProperties\">" ).ConfigureAwait( false );
 
 				foreach (var property in file.Properties)
-				{
-					if (!string.IsNullOrWhiteSpace( property.Key ) && property.Value != null)
 					{
+					if (!string.IsNullOrWhiteSpace( property.Key ) && property.Value != null)
+						{
 						await writer.WriteLineAsync( spacer + "\t<li class=\"extentedProperty\">" ).ConfigureAwait( false );
 						await writer.WriteLineAsync( $"{spacer}\t\t<span>{property.Key}</span>" ).ConfigureAwait( false );
 
 						if (property.Value is DateTime dtValue)
-						{
+							{
 							await writer.WriteLineAsync( $"{spacer}\t\t<span>{dtValue.ToString( "F", CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
-						}
+							}
 						else
-						{
+							{
 							var value = property.Value.ToString( CultureInfo.CurrentCulture );
 							await writer.WriteLineAsync( $"{spacer}\t\t<span>{value}</span>" ).ConfigureAwait( false );
-						}
+							}
 
 						await writer.WriteLineAsync( spacer + "\t</li>" ).ConfigureAwait( false );
 
+						}
 					}
-				}
 				await writer.WriteLineAsync( spacer + "</ol>" ).ConfigureAwait( false );
 				await writer.WriteLineAsync( spacer + "</li>" ).ConfigureAwait( false );
-			}
+				}
 
 			await writer.WriteLineAsync( spacer + "</ul>" ).ConfigureAwait( false );
-		}
+			}
 
 		#endregion
+		}
 	}
-}

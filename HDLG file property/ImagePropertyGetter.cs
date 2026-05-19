@@ -10,6 +10,8 @@ You should have received a copy of the GNU General Public License along with Foo
 using Serilog;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
+using System.Drawing;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace HdlgFileProperty
 {

@@ -41,7 +41,7 @@ namespace HdlgFileProperty
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(path);
             TotalNumberOfFiles++;
-            Dictionary<string, IConvertible> properties = new();
+            Dictionary<string, IConvertible> properties = [];
             foreach (var propertyGetters in filePropertyGetters)
             {
                 if (propertyGetters.FilePropertyGetter.IsSupportedFile(path))
