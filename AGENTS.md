@@ -2,8 +2,8 @@
 
 Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
-**Version** : 1.0  
-**Dernière mise à jour** : 18 mai 2026  
+**Version** : 1.1.0  
+**Dernière mise à jour** : 19 mai 2026  
 **Propriétaire** : Martin Labelle (@bestter)
 
 ---
@@ -92,22 +92,22 @@ La solution `HDLG.sln` contient **deux projets** :
 ### `HDLG winforms`
 | Package | Version | Usage |
 |---|---|---|
-| `Microsoft.Extensions.Hosting` | 10.0.5 | Hébergement et injection de dépendances |
-| `Microsoft.Extensions.DependencyInjection` | 9.0.0 | Conteneur IoC |
-| `Microsoft.Extensions.Logging` | 9.0.0 | Abstraction de logging |
+| `Microsoft.Extensions.Hosting` | 10.0.8 | Hébergement et injection de dépendances |
+| `Microsoft.Extensions.DependencyInjection` | 10.0.8 | Conteneur IoC |
+| `Microsoft.Extensions.Logging` | 10.0.8 | Abstraction de logging |
 | `Newtonsoft.Json` | 13.0.4 | Sérialisation JSON |
 | `Serilog.Sinks.File` | 7.0.0 | Journalisation vers fichiers |
 
 ### `HdlgFileProperty`
 | Package | Version | Usage |
 |---|---|---|
-| `DocumentFormat.OpenXml` | 3.4.1 | Lecture de documents Office (Word, Excel) |
-| `itext` | 9.5.0 | Lecture de propriétés PDF |
-| `itext.bouncy-castle-adapter` | 9.5.0 | Adaptateur cryptographique pour iText |
+| `DocumentFormat.OpenXml` | 3.5.1 | Lecture de documents Office (Word, Excel) |
+| `itext` | 9.6.0 | Lecture de propriétés PDF |
+| `itext.bouncy-castle-adapter` | 9.6.0 | Adaptateur cryptographique pour iText |
 | `Newtonsoft.Json` | 13.0.4 | Sérialisation JSON |
 | `Serilog` | 4.3.1 | Logging |
 | `SixLabors.ImageSharp` | 3.1.12 | Traitement d'images |
-| `System.Drawing.Common` | 10.0.5 | API graphique Windows |
+| `System.Drawing.Common` | 10.0.8 | API graphique Windows |
 | `TagLibSharp` | 2.3.0 | Lecture de métadonnées audio (MP3) |
 
 ---
