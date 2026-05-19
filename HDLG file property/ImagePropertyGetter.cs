@@ -11,6 +11,7 @@ using Serilog;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
 using System.Drawing;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace HdlgFileProperty
 {

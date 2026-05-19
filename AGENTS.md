@@ -43,8 +43,8 @@ Avant toute modification, suis toujours cet ordre :
 
 - **Nom du projet** : HDLG2 (HTML Directory List Generator)
 - **Type d'application** : Application de bureau (Windows Forms)
-- **Langage principal** : C# (.NET 9)
-- **Framework cible** : `net9.0-windows10.0.26100.0`
+- **Langage principal** : C# (.NET 10)
+- **Framework cible** : `net10.0-windows10.0.26100.0`
 - **Licence** : GNU General Public License v3.0 (GPLv3)
 - **Objectif** : Fournir une interface graphique utilisateur (GUI) permettant de parcourir le contenu d'un répertoire (et ses sous-répertoires) et de générer un listing structuré au format **XML** ou **HTML**, avec extraction des propriétés étendues des fichiers (images, documents Word/Excel, PDF, MP3).
 

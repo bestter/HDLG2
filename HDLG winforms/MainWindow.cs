@@ -39,15 +39,15 @@ namespace HDLG_winforms
 		/// </summary>
 		private readonly FilePropertyBrowser propertyBrowser;
 
-		/// <summary>
-		/// Logger
-		/// </summary>
-		private readonly Logger log = new LoggerConfiguration( )
-	.WriteTo.File( @"logs\log.txt", formatProvider: CultureInfo.CurrentCulture, rollingInterval: RollingInterval.Day, outputTemplate:
-		"[{Timestamp:R} {Level:u3}] {Message:lj}{NewLine}{Exception}" ).MinimumLevel.Debug( )
-	.CreateLogger( );
+	//	/// <summary>
+	//	/// Logger
+	//	/// </summary>
+	//	private readonly Logger log = new LoggerConfiguration( )
+	//.WriteTo.File( @"logs\Logger.txt", formatProvider: CultureInfo.CurrentCulture, rollingInterval: RollingInterval.Day, outputTemplate:
+	//	"[{Timestamp:R} {Level:u3}] {Message:lj}{NewLine}{Exception}" ).MinimumLevel.Debug( )
+	//.CreateLogger( );
 
-		public MainWindow(ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter, PdfPropertyGetter pdfPropertyGetter, Mp3PropertyGetter mp3PropertyGetter)
+		public MainWindow(ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter, PdfPropertyGetter pdfPropertyGetter, Mp3PropertyGetter mp3PropertyGetter, Logger logger)
 			{
 			InitializeComponent( );
 			ImagePropertyGetter = imagePropertyGetter;
@@ -55,7 +55,8 @@ namespace HDLG_winforms
 			ExcelPropertyGetter = excelPropertyGetter;
 			PdfPropertyGetter = pdfPropertyGetter;
 			Mp3PropertyGetter = mp3PropertyGetter;
-			propertyBrowser = new( log, imagePropertyGetter, wordPropertyGetter, excelPropertyGetter, pdfPropertyGetter, mp3PropertyGetter );
+			Logger = logger;
+			propertyBrowser = new( logger, imagePropertyGetter, wordPropertyGetter, excelPropertyGetter, pdfPropertyGetter, mp3PropertyGetter );
 			}
 
 		private string? selectedDirectory;
@@ -86,29 +87,33 @@ namespace HDLG_winforms
 			toolStripStatusLabelSaveTime.Text = string.Empty;
 			toolStripStatusLabelTotalTime.Text = string.Empty;
 			toolStripStatusLabelException.Text = string.Empty;
-			saveContentFileDialog.InitialDirectory = Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments );
+			//saveContentFileDiaLogger.InitialDirectory = Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments );
 			saveFileDialogHtml.InitialDirectory = Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments );
 		}
 
-		private void BtnStart_Click(object sender, EventArgs e)
+		private async void BtnStart_Click(object sender, EventArgs e)
 			{
 			try
 				{
-				if (!backgroundWorkerDirectoryBrowseXml.IsBusy)
-					{
-					progressBar1.Value = 0;
-					labelBrowseTime.Text = string.Empty;
-					labelSaveTime.Text = string.Empty;
-					labelTotalTime.Text = string.Empty;
-					labelException.Text = string.Empty;
+				progressBar1.Value = 0;
+				toolStripStatusLabelBrowseTime.Text = string.Empty;
+				toolStripStatusLabelSaveTime.Text = string.Empty;
+				toolStripStatusLabelTotalTime.Text = string.Empty;
+				toolStripStatusLabelException.Text = string.Empty;
+
+#if !DEBUG
+toolStripStatusLabelBrowseTime.Visible = false;
+toolStripStatusLabelSaveTime.Visible = false;
+toolStripStatusLabelTotalTime.Visible = false;
+#endif
 
 				if (!string.IsNullOrWhiteSpace( selectedDirectory ))
-				{
+					{
 					DirectoryInfo di = new( selectedDirectory );
 					saveContentFileDialog.FileName = $"{di.Name}.xml";
 					var result = saveContentFileDialog.ShowDialog( );
 					if (result == DialogResult.OK)
-					{
+						{
 						btnStartXml.Enabled = false;
 						btnStartHtml.Enabled = false;
 						if (btnStartUi != null) btnStartUi.Enabled = false;
@@ -127,16 +132,25 @@ namespace HDLG_winforms
 						// Mettre à jour l'UI après le traitement
 						UpdateUIWithPerformance( perf );
 						OpenWithDefaultProgram( saveContentFileDialog.FileName );
+						}
 					}
 				}
-			}
 #pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
 			catch (Exception ex)
+#pragma warning restore CA1031
 				{
-				labelException.Text = ex.Message;
-				log.Fatal( ex, $"Error in {nameof( BtnStart_Click )}" );
+				toolStripStatusLabelException.Text = ex.Message;
+				Logger.Fatal( ex, $"Error in {nameof( BtnStart_Click )}" );
+				}
+			finally
+				{
+				btnStartXml.Enabled = true;
+				btnStartHtml.Enabled = true;
+				if (btnStartUi != null) btnStartUi.Enabled = true;
+				UseWaitCursor = false;
 				}
 			}
+
 
 		private void UpdateUIWithPerformance (PerformanceCount perf)
 		{
@@ -153,17 +167,17 @@ namespace HDLG_winforms
 			Logger.Debug( $"{nameof( PerformDirectoryBrowseXml )} started at {DateTime.Now:T}" );
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
 				{
-				log.Information( selecteDirectory );
-				Directory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, log );
+				Logger.Information( selecteDirectory );
+				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
 				Stopwatch stopwatch = Stopwatch.StartNew( );
-				log.Debug( $"Ready to start {nameof( directory.Browse )}" );
+				Logger.Debug( $"Ready to start {nameof( directory.Browse )}" );
 				directory.Browse( propertyBrowser );
-				log.Debug( $"{nameof( directory.Browse )} of directory {directory.Name} done" );
+				Logger.Debug( $"{nameof( directory.Browse )} of directory {directory.Name} done" );
 				TimeSpan browseTime = stopwatch.Elapsed;
 				propertyBrowser.LogGetterStatistics( );
 
-				DirectoryBrowser db = new( log );
-				log.Debug( $"Ready to start {nameof( DirectoryBrowser.SaveAsXMLAsync )}" );
+				DirectoryBrowser db = new( Logger );
+				Logger.Debug( $"Ready to start {nameof( DirectoryBrowser.SaveAsXMLAsync )}" );
 
 				db.SaveAsXMLAsync( saveFilePath, directory ).Wait( );
 
@@ -203,21 +217,13 @@ namespace HDLG_winforms
 			fileopener.Start( );
 		}
 
-		/// <summary>
-		/// Dispose
-		/// </summary>
-		/// <param name="disposing"></param>
-		protected override void Dispose (bool disposing)
-		{
-			if (disposing)
-			{
-				components?.Dispose( );
+		
 		/// <summary>
 		/// Dispose
 		/// </summary>
 		/// <param name="disposing"></param>
 		protected override void Dispose(bool disposing)
-			{
+		{
 			if (disposing)
 				{
 				components?.Dispose( );
@@ -228,25 +234,29 @@ namespace HDLG_winforms
 			base.Dispose( disposing );
 		}
 
-		private void BtnStartHtml_Click(object sender, EventArgs e)
+		private async void BtnStartHtml_Click(object sender, EventArgs e)
 			{
 			try
 				{
-				if (!backgroundWorkerDirectoryBrowseHtml.IsBusy)
-					{
-					progressBar1.Value = 0;
-					labelBrowseTime.Text = string.Empty;
-					labelSaveTime.Text = string.Empty;
-					labelTotalTime.Text = string.Empty;
-					labelException.Text = string.Empty;
+				progressBar1.Value = 0;
+				toolStripStatusLabelBrowseTime.Text = string.Empty;
+				toolStripStatusLabelSaveTime.Text = string.Empty;
+				toolStripStatusLabelTotalTime.Text = string.Empty;
+				toolStripStatusLabelException.Text = string.Empty;
+
+#if !DEBUG
+				toolStripStatusLabelBrowseTime.Visible = false;
+				toolStripStatusLabelSaveTime.Visible = false;
+				toolStripStatusLabelTotalTime.Visible = false;
+#endif
 
 				if (!string.IsNullOrWhiteSpace( selectedDirectory ))
-				{
+					{
 					DirectoryInfo di = new( selectedDirectory );
 					saveFileDialogHtml.FileName = $"{di.Name}.html";
 					var result = saveFileDialogHtml.ShowDialog( );
 					if (result == DialogResult.OK)
-					{
+						{
 						btnStartXml.Enabled = false;
 						btnStartHtml.Enabled = false;
 						if (btnStartUi != null) btnStartUi.Enabled = false;
@@ -262,48 +272,68 @@ namespace HDLG_winforms
 
 						UpdateUIWithPerformance( perf );
 						OpenWithDefaultProgram( saveFileDialogHtml.FileName );
+						}
 					}
 				}
-			}
-#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
+#pragma warning disable CA1031 // Do not catch general exception types
 			catch (Exception ex)
+#pragma warning restore CA1031
 				{
-				labelException.Text = ex.Message;
-				log.Fatal( ex, $"Error in {nameof( BtnStart_Click )}" );
+				toolStripStatusLabelException.Text = ex.Message;
+				Logger.Fatal( ex, $"Error in {nameof( BtnStartHtml_Click )}" );
+				}
+			finally
+				{
+				btnStartXml.Enabled = true;
+				btnStartHtml.Enabled = true;
+				if (btnStartUi != null) btnStartUi.Enabled = true;
+				UseWaitCursor = false;
 				}
 			}
 
 		private PerformanceCount PerformDirectoryBrowseHtml (string selecteDirectory, string saveFilePath)
 		{
 			Debug.Write( $"{nameof( PerformDirectoryBrowseHtml )} started at {DateTime.Now:T}" );
+			TimeSpan saveTime = TimeSpan.Zero;
+			TimeSpan browseTime = TimeSpan.Zero;
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
 				{
-				log.Information( selecteDirectory );
-				Directory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, log );
+				Logger.Information( selecteDirectory );
+				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
+
 				Stopwatch stopwatch = Stopwatch.StartNew( );
-				log.Debug( $"Ready to start {nameof( directory.Browse )}" );
+				try
+					{ 
+				Logger.Debug( $"Ready to start {nameof( directory.Browse )}" );
 				directory.Browse( propertyBrowser );
-				log.Debug( $"{nameof( directory.Browse )} of directory {directory.Name} done" );
-				TimeSpan browseTime = stopwatch.Elapsed;
+				Logger.Debug( $"{nameof( directory.Browse )} of directory {directory.Name} done" );
+					browseTime = stopwatch.Elapsed;
 				propertyBrowser.LogGetterStatistics( );
 
-				DirectoryBrowser db = new( log );
-				log.Debug( $"Ready to start {nameof( DirectoryBrowser.SaveAsHTMLAsync )}" );
+				DirectoryBrowser db = new( Logger );
+				Logger.Debug( $"Ready to start {nameof( DirectoryBrowser.SaveAsHTMLAsync )}" );
 
 				db.SaveAsHTMLAsync( saveFileDialogHtml.FileName, directory ).Wait( );
 
-				log.Debug( $"{nameof( DirectoryBrowser.SaveAsHTMLAsync )} done" );
+				Logger.Debug( $"{nameof( DirectoryBrowser.SaveAsHTMLAsync )} done" );
 				stopwatch.Stop( );
-				TimeSpan saveTime = stopwatch.Elapsed - browseTime;
+				saveTime = stopwatch.Elapsed - browseTime;
 
-				e.Result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
-				log.Information( $"Done at {DateTime.Now.ToLongTimeString( )}" );
+				//e.Result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
+				Logger.Information( $"Done at {DateTime.Now.ToLongTimeString( )}" );
+					stopwatch.Stop( );
+					return new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
+					}
+				finally {
+					stopwatch.Stop( );
+
+					}
 				}
 			else
 				{
-				log.Information( $"No {nameof( selecteDirectory )}" );
-				e.Result = new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
-				e.Cancel = true;
+				Logger.Information( $"No {nameof( selecteDirectory )}" );
+				return new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
+				
 				}
 			}
 
@@ -316,9 +346,9 @@ namespace HDLG_winforms
 			PerformanceCount? perf = e.Result as PerformanceCount?;
 			if (perf != null)
 				{
-				labelBrowseTime.Text = perf.Value.BrowseTime.ToString( "G", CultureInfo.CurrentCulture );
-				labelSaveTime.Text = perf.Value.SaveTime.ToString( "G", CultureInfo.CurrentCulture );
-				labelTotalTime.Text = perf.Value.TotalTime.ToString( "G", CultureInfo.CurrentCulture );
+				//labelBrowseTime.Text = perf.Value.BrowseTime.ToString( "G", CultureInfo.CurrentCulture );
+				//labelSaveTime.Text = perf.Value.SaveTime.ToString( "G", CultureInfo.CurrentCulture );
+				//labelTotalTime.Text = perf.Value.TotalTime.ToString( "G", CultureInfo.CurrentCulture );
 				}
 			if (saveFileDialogHtml.FileName != null)
 				{
@@ -329,6 +359,38 @@ namespace HDLG_winforms
 		private void SaveFileDialogHtml_FileOk(object sender, CancelEventArgs e)
 			{
 
+			}
+
+		private void BtnStartUi_Click(object sender, EventArgs e)
+			{
+			if (string.IsNullOrWhiteSpace( selectedDirectory ))
+				{
+				MessageBox.Show( this, "Please choose a directory first.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
+				return;
+				}
+
+			try
+				{
+				UseWaitCursor = true;
+				using BrowserForm form = new BrowserForm( selectedDirectory, propertyBrowser, Logger );
+				UseWaitCursor = false;
+				form.ShowDialog( this );
+				}
+#pragma warning disable CA1031 // Do not catch general exception types
+			catch (Exception ex)
+#pragma warning restore CA1031
+				{
+				UseWaitCursor = false;
+				toolStripStatusLabelException.Text = ex.Message;
+				Logger.Fatal( ex, $"Error opening UI Explorer" );
+				MessageBox.Show( this, $"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+				}
+			}
+
+		private void CreditToolStripMenuItem_Click(object sender, EventArgs e)
+			{
+			using Credit credit = new Credit( );
+			credit.ShowDialog( this );
 			}
 		}
 	}

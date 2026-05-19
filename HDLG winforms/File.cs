@@ -1,5 +1,8 @@
-﻿namespace HDLG_winforms
+﻿using Windows.Foundation.Metadata;
+
+namespace HDLG_winforms
 	{
+	[Obsolete("This class is deprecated and will be removed in a future version.", true)]
 	public class File : IEquatable<File>, IComparable, IComparable<File>
 		{
 		public string Name { get; private set; }

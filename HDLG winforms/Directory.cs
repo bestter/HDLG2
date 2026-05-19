@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 
 namespace HDLG_winforms
 	{
-
+	[Obsolete( "This class is not used anymore. It will be removed in the future." , true)]
 	public class Directory : IEquatable<Directory>, IComparable, IComparable<Directory>
 		{
 		public string Name { get; private set; }

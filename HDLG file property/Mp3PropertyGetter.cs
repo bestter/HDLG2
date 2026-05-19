@@ -89,11 +89,9 @@ namespace HdlgFileProperty
         public bool IsSupportedFile(string path)
         {
             FileInfo fileInfo = new(path);
-            var extension = fileInfo.Extension.ToLowerInvariant();
-            string[] extensions = [ ".mkv", ".ogv", ".avi", ".wmv", ".asf", ".mp4", ".m4p", ".m4v", ".mpeg", ".mpg", ".mpe", ".mpv", ".mpg", ".m2v",
-            ".aa", ".aax", ".aac", ".aiff", ".ape", ".dsf", ".flac", ".m4a", ".m4b", ".m4p", ".mp3", ".mpc", ".mpp", ".ogg", ".oga", ".wav", ".wma", ".wv", ".webm"];
+            var extension = fileInfo.Extension.ToUpperInvariant();            
 
-            return extensions.Contains(extension);
+            return _supportedExtensions.Contains(extension);
         }
     }
 }
