@@ -210,7 +210,7 @@ namespace HDLG_winforms
 <link href=""https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,opsz,wght@0,8..144,400;0,8..144,700;1,8..144,400;1,8..144,700&family=Source+Sans+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap"" rel=""stylesheet"">";
 		}
 
-		private string GetCss ()
+		private async Task<string> GetCssAsync ()
 		{
 			if (string.IsNullOrEmpty( CssContent ))
 			{
@@ -218,9 +218,9 @@ namespace HDLG_winforms
 				FileInfo cssFile = new( Path.Combine( directory ?? string.Empty, "hdlg.css" ) );
 				if (cssFile.Exists)
 				{
-					using FileStream stream = cssFile.OpenRead( );
+					using FileStream stream = new( cssFile.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, useAsync: true );
 					using StreamReader reader = new( stream );
-					var iCss = reader.ReadToEnd( ).Trim( );
+					var iCss = (await reader.ReadToEndAsync( ).ConfigureAwait( false )).Trim( );
 
 					if (!string.IsNullOrWhiteSpace( iCss ))
 					{
@@ -264,7 +264,7 @@ namespace HDLG_winforms
 			await sw.WriteLineAsync( "<meta name=\"rating\" content=\"general\">" ).ConfigureAwait( false );
 			await sw.WriteAsync( $"<title>{title}</title>" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( GetGoogleFontHeader( ) ).ConfigureAwait( false );
-			await sw.WriteLineAsync( GetCss( ) ).ConfigureAwait( false );
+			await sw.WriteLineAsync( await GetCssAsync( ).ConfigureAwait( false ) ).ConfigureAwait( false );
 			await sw.WriteLineAsync( ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "</head>" ).ConfigureAwait( false );
 
@@ -412,7 +412,7 @@ namespace HDLG_winforms
 
 			await writer.WriteLineAsync( spacer + "<ul class=\"file\">" ).ConfigureAwait( false );
 
-			
+
 			await writer.WriteLineAsync( $"{spacer}<li><a href=\"file:///{file.Path}\" download=\"{file.Name}\" referrerpolicy=\"strict-origin\">{file.Name}</a></li>" ).ConfigureAwait( false );
 
 
