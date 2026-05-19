@@ -5,7 +5,7 @@ HTML Directory List Generator is free software: you can redistribute it and/or m
 
 HTML Directory List Generator is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with HTML Directory List Generator. If not, see <https://www.gnu.org/licenses/>. 
+You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
  */
 
 using System.Globalization;
@@ -41,7 +41,7 @@ namespace HdlgFileProperty
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(path);
             TotalNumberOfFiles++;
-            Dictionary<string, IConvertible> properties = [];
+            Dictionary<string, IConvertible> properties = new();
             foreach (var propertyGetters in filePropertyGetters)
             {
                 if (propertyGetters.FilePropertyGetter.IsSupportedFile(path))

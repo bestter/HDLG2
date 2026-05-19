@@ -1,22 +1,17 @@
-# Instructions de Gestion des Ressources IA
+# Directives IA : HTML Directory List Generator (Winforms/C#)
 
-## 1. Analyse de Contexte Minimale
-* Ne relis pas l'intégralité du projet pour des modifications locales. 
-* Avant de scanner un dossier, demande-moi si c'est nécessaire.
-* Priorise la lecture des fichiers `.cs` spécifiquement mentionnés.
+## 1. Contexte du Projet
+Tu agis en tant qu'expert C# .NET et Winforms. L'objectif de cette application est de lire des répertoires locaux et de générer des listes HTML propres et performantes.
 
-## 2. Optimisation des Réponses
-* **Code seulement :** Si la modification est évidente, fournis uniquement le snippet de code sans explications exhaustives.
-* **Pas de réécriture complète :** Ne réécris pas un fichier entier si seulement deux lignes changent. Utilise des commentaires `// ... reste du code` pour économiser les tokens.
+## 2. Règles de Lecture et d'Analyse (Économie de Tokens)
+* **Ignore le code autogénéré :** Ne lis et ne modifie JAMAIS les fichiers `*.Designer.cs` ou `*.resx` à moins que je te le demande explicitement.
+* **Focus ciblé :** Concentre-toi uniquement sur le "Code-Behind" (ex: `Form1.cs`) et les classes de logique métier.
+* **Pas de scan global :** Si je te parle d'un bug de génération HTML, regarde en priorité la méthode qui construit la chaîne de caractères, ne scanne pas l'interface utilisateur.
 
-## 3. Prévention du "Looping"
-* Si tu ne trouves pas la solution après 2 tentatives de correction d'erreur, arrête-toi et demande-moi des précisions au lieu de brûler des crédits en bouclant.
+## 3. Génération de Code et Bonnes Pratiques C#
+* **Performance HTML :** Pour toute génération de HTML, privilégie systématiquement l'utilisation de `StringBuilder` plutôt que la concaténation classique avec `+` ou `+=` pour éviter d'allouer trop de mémoire.
+* **Séparation des préoccupations :** Garde la logique de parcours de fichiers (`System.IO`) et de génération HTML séparée du fil d'exécution de l'interface utilisateur (UI Thread) pour éviter que l'application Winforms ne gèle (utilise `async/await` et `Task.Run` si nécessaire).
+* **Code minimaliste :** Si je te demande de modifier une méthode, renvoie **uniquement** la méthode modifiée ou le bloc de code concerné, pas la classe entière. Utilise `// ... code existant ...` pour indiquer les parties inchangées.
 
-## 4. Priorité au Local
-* Utilise les définitions locales (types, interfaces) avant de chercher à indexer les bibliothèques externes.
-
-## 5. Conventions de Tests
-* Les tests unitaires se trouvent dans le projet `HDLG.Tests` (xUnit).
-* Utilise **FluentAssertions** pour les assertions et **Moq** pour le mocking d'interfaces.
-* Nettoie toujours les fichiers et répertoires temporaires via `IDisposable`.
-* Tout nouveau code doit être accompagné de tests unitaires. Ne crée pas de tests si la tâche ne concerne que de la documentation ou de la configuration.
+## 4. Prévention des Boucles d'Erreurs
+* Si une solution proposée génère une erreur de compilation Winforms ou lève une exception d'accès refusé (`UnauthorizedAccessException` lors de la lecture des dossiers), propose UNE correction. Si elle échoue encore, arrête-toi, explique le problème brièvement et demande-moi d'inspecter les permissions locales. Ne boucle pas.
