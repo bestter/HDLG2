@@ -42,7 +42,7 @@ namespace HDLG_winforms
 					services.AddTransient<ExcelPropertyGetter, ExcelPropertyGetter>( );
 					services.AddTransient<PdfPropertyGetter, PdfPropertyGetter>( );
 					services.AddTransient<Mp3PropertyGetter, Mp3PropertyGetter>( );
-					services.AddSingleton<Logger>(log);
+					services.AddSingleton<Logger>( log );
 					services.AddTransient<MainWindow>( );
 				} );
 		}
@@ -98,7 +98,7 @@ namespace HDLG_winforms
 
 			// Souvent, pour les erreurs de thread d'arrière-plan, il est plus sûr de fermer l'application
 			// car l'état de la mémoire peut être corrompu.
-			// Application.Exit(); 
+			// Application.Exit();
 		}
 
 		// Fonction utilitaire pour éviter de répéter le code de la boîte de dialogue

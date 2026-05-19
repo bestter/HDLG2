@@ -102,29 +102,35 @@ namespace HDLG_winforms
 					labelTotalTime.Text = string.Empty;
 					labelException.Text = string.Empty;
 
-					if (!string.IsNullOrWhiteSpace( selectedDirectory ))
-						{
-						DirectoryInfo di = new( selectedDirectory );
-						saveContentFileDialog.FileName = $"{di.Name}.xml";
-						var result = saveContentFileDialog.ShowDialog( );
-						if (result == DialogResult.OK)
-							{
-							btnStartXml.Enabled = false;
-							btnStartHtml.Enabled = false;
-							UseWaitCursor = true;
-							log.Information( $"Start browse with {selectedDirectory}" );
-							backgroundWorkerDirectoryBrowseXml.RunWorkerAsync( selectedDirectory );
-							while (backgroundWorkerDirectoryBrowseXml.IsBusy)
-								{
-								progressBar1.Increment( 1 );
-								// Keep UI messages moving, so the form remains 
-								// responsive during the asynchronous operation.
-								Application.DoEvents( );
-								}
-							}
-						}
+				if (!string.IsNullOrWhiteSpace( selectedDirectory ))
+				{
+					DirectoryInfo di = new( selectedDirectory );
+					saveContentFileDialog.FileName = $"{di.Name}.xml";
+					var result = saveContentFileDialog.ShowDialog( );
+					if (result == DialogResult.OK)
+					{
+						btnStartXml.Enabled = false;
+						btnStartHtml.Enabled = false;
+						if (btnStartUi != null) btnStartUi.Enabled = false;
+						UseWaitCursor = true;
+						Logger.Information( $"Start browse with {selectedDirectory}" );
+
+						// Use an indeterminate progress bar if supported, or leave it at 0
+						progressBar1.Style = ProgressBarStyle.Marquee;
+
+						// Exécuter le travail dans un thread de fond sans bloquer l'UI
+						var perf = await Task.Run( () => PerformDirectoryBrowseXml( selectedDirectory, saveContentFileDialog.FileName ) ).ConfigureAwait( true );
+
+						progressBar1.Style = ProgressBarStyle.Blocks;
+						progressBar1.Value = 100;
+
+						// Mettre à jour l'UI après le traitement
+						UpdateUIWithPerformance( perf );
+						OpenWithDefaultProgram( saveContentFileDialog.FileName );
 					}
 				}
+			}
+#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
 			catch (Exception ex)
 				{
 				labelException.Text = ex.Message;
@@ -132,10 +138,19 @@ namespace HDLG_winforms
 				}
 			}
 
-		private void BackgroundWorkerDirectoryBrowse_DoWork(object sender, DoWorkEventArgs e)
+		private void UpdateUIWithPerformance (PerformanceCount perf)
+		{
+			if (perf.TotalTime != TimeSpan.MinValue)
 			{
-			Debug.Write( $"{nameof( BackgroundWorkerDirectoryBrowse_DoWork )} started at {DateTime.Now.ToLongTimeString( )}" );
-			string? selecteDirectory = e.Argument as string;
+				toolStripStatusLabelBrowseTime.Text = $"Browse: {perf.BrowseTime.ToString( "G", CultureInfo.CurrentCulture )}";
+				toolStripStatusLabelSaveTime.Text = $"Save: {perf.SaveTime.ToString( "G", CultureInfo.CurrentCulture )}";
+				toolStripStatusLabelTotalTime.Text = $"Total: {perf.TotalTime.ToString( "G", CultureInfo.CurrentCulture )}";
+			}
+		}
+
+		private PerformanceCount PerformDirectoryBrowseXml (string selecteDirectory, string saveFilePath)
+		{
+			Logger.Debug( $"{nameof( PerformDirectoryBrowseXml )} started at {DateTime.Now:T}" );
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
 				{
 				log.Information( selecteDirectory );
@@ -178,15 +193,15 @@ namespace HDLG_winforms
 		/// </summary>
 		/// <param name="path"></param>
 		/// <remarks>https://stackoverflow.com/a/54275102/910741</remarks>
-		public static void OpenWithDefaultProgram(string path)
-{
-    using Process fileopener = new();
-    fileopener.StartInfo = new ProcessStartInfo(path)
-    {
-        UseShellExecute = true
-    };
-    fileopener.Start();
-}
+		public static void OpenWithDefaultProgram (string path)
+		{
+			using Process fileopener = new( );
+			fileopener.StartInfo = new ProcessStartInfo( path )
+			{
+				UseShellExecute = true
+			};
+			fileopener.Start( );
+		}
 
 		/// <summary>
 		/// Dispose
@@ -225,29 +240,32 @@ namespace HDLG_winforms
 					labelTotalTime.Text = string.Empty;
 					labelException.Text = string.Empty;
 
-					if (!string.IsNullOrWhiteSpace( selectedDirectory ))
-						{
-						DirectoryInfo di = new( selectedDirectory );
-						saveFileDialogHtml.FileName = $"{di.Name}.html";
-						var result = saveFileDialogHtml.ShowDialog( );
-						if (result == DialogResult.OK)
-							{
-							btnStartXml.Enabled = false;
-							btnStartHtml.Enabled = false;
-							UseWaitCursor = true;
-							log.Information( $"Start browse with {selectedDirectory}" );
-							backgroundWorkerDirectoryBrowseHtml.RunWorkerAsync( selectedDirectory );
-							while (backgroundWorkerDirectoryBrowseHtml.IsBusy)
-								{
-								progressBar1.Increment( 1 );
-								// Keep UI messages moving, so the form remains 
-								// responsive during the asynchronous operation.
-								Application.DoEvents( );
-								}
-							}
-						}
+				if (!string.IsNullOrWhiteSpace( selectedDirectory ))
+				{
+					DirectoryInfo di = new( selectedDirectory );
+					saveFileDialogHtml.FileName = $"{di.Name}.html";
+					var result = saveFileDialogHtml.ShowDialog( );
+					if (result == DialogResult.OK)
+					{
+						btnStartXml.Enabled = false;
+						btnStartHtml.Enabled = false;
+						if (btnStartUi != null) btnStartUi.Enabled = false;
+						UseWaitCursor = true;
+						Logger.Information( $"Start browse with {selectedDirectory}" );
+
+						progressBar1.Style = ProgressBarStyle.Marquee;
+
+						var perf = await Task.Run( () => PerformDirectoryBrowseHtml( selectedDirectory, saveFileDialogHtml.FileName ) ).ConfigureAwait( true );
+
+						progressBar1.Style = ProgressBarStyle.Blocks;
+						progressBar1.Value = 100;
+
+						UpdateUIWithPerformance( perf );
+						OpenWithDefaultProgram( saveFileDialogHtml.FileName );
 					}
 				}
+			}
+#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
 			catch (Exception ex)
 				{
 				labelException.Text = ex.Message;
@@ -255,10 +273,9 @@ namespace HDLG_winforms
 				}
 			}
 
-		private void BackgroundWorkerDirectoryBrowseHtml_DoWork(object sender, DoWorkEventArgs e)
-			{
-			Debug.Write( $"{nameof( BackgroundWorkerDirectoryBrowseHtml_DoWork )} started at {DateTime.Now.ToLongTimeString( )}" );
-			string? selecteDirectory = e.Argument as string;
+		private PerformanceCount PerformDirectoryBrowseHtml (string selecteDirectory, string saveFilePath)
+		{
+			Debug.Write( $"{nameof( PerformDirectoryBrowseHtml )} started at {DateTime.Now:T}" );
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
 				{
 				log.Information( selecteDirectory );

@@ -65,7 +65,7 @@ namespace HdlgFileProperty
                     Logger?.Warning($"File {path} might be corrupted because {string.Join(",", f.CorruptionReasons)}");
                 }
             }
-            catch(IOException ioe)
+            catch (IOException ioe)
             {
                 Logger?.Error(ioe, $"Cannot read file {path}");
             }
