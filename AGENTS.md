@@ -2,7 +2,7 @@
 
 Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
-**Version** : 1.1.0  
+**Version** : 1.2.0  
 **Dernière mise à jour** : 19 mai 2026  
 **Propriétaire** : Martin Labelle (@bestter)
 
@@ -25,6 +25,12 @@ Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
    Avant de générer ou de modifier du code, analyse et respecte **impérativement** les règles des fichiers `.editorconfig` (racine **et** `HDLG winforms\.editorconfig`).  
    Tous les commentaires de code, messages de commit et documentation technique doivent être rédigés **en anglais**, à l'exception des fichiers `AGENTS.md` et `ANTIGRAVITY.md` qui doivent rester en français.
 
+5. **Toute nouvelle fonctionnalité doit être accompagnée de tests**  
+   Chaque nouvelle fonctionnalité implémentée doit inclure des tests unitaires dans le projet `HDLG.Tests` qui valident son bon fonctionnement. **Aucune fonctionnalité ne sera considérée comme terminée sans ses tests.**
+
+6. **Toute modification de fonctionnalité existante doit mettre à jour les tests**  
+   Lorsqu'une fonctionnalité existante est modifiée, les tests unitaires correspondants doivent être mis à jour pour refléter le nouveau comportement attendu. Les tests obsolètes ou cassés ne sont **jamais acceptables**.
+
 ---
 
 ## 🔄 Flux de Travail Standard pour les Agents IA
@@ -35,7 +41,8 @@ Avant toute modification, suis toujours cet ordre :
 2. Analyser le besoin et **imaginer le design** (surtout pour l'UI).
 3. Implémenter **uniquement** selon les règles définies dans ce document.
 4. Exécuter `dotnet build HDLG.sln` et obtenir **0 erreur, 0 warning** de build.
-5. Si le moindre doute existe sur l'architecture, le design ou une décision non documentée → **poser la question immédiatement**.
+5. Exécuter `dotnet test HDLG.sln` et obtenir **0 échec** de test.
+6. Si le moindre doute existe sur l'architecture, le design ou une décision non documentée → **poser la question immédiatement**.
 
 ---
 
@@ -52,7 +59,7 @@ Avant toute modification, suis toujours cet ordre :
 
 ## 📁 Structure de la Solution
 
-La solution `HDLG.sln` contient **deux projets** :
+La solution `HDLG.sln` contient **trois projets** :
 
 ### Projet 1 : `HDLG winforms` (Application WinForms principale)
 
@@ -85,6 +92,15 @@ La solution `HDLG.sln` contient **deux projets** :
 | **`Mp3PropertyGetter.cs`** | Extraction de propriétés de fichiers MP3 (via `TagLibSharp`). |
 | **`FilePropertyGetterStatistic.cs`** | Wrapper autour d'un `IFilePropertyGetter` pour mesurer le temps d'exécution et compter les fichiers traités. |
 
+### Projet 3 : `HDLG.Tests` (Tests unitaires – xUnit)
+
+| Fichier | Rôle |
+|---|---|
+| **`DirectoryBrowserTests.cs`** | Tests de `DirectoryBrowser` : validation des paramètres (null/empty), génération XML (structure, balises attendues) et génération HTML (DOCTYPE, structure, contenu). Utilise des fichiers temporaires nettoyés via `IDisposable`. |
+| **`FilePropertyBrowserTests.cs`** | Tests de `FilePropertyBrowser` : validation du constructeur (null logger, null getters), délégation correcte aux `IFilePropertyGetter` via mocks Moq, combinaison de propriétés de multiples getters, et vérification des statistiques de logging. |
+| **`HdlgDirectoryTests.cs`** | Tests de `HdlgDirectory` : construction avec propriétés valides, validation des paramètres null, parcours avec/sans sous-répertoires, et vérification de l'égalité par chemin. Utilise des répertoires temporaires sur le système de fichiers. |
+| **`PropertyGetterTests.cs`** | Tests des implémentations `IFilePropertyGetter` : `ImagePropertyGetter`, `Mp3PropertyGetter`, `PdfPropertyGetter`, `WordPropertyGetter`, `ExcelPropertyGetter`. Vérifie `AddLogger()`, la validation null, et `IsSupportedFile()` via `[Theory]`/`[InlineData]`. |
+
 ---
 
 ## 📦 Dépendances NuGet
@@ -109,6 +125,16 @@ La solution `HDLG.sln` contient **deux projets** :
 | `SixLabors.ImageSharp` | 3.1.12 | Traitement d'images |
 | `System.Drawing.Common` | 10.0.8 | API graphique Windows |
 | `TagLibSharp` | 2.3.0 | Lecture de métadonnées audio (MP3) |
+
+### `HDLG.Tests`
+| Package | Version | Usage |
+|---|---|---|
+| `coverlet.collector` | 6.0.4 | Collecte de couverture de code |
+| `FluentAssertions` | 8.10.0 | Assertions lisibles et expressives |
+| `Microsoft.NET.Test.Sdk` | 17.14.1 | Infrastructure de test .NET |
+| `Moq` | 4.20.72 | Mocking d'interfaces pour tests isolés |
+| `xunit` | 2.9.3 | Framework de tests unitaires |
+| `xunit.runner.visualstudio` | 3.1.4 | Runner Visual Studio pour xUnit |
 
 ---
 
@@ -148,5 +174,5 @@ Pour toute modification de l'interface utilisateur :
 - **Logging** : Utiliser exclusivement Serilog via l'injection du `Logger`. Ne pas créer de nouvelles instances de logger en dehors de `Program.cs`.
 - **Build** : Le projet se compile via `dotnet build HDLG.sln`. Un fichier `build.bat` est fourni à la racine pour simplifier la commande.
 - **CI/CD** : GitHub Actions (`.github/workflows/dotnet-desktop.yml`) exécute le build sur push/PR vers `main` en configurations Debug et Release. Dependabot est activé pour les mises à jour NuGet et GitHub Actions.
-- **Tests** : Il n'y a actuellement **aucun projet de tests unitaires** dans la solution. Si des tests sont demandés, créer un projet `HDLG.Tests` (xUnit ou MSTest) et l'ajouter à la solution.
+- **Tests** : Le projet `HDLG.Tests` (xUnit) contient les tests unitaires de la solution. Les tests utilisent **FluentAssertions** pour des assertions expressives et **Moq** pour le mocking d'interfaces. Pour exécuter les tests : `dotnet test HDLG.sln`. Tout nouveau code doit être accompagné de tests unitaires correspondants dans ce projet.
 - **Encodage des fichiers** : Les fichiers `.cs` et `.vb` utilisent des **tabulations** pour l'indentation (`indent_style = tab`, `tab_width = 4`) et les fins de ligne **CRLF** (`end_of_line = crlf`).

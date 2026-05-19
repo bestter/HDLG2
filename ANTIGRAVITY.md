@@ -14,3 +14,9 @@
 
 ## 4. Priorité au Local
 * Utilise les définitions locales (types, interfaces) avant de chercher à indexer les bibliothèques externes.
+
+## 5. Conventions de Tests
+* Les tests unitaires se trouvent dans le projet `HDLG.Tests` (xUnit).
+* Utilise **FluentAssertions** pour les assertions et **Moq** pour le mocking d'interfaces.
+* Nettoie toujours les fichiers et répertoires temporaires via `IDisposable`.
+* Tout nouveau code doit être accompagné de tests unitaires. Ne crée pas de tests si la tâche ne concerne que de la documentation ou de la configuration.

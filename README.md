@@ -28,13 +28,15 @@
 
 ## 🏛️ Architecture Overview
 
-The solution consists of two primary layers:
+The solution consists of three primary layers:
 
 1. **`HDLG winforms` (Desktop GUI App)**: 
    - Manages the Windows Forms layout, progress metrics, and output generation orchestrators.
    - Built on `Microsoft.Extensions.Hosting` utilizing full Dependency Injection (DI) and robust background threading (`Task.Run`) to keep the UI perfectly responsive.
 2. **`HdlgFileProperty` (Extraction Engine)**:
    - Houses the core extraction strategy (`IFilePropertyGetter`), delegating specialized tasks to respective metadata engines based on MIME/file formats.
+3. **`HDLG.Tests` (Unit Tests)**:
+   - xUnit-based test suite with FluentAssertions and Moq, covering export engines, metadata extraction orchestration, directory model logic, and property getter contracts.
 
 ---
 
@@ -59,6 +61,18 @@ Run the shortcut compilation script at the root directory:
 ```powershell
 .\build.bat
 ```
+
+### 3. Running Tests
+Execute the full test suite:
+```powershell
+dotnet test HDLG.sln
+```
+
+The `HDLG.Tests` project covers:
+- **DirectoryBrowserTests** — XML and HTML export validation (parameter guards, output structure).
+- **FilePropertyBrowserTests** — Property extraction orchestration (getter delegation, multi-getter combination, statistics logging).
+- **HdlgDirectoryTests** — Directory model construction, recursive browse behavior, and equality semantics.
+- **PropertyGetterTests** — File-type support detection for all property getter implementations (Image, MP3, PDF, Word, Excel).
 
 ---
 
