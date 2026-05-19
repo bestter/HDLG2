@@ -22,14 +22,14 @@ namespace HDLG_winforms
         /// <summary>
         /// Logger
         /// </summary>
-        private readonly Logger log;
+        private readonly Serilog.ILogger log;
 
         /// <summary>
         /// Css content
         /// </summary>
         private string? CssContent;
 
-        public DirectoryBrowser(Logger log)
+        public DirectoryBrowser(Serilog.ILogger log)
         {
             this.log = log ?? throw new ArgumentNullException(nameof(log));
             CssContent = null;

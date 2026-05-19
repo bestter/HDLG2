@@ -11,9 +11,9 @@ namespace HDLG_winforms
     {
         private readonly string rootDirectory;
         private readonly FilePropertyBrowser propertyBrowser;
-        private readonly Logger logger;
+        private readonly Serilog.ILogger logger;
 
-        public BrowserForm(string rootDirectory, FilePropertyBrowser propertyBrowser, Logger logger)
+        public BrowserForm(string rootDirectory, FilePropertyBrowser propertyBrowser, Serilog.ILogger logger)
         {
             InitializeComponent();
             this.rootDirectory = rootDirectory;
