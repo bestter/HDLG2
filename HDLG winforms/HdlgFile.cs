@@ -9,128 +9,128 @@ You should have received a copy of the GNU General Public License along with Foo
  */
 namespace HDLG_winforms
 {
-	public class HdlgFile : IEquatable<HdlgFile>, IComparable, IComparable<HdlgFile>
-	{
-		public string Name { get; }
+    public class HdlgFile : IEquatable<HdlgFile>, IComparable, IComparable<HdlgFile>
+    {
+        public string Name { get; }
 
-		public string Path { get; }
+        public string Path { get; }
 
-		public string Extension { get; }
+        public string Extension { get; }
 
-		public long Size { get; }
+        public long Size { get; }
 
-		public DateTime CreationTime { get; }
+        public DateTime CreationTime { get; }
 
-		public IReadOnlyDictionary<string, IConvertible> Properties { get; }
+        public IReadOnlyDictionary<string, IConvertible> Properties { get; }
 
-		public HdlgFile (string path, Dictionary<string, IConvertible>? properties)
-		{
-			ArgumentNullException.ThrowIfNull( path );
+        public HdlgFile(string path, Dictionary<string, IConvertible>? properties)
+        {
+            ArgumentNullException.ThrowIfNull(path);
 
-			Path = path;
-			FileInfo info = new( Path );
+            Path = path;
+            FileInfo info = new(Path);
 
-			if (info.Exists)
-			{
-				Name = info.Name;
-				Extension = info.Extension;
-				Size = info.Length;
-				CreationTime = info.CreationTime;
-				Properties = properties != null
-					? new Dictionary<string, IConvertible>( properties )
-					: new Dictionary<string, IConvertible>( );
-			}
-			else
-			{
-				throw new FileNotFoundException( $"Le fichier {Path} n'existe pas", Path );
-			}
-		}
+            if (info.Exists)
+            {
+                Name = info.Name;
+                Extension = info.Extension;
+                Size = info.Length;
+                CreationTime = info.CreationTime;
+                Properties = properties != null
+                    ? new Dictionary<string, IConvertible>(properties)
+                    : new Dictionary<string, IConvertible>();
+            }
+            else
+            {
+                throw new FileNotFoundException($"Le fichier {Path} n'existe pas", Path);
+            }
+        }
 
-		public override string ToString () { return Path; }
+        public override string ToString() { return Path; }
 
-		public override int GetHashCode ()
-		{
-			return Path.GetHashCode( StringComparison.OrdinalIgnoreCase );
-		}
+        public override int GetHashCode()
+        {
+            return Path.GetHashCode(StringComparison.OrdinalIgnoreCase);
+        }
 
-		public override bool Equals (object? obj)
-		{
-			return Equals( obj as HdlgFile );
-		}
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as HdlgFile);
+        }
 
-		public bool Equals (HdlgFile? other)
-		{
-			if (other is null)
-			{
-				return false;
-			}
+        public bool Equals(HdlgFile? other)
+        {
+            if (other is null)
+            {
+                return false;
+            }
 
-			if (ReferenceEquals( this, other ))
-			{
-				return true;
-			}
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
 
-			return string.Equals( Path, other.Path, StringComparison.OrdinalIgnoreCase );
-		}
+            return string.Equals(Path, other.Path, StringComparison.OrdinalIgnoreCase);
+        }
 
-		public int CompareTo (object? obj)
-		{
-			if (obj is null)
-			{
-				return 1;
-			}
+        public int CompareTo(object? obj)
+        {
+            if (obj is null)
+            {
+                return 1;
+            }
 
-			if (obj is HdlgFile file)
-			{
-				return CompareTo( file );
-			}
+            if (obj is HdlgFile file)
+            {
+                return CompareTo(file);
+            }
 
-			throw new ArgumentException( "L'objet doit être de type HdlgFile", nameof( obj ) );
-		}
+            throw new ArgumentException("L'objet doit être de type HdlgFile", nameof(obj));
+        }
 
-		public int CompareTo (HdlgFile? other)
-		{
-			if (other is null)
-			{
-				return 1;
-			}
+        public int CompareTo(HdlgFile? other)
+        {
+            if (other is null)
+            {
+                return 1;
+            }
 
-			return string.Compare( Path, other.Path, StringComparison.OrdinalIgnoreCase );
-		}
+            return string.Compare(Path, other.Path, StringComparison.OrdinalIgnoreCase);
+        }
 
-		public static bool operator == (HdlgFile? left, HdlgFile? right)
-		{
-			if (left is null)
-			{
-				return right is null;
-			}
+        public static bool operator ==(HdlgFile? left, HdlgFile? right)
+        {
+            if (left is null)
+            {
+                return right is null;
+            }
 
-			return left.Equals( right );
-		}
+            return left.Equals(right);
+        }
 
-		public static bool operator != (HdlgFile? left, HdlgFile? right)
-		{
-			return !(left == right);
-		}
+        public static bool operator !=(HdlgFile? left, HdlgFile? right)
+        {
+            return !(left == right);
+        }
 
-		public static bool operator < (HdlgFile? left, HdlgFile? right)
-		{
-			return Comparer<HdlgFile>.Default.Compare( left, right ) < 0;
-		}
+        public static bool operator <(HdlgFile? left, HdlgFile? right)
+        {
+            return Comparer<HdlgFile>.Default.Compare(left, right) < 0;
+        }
 
-		public static bool operator <= (HdlgFile? left, HdlgFile? right)
-		{
-			return Comparer<HdlgFile>.Default.Compare( left, right ) <= 0;
-		}
+        public static bool operator <=(HdlgFile? left, HdlgFile? right)
+        {
+            return Comparer<HdlgFile>.Default.Compare(left, right) <= 0;
+        }
 
-		public static bool operator > (HdlgFile? left, HdlgFile? right)
-		{
-			return Comparer<HdlgFile>.Default.Compare( left, right ) > 0;
-		}
+        public static bool operator >(HdlgFile? left, HdlgFile? right)
+        {
+            return Comparer<HdlgFile>.Default.Compare(left, right) > 0;
+        }
 
-		public static bool operator >= (HdlgFile? left, HdlgFile? right)
-		{
-			return Comparer<HdlgFile>.Default.Compare( left, right ) >= 0;
-		}
-	}
+        public static bool operator >=(HdlgFile? left, HdlgFile? right)
+        {
+            return Comparer<HdlgFile>.Default.Compare(left, right) >= 0;
+        }
+    }
 }

@@ -11,55 +11,55 @@ using System.Diagnostics;
 
 namespace HDLG_winforms
 {
-	public partial class Credit : Form
-	{
-		public Credit ()
-		{
-			InitializeComponent( );
+    public partial class Credit : Form
+    {
+        public Credit()
+        {
+            InitializeComponent();
 
-		}
+        }
 
-		private void Credit_Load (object sender, EventArgs e)
-		{
-			//Version version = Assembly.GetExecutingAssembly( ).GetName( ).Version;
-			lblTitle.Text = "HTML Directory List Generator " + typeof( Credit ).Assembly?.GetName( )?.Version?.ToString( );
+        private void Credit_Load(object sender, EventArgs e)
+        {
+            //Version version = Assembly.GetExecutingAssembly( ).GetName( ).Version;
+            lblTitle.Text = "HTML Directory List Generator " + typeof(Credit).Assembly?.GetName()?.Version?.ToString();
 
-		}
+        }
 
-		private void labelIconCredit_LinkClicked (object sender, LinkLabelLinkClickedEventArgs e)
-		{
-			// Source - https://stackoverflow.com/a
-			// Posted by Daniel
-			// Retrieved 2026-01-23, License - CC BY-SA 4.0
+        private void labelIconCredit_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            // Source - https://stackoverflow.com/a
+            // Posted by Daniel
+            // Retrieved 2026-01-23, License - CC BY-SA 4.0
 
-			ProcessStartInfo psInfo = new( )
-			{
-				FileName = "https://www.flaticon.com/free-icons/root-directory",
-				UseShellExecute = true
-			};
-			Process.Start( psInfo );
+            ProcessStartInfo psInfo = new()
+            {
+                FileName = "https://www.flaticon.com/free-icons/root-directory",
+                UseShellExecute = true
+            };
+            Process.Start(psInfo);
 
-		}
+        }
 
-		private void labelGPL_LinkClicked (object sender, LinkLabelLinkClickedEventArgs e)
-		{
-			ProcessStartInfo psInfo = new( )
-			{
-				FileName = "https://www.gnu.org/licenses/gpl-3.0.en.html",
-				UseShellExecute = true
-			};
-			Process.Start( psInfo );
-		}
+        private void labelGPL_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            ProcessStartInfo psInfo = new()
+            {
+                FileName = "https://www.gnu.org/licenses/gpl-3.0.en.html",
+                UseShellExecute = true
+            };
+            Process.Start(psInfo);
+        }
 
 
-		private void pictureBox1_Click (object sender, EventArgs e)
-		{
-			ProcessStartInfo psInfo = new( )
-			{
-				FileName = "https://www.gnu.org/licenses/gpl-3.0.en.html",
-				UseShellExecute = true
-			};
-			Process.Start( psInfo );
-		}
-	}
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            ProcessStartInfo psInfo = new()
+            {
+                FileName = "https://www.gnu.org/licenses/gpl-3.0.en.html",
+                UseShellExecute = true
+            };
+            Process.Start(psInfo);
+        }
+    }
 }
