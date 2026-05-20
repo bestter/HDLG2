@@ -88,10 +88,8 @@ namespace HdlgFileProperty
 
         public bool IsSupportedFile(string path)
         {
-            FileInfo fileInfo = new(path);
-            var extension = fileInfo.Extension.ToUpperInvariant();
-
-            return _supportedExtensions.Contains(extension);
+            var extension = Path.GetExtension(path);
+            return extension != null && _supportedExtensions.Contains(extension.ToUpperInvariant());
         }
     }
 }
