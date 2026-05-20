@@ -278,19 +278,24 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private PerformanceCount PerformDirectoryBrowseHtml(string selecteDirectory, string saveFilePath)
-		{
-			Debug.Write( $"{nameof( PerformDirectoryBrowseHtml )} started at {DateTime.Now:T}" );
-			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
-			{
-				Logger.Information( selecteDirectory );
-				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
-				Stopwatch stopwatch = Stopwatch.StartNew( );
-				Logger.Debug( $"Ready to start {nameof( directory.Browse )}" );
-				directory.Browse( propertyBrowser );
-				Logger.Debug( $"{nameof( directory.Browse )} of directory {directory.Name} done" );
-				TimeSpan browseTime = stopwatch.Elapsed;
-				propertyBrowser.LogGetterStatistics( );
+        private PerformanceCount PerformDirectoryBrowseHtml(string selecteDirectory, string saveFilePath)
+        {
+            Logger.Debug($"{nameof(PerformDirectoryBrowseHtml)} started at {DateTime.Now:T}");
+            TimeSpan saveTime = TimeSpan.Zero;
+            TimeSpan browseTime = TimeSpan.Zero;
+            if (!string.IsNullOrWhiteSpace(selecteDirectory))
+            {
+                Logger.Information(selecteDirectory);
+                HdlgDirectory directory = new(selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger);
+
+                Stopwatch stopwatch = Stopwatch.StartNew();
+                try
+                {
+                    Logger.Debug($"Ready to start {nameof(directory.Browse)}");
+                    directory.Browse(propertyBrowser);
+                    Logger.Debug($"{nameof(directory.Browse)} of directory {directory.Name} done");
+                    browseTime = stopwatch.Elapsed;
+                    propertyBrowser.LogGetterStatistics();
 
 				DirectoryBrowser db = new( Logger );
 				Logger.Debug( $"Ready to start {nameof( DirectoryBrowser.SaveAsHTMLAsync )}" );
