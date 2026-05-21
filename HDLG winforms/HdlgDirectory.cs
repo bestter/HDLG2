@@ -5,10 +5,10 @@ HTML Directory List Generator is free software: you can redistribute it and/or m
 
 HTML Directory List Generator is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with HTML Directory List Generator. If not, see <https://www.gnu.org/licenses/>. 
+You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
  */
 using HdlgFileProperty;
-using Serilog.Core;
+using Serilog;
 using System.Collections.ObjectModel;
 
 namespace HDLG_winforms
@@ -24,7 +24,7 @@ namespace HDLG_winforms
 
         private readonly DirectoryInfo directoryInfo;
 
-        private readonly List<HdlgDirectory> directories = [];
+		private readonly List<HdlgDirectory> directories = [];
 
         public bool IsTopDirectory { get; private set; }
 
@@ -42,22 +42,22 @@ namespace HDLG_winforms
         /// <summary>
         /// Logger
         /// </summary>
-        private readonly Serilog.ILogger log;
+        private readonly ILogger log;
 
-        public HdlgDirectory(string path, bool isTopDirectory, bool browseSubdirectory, Serilog.ILogger log) : this(new DirectoryInfo(path), isTopDirectory, browseSubdirectory, log)
+        public HdlgDirectory(string path, bool isTopDirectory, bool browseSubdirectory, ILogger log) : this(new DirectoryInfo(path), isTopDirectory, browseSubdirectory, log)
         {
 
         }
 
-        public HdlgDirectory(DirectoryInfo directory, bool isTopDirectory, bool browseSubdirectory, Serilog.ILogger log)
+        public HdlgDirectory(DirectoryInfo directory, bool isTopDirectory, bool browseSubdirectory, ILogger log)
         {
-            directoryInfo = directory ?? throw new ArgumentNullException(nameof(directory));
+            directoryInfo = directory ?? throw new ArgumentNullException( nameof( directory ) );
             Path = directory.FullName;
             Name = directory.Name;
             CreationTime = directory.CreationTimeUtc.ToLocalTime();
             IsTopDirectory = isTopDirectory;
             BrowseSubdirectory = browseSubdirectory;
-            this.log = log ?? throw new ArgumentNullException(nameof(log));
+            this.log = log ?? throw new ArgumentNullException( nameof( log ) );
         }
 
 
@@ -67,8 +67,8 @@ namespace HDLG_winforms
         /// <param name="propertyBrowser"></param>
         public void Browse(FilePropertyBrowser propertyBrowser)
         {
-            ArgumentNullException.ThrowIfNull(propertyBrowser);
-            log.Debug($"Directory: {Path} {nameof(IsTopDirectory)}: {IsTopDirectory} {nameof(BrowseSubdirectory)}: {BrowseSubdirectory}");
+			ArgumentNullException.ThrowIfNull( propertyBrowser );
+			log.Debug($"Directory: {Path} {nameof(IsTopDirectory)}: {IsTopDirectory} {nameof(BrowseSubdirectory)}: {BrowseSubdirectory}");
 
             if (BrowseSubdirectory)
             {

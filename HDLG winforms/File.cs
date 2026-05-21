@@ -1,4 +1,3 @@
-using Windows.Foundation.Metadata;
 
 namespace HDLG_winforms
 {

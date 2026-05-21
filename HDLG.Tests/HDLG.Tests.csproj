@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <PlatformTarget>x64</PlatformTarget>
     <!-- Disable WindowsForms in linux to allow building but we might need it for types so conditional -->
     <UseWindowsForms Condition="'$(OS)' == 'Windows_NT'">true</UseWindowsForms>
     <!-- This allows referencing the project without blowing up the compiler on Linux for WinForms -->

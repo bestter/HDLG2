@@ -5,13 +5,11 @@ HTML Directory List Generator is free software: you can redistribute it and/or m
 
 HTML Directory List Generator is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with HTML Directory List Generator. If not, see <https://www.gnu.org/licenses/>. 
+You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
  */
 using Serilog;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
-using System.Drawing;
-using Image = SixLabors.ImageSharp.Image;
 
 namespace HdlgFileProperty
 {
@@ -49,13 +47,15 @@ namespace HdlgFileProperty
                     }
                 }
             }
-            catch (UnknownImageFormatException)
+            catch (UnknownImageFormatException e    )
             {
                 //The stream does not have a valid image format.
+                Logger?.Warning(e, "Unsupported image format for file: {FilePath}", path);
             }
-            catch (InvalidImageContentException)
+            catch (InvalidImageContentException e)
             {
                 //The image content is corrupted or invalid.
+                Logger?.Warning(e,"Invalid image content for file: {FilePath}", path);
             }
             catch (Exception)
             {

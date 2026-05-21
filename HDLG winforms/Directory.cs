@@ -1,5 +1,5 @@
 using HdlgFileProperty;
-using Serilog.Core;
+using Serilog;
 using System.Collections.ObjectModel;
 
 namespace HDLG_winforms
@@ -33,14 +33,14 @@ namespace HDLG_winforms
         /// <summary>
         /// Logger
         /// </summary>
-        private readonly Logger log;
+        private readonly ILogger log;
 
-        public Directory(string path, bool isTopDirectory, bool browseSubdirectory, Logger log) : this(new DirectoryInfo(path), isTopDirectory, browseSubdirectory, log)
+        public Directory(string path, bool isTopDirectory, bool browseSubdirectory, ILogger log) : this(new DirectoryInfo(path), isTopDirectory, browseSubdirectory, log)
         {
 
         }
 
-        public Directory(DirectoryInfo directory, bool isTopDirectory, bool browseSubdirectory, Logger log)
+        public Directory(DirectoryInfo directory, bool isTopDirectory, bool browseSubdirectory, ILogger log)
         {
             directoryInfo = directory ?? throw new ArgumentNullException(nameof(directory));
             Path = directory.FullName;

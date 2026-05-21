@@ -1,19 +1,26 @@
+/*
+ This file is part of HTML Directory List Generator.
+
+HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+HTML Directory List Generator is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
+ */
 using HdlgFileProperty;
-using Serilog.Core;
+using Serilog;
 using System.Diagnostics;
 using System.Globalization;
 
-#pragma warning disable CA1707 // Identifiers should not contain underscores
 namespace HDLG_winforms
-#pragma warning restore CA1707
 {
     public partial class BrowserForm : Form
     {
         private readonly string rootDirectory;
         private readonly FilePropertyBrowser propertyBrowser;
-        private readonly Serilog.ILogger logger;
+        private readonly ILogger logger;
 
-        public BrowserForm(string rootDirectory, FilePropertyBrowser propertyBrowser, Serilog.ILogger logger)
+        public BrowserForm(string rootDirectory, FilePropertyBrowser propertyBrowser, ILogger logger)
         {
             InitializeComponent();
             this.rootDirectory = rootDirectory;
@@ -31,11 +38,11 @@ namespace HDLG_winforms
                 treeView1.Nodes.Add(rootNode);
                 rootNode.Expand();
             }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception ex)
+#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
+			catch (Exception ex)
 #pragma warning restore CA1031
-            {
-                logger.Error(ex, "Error loading root directory in BrowserForm");
+			{
+				logger.Error(ex, "Error loading root directory in BrowserForm");
                 MessageBox.Show(this, "An error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -84,11 +91,11 @@ namespace HDLG_winforms
                     logger.Warning(ex, $"Access denied to directory: {info.Path}");
                     e.Node.Nodes.Add(new TreeNode("Access Denied"));
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
-                catch (Exception ex)
+#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
+				catch (Exception ex)
 #pragma warning restore CA1031
-                {
-                    logger.Error(ex, $"Error loading directory: {info.Path}");
+				{
+					logger.Error(ex, $"Error loading directory: {info.Path}");
                     e.Node.Nodes.Add(new TreeNode("Error"));
                 }
                 finally
@@ -105,9 +112,7 @@ namespace HDLG_winforms
 
             if (e.Node == null || e.Node.Tag is not NodeInfo info)
             {
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
                 lblSelectedFileName.Text = "Select a file to view properties";
-#pragma warning restore CA1303
                 return;
             }
 
@@ -143,11 +148,11 @@ namespace HDLG_winforms
                     }
                 }
             }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception ex)
+#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
+			catch (Exception ex)
 #pragma warning restore CA1031
-            {
-                logger.Error(ex, $"Error reading properties for file: {info.Path}");
+			{
+				logger.Error(ex, $"Error reading properties for file: {info.Path}");
                 AddPropertyToListView("Error", ex.Message);
             }
             finally

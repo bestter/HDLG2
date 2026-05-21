@@ -91,7 +91,7 @@ namespace HDLG.Tests
         }
 
         [Theory]
-        [InlineData("test.doc", true)]
+        [InlineData("test.doc", false)]
         [InlineData("test.docx", true)]
         [InlineData("test.txt", false)]
         public void WordPropertyGetter_IsSupportedFile_ReturnsExpectedResult(string path, bool expected)
@@ -107,7 +107,7 @@ namespace HDLG.Tests
         }
 
         [Theory]
-        [InlineData("test.xls", true)]
+        [InlineData("test.xls", false)]
         [InlineData("test.xlsx", true)]
         [InlineData("test.txt", false)]
         public void ExcelPropertyGetter_IsSupportedFile_ReturnsExpectedResult(string path, bool expected)

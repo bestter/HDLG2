@@ -3,7 +3,7 @@
 Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
 **Version** : 1.2.0  
-**Dernière mise à jour** : 19 mai 2026  
+**Dernière mise à jour** : 21 mai 2026  
 **Propriétaire** : Martin Labelle (@bestter)
 
 ---
@@ -85,10 +85,10 @@ La solution `HDLG.sln` contient **trois projets** :
 |---|---|
 | **`IFilePropertyGetter.cs`** | Interface définissant le contrat pour les extracteurs de propriétés : `IsSupportedFile()` et `GetFileProperties()`. |
 | **`FilePropertyBrowser.cs`** | Orchestrateur qui délègue l'extraction des propriétés au bon `IFilePropertyGetter` en fonction du type de fichier. Collecte aussi des statistiques de performance par getter. |
-| **`ImagePropertyGetter.cs`** | Extraction de propriétés d'images (via `SixLabors.ImageSharp` et `System.Drawing.Common`). |
+| **`ImagePropertyGetter.cs`** | Extraction de propriétés d'images (via `SixLabors.ImageSharp` uniquement). |
 | **`WordPropertyGetter.cs`** | Extraction de propriétés de documents Word (via `DocumentFormat.OpenXml`). |
 | **`ExcelPropertyGetter.cs`** | Extraction de propriétés de fichiers Excel (via `DocumentFormat.OpenXml`). |
-| **`PdfPropertyGetter.cs`** | Extraction de propriétés de fichiers PDF (via `iText`). |
+| **`PdfPropertyGetter.cs`** | Extraction de propriétés de fichiers PDF (via `PdfPig`). |
 | **`Mp3PropertyGetter.cs`** | Extraction de propriétés de fichiers MP3 (via `TagLibSharp`). |
 | **`FilePropertyGetterStatistic.cs`** | Wrapper autour d'un `IFilePropertyGetter` pour mesurer le temps d'exécution et compter les fichiers traités. |
 
@@ -118,8 +118,7 @@ La solution `HDLG.sln` contient **trois projets** :
 | Package | Version | Usage |
 |---|---|---|
 | `DocumentFormat.OpenXml` | 3.5.1 | Lecture de documents Office (Word, Excel) |
-| `itext` | 9.6.0 | Lecture de propriétés PDF |
-| `itext.bouncy-castle-adapter` | 9.6.0 | Adaptateur cryptographique pour iText |
+| `PdfPig` | 0.1.14 | Lecture de propriétés PDF |
 | `Newtonsoft.Json` | 13.0.4 | Sérialisation JSON |
 | `Serilog` | 4.3.1 | Logging |
 | `SixLabors.ImageSharp` | 3.1.12 | Traitement d'images |

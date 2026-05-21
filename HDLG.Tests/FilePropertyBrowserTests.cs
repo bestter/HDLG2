@@ -53,7 +53,7 @@ namespace HDLG.Tests
             var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object);
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => browser.GetFileProperty(null!));
+            Assert.Throws<ArgumentNullException>(() => browser.GetFileProperty(null!));
             Assert.Throws<ArgumentException>(() => browser.GetFileProperty(""));
             Assert.Throws<ArgumentException>(() => browser.GetFileProperty("   "));
         }

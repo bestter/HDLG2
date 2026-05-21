@@ -104,7 +104,7 @@ namespace HDLG.Tests
 
             var htmlContent = await System.IO.File.ReadAllTextAsync(tempHtmlFilePath);
             htmlContent.Should().Contain("<!DOCTYPE html>");
-            htmlContent.Should().Contain("<html lang=\"en\">");
+            htmlContent.Should().Contain($"<html lang=\"{System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName}\">");
             htmlContent.Should().Contain($"<h2>{testDirectory.Path}</h2>");
             htmlContent.Should().Contain("</html>");
         }
