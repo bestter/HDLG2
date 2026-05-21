@@ -23,12 +23,16 @@ namespace HDLG_winforms
 
 		public IReadOnlyDictionary<string, IConvertible> Properties { get; }
 
-		public HdlgFile (string path, Dictionary<string, IConvertible>? properties)
-		{
-			ArgumentNullException.ThrowIfNull(path);
+        public HdlgFile(string path, Dictionary<string, IConvertible>? properties)
+            : this(new FileInfo(path ?? throw new ArgumentNullException(nameof(path))), properties)
+        {
+        }
 
-			Path = path;
-			FileInfo info = new( Path );
+        public HdlgFile(FileInfo info, Dictionary<string, IConvertible>? properties)
+        {
+            ArgumentNullException.ThrowIfNull(info);
+
+            Path = info.FullName;
 
 			if (info.Exists)
 			{

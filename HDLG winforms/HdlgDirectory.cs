@@ -82,7 +82,7 @@ namespace HDLG_winforms
             foreach (var f in directoryInfo.EnumerateFiles())
             {
                 var properties = propertyBrowser.GetFileProperty(f.FullName);
-                var file = new HdlgFile(f.FullName, properties);
+                var file = new HdlgFile(f, properties);
                 files.Add(file);
             }
             files.Sort();
