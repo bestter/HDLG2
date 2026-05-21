@@ -111,7 +111,6 @@ La solution `HDLG.sln` contient **trois projets** :
 | `Microsoft.Extensions.Hosting` | 10.0.8 | Hébergement et injection de dépendances |
 | `Microsoft.Extensions.DependencyInjection` | 10.0.8 | Conteneur IoC |
 | `Microsoft.Extensions.Logging` | 10.0.8 | Abstraction de logging |
-| `Newtonsoft.Json` | 13.0.4 | Sérialisation JSON |
 | `Serilog.Sinks.File` | 7.0.0 | Journalisation vers fichiers |
 
 ### `HdlgFileProperty`
@@ -119,7 +118,6 @@ La solution `HDLG.sln` contient **trois projets** :
 |---|---|---|
 | `DocumentFormat.OpenXml` | 3.5.1 | Lecture de documents Office (Word, Excel) |
 | `PdfPig` | 0.1.14 | Lecture de propriétés PDF |
-| `Newtonsoft.Json` | 13.0.4 | Sérialisation JSON |
 | `Serilog` | 4.3.1 | Logging |
 | `SixLabors.ImageSharp` | 3.1.12 | Traitement d'images |
 | `System.Drawing.Common` | 10.0.8 | API graphique Windows |
