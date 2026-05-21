@@ -53,6 +53,26 @@ namespace HDLG_winforms
             public string Path { get; set; } = string.Empty;
         }
 
+        /// <summary>
+        /// Validates that a resolved path stays within the root directory to prevent path traversal attacks
+        /// </summary>
+        /// <param name="path">The path to validate</param>
+        /// <returns>True if the path is within the root directory</returns>
+        private bool IsPathWithinRoot(string path)
+        {
+            string resolvedPath = Path.GetFullPath(path);
+            string resolvedRoot = Path.GetFullPath(rootDirectory);
+
+            // Ensure root ends with separator for prefix comparison
+            if (!resolvedRoot.EndsWith(Path.DirectorySeparatorChar))
+            {
+                resolvedRoot += Path.DirectorySeparatorChar;
+            }
+
+            return resolvedPath.StartsWith(resolvedRoot, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(resolvedPath, Path.GetFullPath(rootDirectory), StringComparison.OrdinalIgnoreCase);
+        }
+
         private void TreeView1_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
             if (e.Node == null || e.Node.Tag is not NodeInfo info || !info.IsDirectory)
@@ -65,6 +85,13 @@ namespace HDLG_winforms
 
                 try
                 {
+                    if (!IsPathWithinRoot(info.Path))
+                    {
+                        logger.Warning($"Path traversal blocked: {info.Path} is outside root directory {rootDirectory}");
+                        e.Node.Nodes.Add(new TreeNode("Access Denied"));
+                        return;
+                    }
+
                     var dirInfo = new DirectoryInfo(info.Path);
 
                     var dirNodes = new List<TreeNode>();
@@ -129,6 +156,15 @@ namespace HDLG_winforms
                 btnOpenFile.Enabled = true;
 
                 var fileInfo = new FileInfo(info.Path);
+
+                if (!IsPathWithinRoot(info.Path))
+                {
+                    logger.Warning($"Path traversal blocked: {info.Path} is outside root directory {rootDirectory}");
+                    AddPropertyToListView("Error", "Access denied: path is outside the root directory.");
+                    btnOpenFile.Enabled = false;
+                    return;
+                }
+
                 lblSelectedFileName.Text = fileInfo.Name;
 
                 AddPropertyToListView("Name", fileInfo.Name);

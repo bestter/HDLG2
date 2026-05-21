@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
 using HDLG_winforms;
@@ -105,8 +106,50 @@ namespace HDLG.Tests
             var htmlContent = await System.IO.File.ReadAllTextAsync(tempHtmlFilePath);
             htmlContent.Should().Contain("<!DOCTYPE html>");
             htmlContent.Should().Contain($"<html lang=\"{System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName}\">");
-            htmlContent.Should().Contain($"<h2>{testDirectory.Path}</h2>");
+            htmlContent.Should().Contain($"<h2>{WebUtility.HtmlEncode( testDirectory.Path )}</h2>");
             htmlContent.Should().Contain("</html>");
+        }
+
+        [Fact]
+        public async Task SaveAsHTMLAsync_DirectoryWithSpecialChars_EncodesHtmlContent()
+        {
+            // Arrange — create a directory with HTML-dangerous characters in the name
+            var dangerousDirName = "test&dir<xss>";
+            var dangerousDirPath = Path.Combine(baseDirectoryPath, dangerousDirName);
+
+            // On Windows, < and > are not valid directory name chars, so use only &
+            var safeDangerousDirName = "test&dir";
+            var safeDangerousDirPath = Path.Combine(baseDirectoryPath, safeDangerousDirName);
+            System.IO.Directory.CreateDirectory(safeDangerousDirPath);
+            System.IO.File.WriteAllText(Path.Combine(safeDangerousDirPath, "a&b.txt"), "content");
+
+            var dirWithSubDirs = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+            var browser = new HdlgFileProperty.FilePropertyBrowser(loggerMock.Object);
+            dirWithSubDirs.Browse(browser);
+
+            var htmlPath = Path.Combine(Path.GetTempPath(), "test_xss_" + Guid.NewGuid().ToString() + ".html");
+
+            try
+            {
+                // Act
+                await directoryBrowser.SaveAsHTMLAsync(htmlPath, dirWithSubDirs);
+
+                // Assert
+                var htmlContent = await System.IO.File.ReadAllTextAsync(htmlPath);
+
+                // The & character must be encoded as &amp; in the HTML output
+                htmlContent.Should().Contain(WebUtility.HtmlEncode(safeDangerousDirName));
+                htmlContent.Should().NotContain($"<span class=\"name\">{safeDangerousDirName}</span>");
+                htmlContent.Should().Contain($"<span class=\"name\">{WebUtility.HtmlEncode( safeDangerousDirName )}</span>");
+
+                // File name with & must also be encoded
+                htmlContent.Should().Contain(WebUtility.HtmlEncode("a&b.txt"));
+            }
+            finally
+            {
+                if (System.IO.File.Exists(htmlPath))
+                    System.IO.File.Delete(htmlPath);
+            }
         }
     }
 }

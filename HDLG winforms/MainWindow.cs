@@ -197,19 +197,43 @@ toolStripStatusLabelTotalTime.Visible = false;
 		}
 
 		/// <summary>
-		/// Open file
+		/// Dangerous file extensions that must not be opened directly to prevent process injection
+		/// </summary>
+		private static readonly HashSet<string> DangerousExtensions = new( StringComparer.OrdinalIgnoreCase )
+		{
+			".exe", ".bat", ".cmd", ".ps1", ".vbs", ".js", ".wsf", ".scr", ".com", ".msi", ".pif", ".hta", ".cpl"
+		};
+
+		/// <summary>
+		/// Open file with the default program
 		/// </summary>
 		/// <param name="path"></param>
 		/// <remarks>https://stackoverflow.com/a/54275102/910741</remarks>
+		/// <exception cref="ArgumentException">Thrown when path is null or whitespace</exception>
+		/// <exception cref="FileNotFoundException">Thrown when the file does not exist</exception>
+		/// <exception cref="InvalidOperationException">Thrown when the file has a dangerous extension</exception>
 		public static void OpenWithDefaultProgram(string path)
-{
-    using Process fileopener = new();
-    fileopener.StartInfo = new ProcessStartInfo(path)
-    {
-        UseShellExecute = true
-    };
-    fileopener.Start();
-}
+		{
+			ArgumentException.ThrowIfNullOrWhiteSpace( path );
+
+			if (!System.IO.File.Exists( path ))
+			{
+				throw new FileNotFoundException( "The specified file was not found.", path );
+			}
+
+			string extension = System.IO.Path.GetExtension( path );
+			if (DangerousExtensions.Contains( extension ))
+			{
+				throw new InvalidOperationException( $"Opening files with extension '{extension}' is not allowed for security reasons." );
+			}
+
+			using Process fileopener = new( );
+			fileopener.StartInfo = new ProcessStartInfo( path )
+			{
+				UseShellExecute = true
+			};
+			fileopener.Start( );
+		}
 
 		/// <summary>
 		/// Dispose
