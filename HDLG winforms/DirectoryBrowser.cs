@@ -5,8 +5,7 @@ HTML Directory List Generator is free software: you can redistribute it and/or m
 
 HTML Directory List Generator is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
-You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
+You should have received a copy of the GNU General Public License along with HTML Directory List Generator. If not, see <https://www.gnu.org/licenses/>. 
  */
 using Serilog;
 using System.Globalization;
@@ -282,7 +281,6 @@ namespace HDLG_winforms
 			await sw.WriteLineAsync( "</div>" ).ConfigureAwait( false );
 
 			await WriteDirectoriesListAsync( sw, directory ).ConfigureAwait( false );
-			await WriteDirectoriesListAsync( sw, directory ).ConfigureAwait( false );
 
 			await sw.WriteLineAsync( "<div class=\"directoryHeader\">" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "<span>Directory</span>" ).ConfigureAwait( false );
@@ -290,12 +288,7 @@ namespace HDLG_winforms
 			await sw.WriteLineAsync( "</div>" ).ConfigureAwait( false );
 
 			await sw.WriteLineAsync( "<div class=\"spacer\">&nbsp;</div>" ).ConfigureAwait( false );
-			await sw.WriteLineAsync( "<div class=\"spacer\">&nbsp;</div>" ).ConfigureAwait( false );
 
-			await sw.WriteLineAsync( "<div class=\"dateTime headerContent\">" ).ConfigureAwait( false );
-			await sw.WriteLineAsync( "<span class=\"headerContentTitle\">DateTime</span>" ).ConfigureAwait( false );
-			await sw.WriteLineAsync( $"<span class=\"headerContentData\">{DateTime.Now.ToString( "F", CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
-			await sw.WriteLineAsync( "</div>" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "<div class=\"dateTime headerContent\">" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "<span class=\"headerContentTitle\">DateTime</span>" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( $"<span class=\"headerContentData\">{DateTime.Now.ToString( "F", CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
