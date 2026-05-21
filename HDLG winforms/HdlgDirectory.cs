@@ -8,7 +8,7 @@ HTML Directory List Generator is distributed in the hope that it will be useful,
 You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
  */
 using HdlgFileProperty;
-using Serilog.Core;
+using Serilog;
 using System.Collections.ObjectModel;
 
 namespace HDLG_winforms
@@ -42,14 +42,14 @@ namespace HDLG_winforms
         /// <summary>
         /// Logger
         /// </summary>
-        private readonly Logger log;
+        private readonly ILogger log;
 
-        public HdlgDirectory(string path, bool isTopDirectory, bool browseSubdirectory, Logger log) : this(new DirectoryInfo(path), isTopDirectory, browseSubdirectory, log)
+        public HdlgDirectory(string path, bool isTopDirectory, bool browseSubdirectory, ILogger log) : this(new DirectoryInfo(path), isTopDirectory, browseSubdirectory, log)
         {
 
         }
 
-        public HdlgDirectory(DirectoryInfo directory, bool isTopDirectory, bool browseSubdirectory, Logger log)
+        public HdlgDirectory(DirectoryInfo directory, bool isTopDirectory, bool browseSubdirectory, ILogger log)
         {
             directoryInfo = directory ?? throw new ArgumentNullException( nameof( directory ) );
             Path = directory.FullName;

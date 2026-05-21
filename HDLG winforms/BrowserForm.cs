@@ -8,7 +8,7 @@ HTML Directory List Generator is distributed in the hope that it will be useful,
 You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
  */
 using HdlgFileProperty;
-using Serilog.Core;
+using Serilog;
 using System.Diagnostics;
 using System.Globalization;
 
@@ -18,9 +18,9 @@ namespace HDLG_winforms
     {
         private readonly string rootDirectory;
         private readonly FilePropertyBrowser propertyBrowser;
-        private readonly Logger logger;
+        private readonly ILogger logger;
 
-        public BrowserForm(string rootDirectory, FilePropertyBrowser propertyBrowser, Logger logger)
+        public BrowserForm(string rootDirectory, FilePropertyBrowser propertyBrowser, ILogger logger)
         {
             InitializeComponent();
             this.rootDirectory = rootDirectory;

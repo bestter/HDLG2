@@ -30,7 +30,7 @@ namespace HDLG_winforms
 
 		public Mp3PropertyGetter Mp3PropertyGetter;
 
-		private Logger Logger;
+		private ILogger Logger;
 		#endregion
 
 		/// <summary>
@@ -38,7 +38,7 @@ namespace HDLG_winforms
 		/// </summary>
 		private readonly FilePropertyBrowser propertyBrowser;
 
-		public MainWindow (ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter, PdfPropertyGetter pdfPropertyGetter, Mp3PropertyGetter mp3PropertyGetter, Logger logger)
+		public MainWindow (ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter, PdfPropertyGetter pdfPropertyGetter, Mp3PropertyGetter mp3PropertyGetter, ILogger logger)
 		{
 			InitializeComponent( );
 			ImagePropertyGetter = imagePropertyGetter;
@@ -221,7 +221,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			{
 				components?.Dispose( );
 
-				Logger.Dispose( );
+				(Logger as IDisposable)?.Dispose( );
 			}
 
 			base.Dispose( disposing );

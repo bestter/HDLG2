@@ -7,7 +7,7 @@ HTML Directory List Generator is distributed in the hope that it will be useful,
 
 You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
  */
-using Serilog.Core;
+using Serilog;
 using System.Globalization;
 using System.Text;
 using System.Xml;
@@ -22,14 +22,14 @@ namespace HDLG_winforms
 		/// <summary>
 		/// Logger
 		/// </summary>
-		private readonly Logger log;
+		private readonly ILogger log;
 
 		/// <summary>
 		/// Css content
 		/// </summary>
 		private string? CssContent;
 
-		public DirectoryBrowser (Logger log)
+		public DirectoryBrowser (ILogger log)
 		{
 			this.log = log ?? throw new ArgumentNullException( nameof( log ) );
 			CssContent = null;
