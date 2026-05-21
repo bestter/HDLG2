@@ -16,15 +16,15 @@
     <RepositoryUrl>https://github.com/bestter/HDLG2.git</RepositoryUrl>
     <Title>HTML directory list generator</Title>
     <NeutralLanguage>en-CA</NeutralLanguage>
-    <AssemblyVersion>1.1.0.0</AssemblyVersion>
-    <Version>1.1.0</Version>
+    <AssemblyVersion>1.1.1.0</AssemblyVersion>
+    <Version>1.1.1</Version>
     <Copyright>2023-2026 Martin Labelle</Copyright>
     <PlatformTarget>x64</PlatformTarget>
     <Platforms>x86;x64</Platforms>
-    <FileVersion>1.1.0.0</FileVersion>
+    <FileVersion>1.1.1.0</FileVersion>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
     <AnalysisLevel>6.0-all</AnalysisLevel>
-    <PackageIcon>root-directory.png</PackageIcon>
+    <PackageIcon>root-directory.png</PackageIcon>    
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
