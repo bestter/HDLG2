@@ -17,10 +17,10 @@
   - Quick-click `file:///` pathways to directly open indexed items.
 - 📊 **Structured XML Export**: Employs clean, high-performance streaming writers (`XmlWriter`) for easy data migration and integration.
 - 🔍 **Deep Metadata Extraction**: Automatically parses and extracts domain-specific properties:
-  - **Images**: Dimensions, pixel format, and resolution (using *ImageSharp*).
-  - **Word & Excel**: Document title, author, word count, and creation dates (using *OpenXML*).
-  - **PDF**: Page count, author, producer, title, and creation dates (using *iText*).
-  - **MP3**: Title, artist, album, genre, duration, and audio specifications (using *TagLibSharp*).
+  - **Images**: Dimensions (Width and Height) and camera model (using *ImageSharp*).
+  - **Word & Excel**: Document title, creator, and creation date (using *OpenXML*).
+  - **PDF**: Document title (using *PdfPig*).
+  - **MP3**: Title, duration, album, year, performers, album artists, composers, and copyright (using *TagLibSharp*).
 - ⚡ **Performance Instrumentation**: Measures, records, and displays execution metrics (scantime, compilation, and save-time).
 - 🪵 **Structured Logging**: Rolling diagnostic logs written daily to `%LOCALAPPDATA%\HDLG\logs`.
 
