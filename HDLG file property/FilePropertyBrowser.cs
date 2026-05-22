@@ -37,11 +37,11 @@ namespace HdlgFileProperty
             }
         }
 
-        public Dictionary<string, IConvertible> GetFileProperty(string path)
+        public Dictionary<string, IConvertible>? GetFileProperty(string path)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(path);
             TotalNumberOfFiles++;
-            Dictionary<string, IConvertible> properties = new();
+            Dictionary<string, IConvertible>? properties = null;
             foreach (var propertyGetters in filePropertyGetters)
             {
                 if (propertyGetters.FilePropertyGetter.IsSupportedFile(path))
@@ -49,9 +49,13 @@ namespace HdlgFileProperty
                     propertyGetters.IncrementFile();
                     propertyGetters.StartTimer();
                     var currentProperties = propertyGetters.FilePropertyGetter.GetFileProperties(path);
+                    if (currentProperties.Count > 0 && properties == null)
+                    {
+                        properties = new();
+                    }
                     foreach (var currentProperty in currentProperties)
                     {
-                        _ = properties.TryAdd(currentProperty.Key, currentProperty.Value);
+                        _ = properties!.TryAdd(currentProperty.Key, currentProperty.Value);
                     }
                     propertyGetters.StopTimer();
 
