@@ -71,7 +71,7 @@ namespace HDLG_winforms
             directoryInfo.EnumerateFiles().ToList().ForEach(f =>
             {
                 var properties = propertyBrowser.GetFileProperty(f.FullName);
-                var file = new File(f.FullName, properties);
+                var file = new File(f.FullName, properties ?? new Dictionary<string, IConvertible>());
                 files.Add(file);
             });
             files.Sort();
