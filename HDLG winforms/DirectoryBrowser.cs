@@ -5,10 +5,11 @@ HTML Directory List Generator is free software: you can redistribute it and/or m
 
 HTML Directory List Generator is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
+You should have received a copy of the GNU General Public License along with HTML Directory List Generator. If not, see <https://www.gnu.org/licenses/>. 
  */
 using Serilog;
 using System.Globalization;
+using System.Net;
 using System.Net;
 using System.Text;
 using System.Xml;
@@ -277,7 +278,7 @@ namespace HDLG_winforms
 			await sw.WriteLineAsync( "<div class=\"version\">" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( $"<h1>{encodedTitle}</h1>" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "<span>Version</span>" ).ConfigureAwait( false );
-			await sw.WriteLineAsync( $"<span>{version}</span>" ).ConfigureAwait( false );
+			await sw.WriteLineAsync( $"<span>{WebUtility.HtmlEncode( version )}</span>" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "</div>" ).ConfigureAwait( false );
 
 			await WriteDirectoriesListAsync( sw, directory ).ConfigureAwait( false );
@@ -418,8 +419,8 @@ namespace HDLG_winforms
 			await writer.WriteLineAsync( $"{spacer}<li><a href=\"file:///{WebUtility.HtmlEncode( file.Path )}\" download=\"{WebUtility.HtmlEncode( file.Name )}\" referrerpolicy=\"strict-origin\">{WebUtility.HtmlEncode( file.Name )}</a></li>" ).ConfigureAwait( false );
 
 
-			await writer.WriteLineAsync( $"{spacer}<li class=\"size\">{file.Size.ToString( CultureInfo.CurrentCulture )} kb</li>" ).ConfigureAwait( false );
-			await writer.WriteLineAsync( $"{spacer}<li class=\"creationTime\">{file.CreationTime.ToString( "F", CultureInfo.CurrentCulture )}</li>" ).ConfigureAwait( false );
+			await writer.WriteLineAsync( $"{spacer}<li class=\"size\">{WebUtility.HtmlEncode( file.Size.ToString( CultureInfo.CurrentCulture ) )} kb</li>" ).ConfigureAwait( false );
+			await writer.WriteLineAsync( $"{spacer}<li class=\"creationTime\">{WebUtility.HtmlEncode( file.CreationTime.ToString( "F", CultureInfo.CurrentCulture ) )}</li>" ).ConfigureAwait( false );
 			if (file.Properties != null && file.Properties.Count > 0)
 			{
 				await writer.WriteLineAsync( spacer + "<li>" ).ConfigureAwait( false );
@@ -434,7 +435,7 @@ namespace HDLG_winforms
 
 						if (property.Value is DateTime dtValue)
 						{
-							await writer.WriteLineAsync( $"{spacer}\t\t<span>{dtValue.ToString( "F", CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
+							await writer.WriteLineAsync( $"{spacer}\t\t<span>{WebUtility.HtmlEncode( dtValue.ToString( "F", CultureInfo.CurrentCulture ) )}</span>" ).ConfigureAwait( false );
 						}
 						else
 						{
