@@ -5,7 +5,7 @@ HTML Directory List Generator is free software: you can redistribute it and/or m
 
 HTML Directory List Generator is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>. 
+You should have received a copy of the GNU General Public License along with HTML Directory List Generator. If not, see <https://www.gnu.org/licenses/>. 
  */
 using HdlgFileProperty;
 using Serilog;
@@ -53,6 +53,26 @@ namespace HDLG_winforms
             public string Path { get; set; } = string.Empty;
         }
 
+        /// <summary>
+        /// Validates that a resolved path stays within the root directory to prevent path traversal attacks
+        /// </summary>
+        /// <param name="path">The path to validate</param>
+        /// <returns>True if the path is within the root directory</returns>
+        private bool IsPathWithinRoot(string path)
+        {
+            string resolvedPath = Path.GetFullPath(path);
+            string resolvedRoot = Path.GetFullPath(rootDirectory);
+
+            // Ensure root ends with separator for prefix comparison
+            if (!resolvedRoot.EndsWith(Path.DirectorySeparatorChar))
+            {
+                resolvedRoot += Path.DirectorySeparatorChar;
+            }
+
+            return resolvedPath.StartsWith(resolvedRoot, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(resolvedPath, Path.GetFullPath(rootDirectory), StringComparison.OrdinalIgnoreCase);
+        }
+
         private void TreeView1_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
             if (e.Node == null || e.Node.Tag is not NodeInfo info || !info.IsDirectory)
@@ -65,6 +85,13 @@ namespace HDLG_winforms
 
                 try
                 {
+                    if (!IsPathWithinRoot(info.Path))
+                    {
+                        logger.Warning($"Path traversal blocked: {info.Path} is outside root directory {rootDirectory}");
+                        e.Node.Nodes.Add(new TreeNode("Access Denied"));
+                        return;
+                    }
+
                     var dirInfo = new DirectoryInfo(info.Path);
 
                     var dirNodes = new List<TreeNode>();
@@ -105,6 +132,7 @@ namespace HDLG_winforms
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Localization", "CA1303:Do not pass literals as localized parameters")]
         private void TreeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
             listViewProperties.Items.Clear();
@@ -129,6 +157,15 @@ namespace HDLG_winforms
                 btnOpenFile.Enabled = true;
 
                 var fileInfo = new FileInfo(info.Path);
+
+                if (!IsPathWithinRoot(info.Path))
+                {
+                    logger.Warning($"Path traversal blocked: {info.Path} is outside root directory {rootDirectory}");
+                    AddPropertyToListView("Error", "Access denied: path is outside the root directory.");
+                    btnOpenFile.Enabled = false;
+                    return;
+                }
+
                 lblSelectedFileName.Text = fileInfo.Name;
 
                 AddPropertyToListView("Name", fileInfo.Name);
