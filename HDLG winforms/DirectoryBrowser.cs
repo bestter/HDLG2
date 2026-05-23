@@ -10,6 +10,7 @@ You should have received a copy of the GNU General Public License along with HTM
 using Serilog;
 using System.Globalization;
 using System.Net;
+using System.Net;
 using System.Text;
 using System.Xml;
 
@@ -254,8 +255,8 @@ namespace HDLG_winforms
 
 			using FileStream fileStream = new( fileInfo.FullName, FileMode.Create, FileAccess.Write, FileShare.None );
 			using StreamWriter sw = new( fileStream, encoding, 4096, false );
-			var titleRaw = $"HTML Directory list generator  {version} {directory.Path} {DateTimeOffset.Now.ToString( "F", CultureInfo.CurrentCulture )}";
-			var title = WebUtility.HtmlEncode( titleRaw );
+			var title = $"HTML Directory list generator  {version} {directory.Path} {DateTimeOffset.Now.ToString( "F", CultureInfo.CurrentCulture )}";
+			var encodedTitle = WebUtility.HtmlEncode(title);
 			await sw.WriteLineAsync( "<!DOCTYPE html>" ).ConfigureAwait( false );
 
 			await sw.WriteLineAsync( $"<html lang=\"{CultureInfo.CurrentCulture.TwoLetterISOLanguageName}\">" ).ConfigureAwait( false );
@@ -264,7 +265,7 @@ namespace HDLG_winforms
 			await sw.WriteLineAsync( "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "<meta name=\"robots\" content=\"noindex, nofollow\">" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "<meta name=\"rating\" content=\"general\">" ).ConfigureAwait( false );
-			await sw.WriteAsync( $"<title>{title}</title>" ).ConfigureAwait( false );
+			await sw.WriteAsync( $"<title>{encodedTitle}</title>" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( GetGoogleFontHeader( ) ).ConfigureAwait( false );
 			await sw.WriteLineAsync( await GetCssAsync( ).ConfigureAwait( false ) ).ConfigureAwait( false );
 			await sw.WriteLineAsync( ).ConfigureAwait( false );
@@ -275,7 +276,7 @@ namespace HDLG_winforms
 			await sw.WriteLineAsync( "<div class=\"Hdlg\">" ).ConfigureAwait( false );
 
 			await sw.WriteLineAsync( "<div class=\"version\">" ).ConfigureAwait( false );
-			await sw.WriteLineAsync( $"<h1>{title}</h1>" ).ConfigureAwait( false );
+			await sw.WriteLineAsync( $"<h1>{encodedTitle}</h1>" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "<span>Version</span>" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( $"<span>{WebUtility.HtmlEncode( version )}</span>" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "</div>" ).ConfigureAwait( false );
@@ -368,7 +369,7 @@ namespace HDLG_winforms
 			await writer.WriteLineAsync( spacer + $"<div class=\"directory\" id=\"{WebUtility.HtmlEncode( directory.Path )}\">" ).ConfigureAwait( false );
 			await writer.WriteLineAsync( $"{spacer}<span class=\"name\">{WebUtility.HtmlEncode( directory.Name )}</span>" ).ConfigureAwait( false );
 			await writer.WriteLineAsync( $"{spacer}<span class=\"path\">{WebUtility.HtmlEncode( directory.Path )}</span>" ).ConfigureAwait( false );
-			await writer.WriteLineAsync( $"{spacer}<span class=\"creationTime\">{WebUtility.HtmlEncode( directory.CreationTime.ToString( "F", CultureInfo.CurrentCulture ) )}</span>" ).ConfigureAwait( false );
+			await writer.WriteLineAsync( $"{spacer}<span class=\"creationTime\">{directory.CreationTime.ToString( "F", CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
 
 			await writer.WriteLineAsync( $"{spacer}<a href=\"#directoryList\">⬆️</a>" ).ConfigureAwait( false );
 
@@ -415,7 +416,7 @@ namespace HDLG_winforms
 			await writer.WriteLineAsync( spacer + "<ul class=\"file\">" ).ConfigureAwait( false );
 
 
-			await writer.WriteLineAsync( $"{spacer}<li><a href=\"file:///{Uri.EscapeDataString( file.Path )}\" download=\"{WebUtility.HtmlEncode( file.Name )}\" referrerpolicy=\"strict-origin\">{WebUtility.HtmlEncode( file.Name )}</a></li>" ).ConfigureAwait( false );
+			await writer.WriteLineAsync( $"{spacer}<li><a href=\"file:///{WebUtility.HtmlEncode( file.Path )}\" download=\"{WebUtility.HtmlEncode( file.Name )}\" referrerpolicy=\"strict-origin\">{WebUtility.HtmlEncode( file.Name )}</a></li>" ).ConfigureAwait( false );
 
 
 			await writer.WriteLineAsync( $"{spacer}<li class=\"size\">{WebUtility.HtmlEncode( file.Size.ToString( CultureInfo.CurrentCulture ) )} kb</li>" ).ConfigureAwait( false );
