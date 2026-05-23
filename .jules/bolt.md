@@ -8,3 +8,6 @@
 ## 2024-10-24 - File metadata dictionary allocation
 **Learning:** `FilePropertyBrowser` was aggressively allocating empty dictionaries for every single file parsed, even if no matching property getter supported it or returned properties. This creates significant garbage generation when parsing thousands of files in a directory list generator.
 **Action:** When a method conditionally builds a collection based on iteration or file metadata lookup, avoid eagerly allocating the container. Wait until at least one item is found to instantiate the collection. Additionally, files without metadata can safely use a static readonly `EmptyProperties` dictionary rather than fresh empty instances.
+## 2025-02-14 - Redundant string allocation in case-insensitive HashSet lookups
+**Learning:** Checking a HashSet that was initialized with `StringComparer.OrdinalIgnoreCase` using an explicitly upper-cased string (`extension.ToUpperInvariant()`) is redundant and causes unnecessary string allocations, which can add up in hot loops like checking supported extensions for every file.
+**Action:** When a collection like `HashSet<string>` is already configured to be case-insensitive, avoid any `.ToUpperInvariant()` or `.ToLowerInvariant()` calls on strings passed to its methods (e.g., `.Contains()`).
