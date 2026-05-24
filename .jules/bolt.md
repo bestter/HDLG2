@@ -11,3 +11,7 @@
 ## 2025-02-14 - Redundant string allocation in case-insensitive HashSet lookups
 **Learning:** Checking a HashSet that was initialized with `StringComparer.OrdinalIgnoreCase` using an explicitly upper-cased string (`extension.ToUpperInvariant()`) is redundant and causes unnecessary string allocations, which can add up in hot loops like checking supported extensions for every file.
 **Action:** When a collection like `HashSet<string>` is already configured to be case-insensitive, avoid any `.ToUpperInvariant()` or `.ToLowerInvariant()` calls on strings passed to its methods (e.g., `.Contains()`).
+
+## 2026-05-24 - Redundant string allocation with case-insensitive collections
+**Learning:** When using case-insensitive collections like `HashSet<string>(StringComparer.OrdinalIgnoreCase)`, calling `.ToUpperInvariant()` or similar methods on the checked string is redundant and causes unnecessary memory allocations.
+**Action:** Always check the comparer used by a collection before transforming strings for lookup. Avoid string transformations in hot loops like file enumeration.
