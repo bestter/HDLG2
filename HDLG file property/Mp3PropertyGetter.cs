@@ -77,6 +77,12 @@ namespace HdlgFileProperty
             {
                 Logger?.Warning(cfe, $"File {path} is corrupted");
             }
+#pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
+            catch (Exception e)
+            {
+                Logger?.Warning(e, "Cannot read properties from file {Path}", path);
+            }
+#pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
             return properties;
         }
 
