@@ -57,10 +57,12 @@ namespace HdlgFileProperty
                 //The image content is corrupted or invalid.
                 Logger?.Warning(e,"Invalid image content for file: {FilePath}", path);
             }
-            catch (Exception)
+#pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
+            catch (Exception e)
             {
-                throw;
+                Logger?.Warning(e, "Cannot read properties from file: {FilePath}", path);
             }
+#pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
             return properties;
         }
 
