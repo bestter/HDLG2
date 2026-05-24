@@ -50,6 +50,12 @@ namespace HdlgFileProperty
             {
                 Logger?.Warning(ex, "Could not open Word file or extract properties for {Path}", path);
             }
+#pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
+            catch (Exception ex)
+            {
+                Logger?.Warning(ex, "Cannot read properties from file {Path}", path);
+            }
+#pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
 
             return properties;
         }
