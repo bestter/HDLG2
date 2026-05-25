@@ -13,3 +13,8 @@
 **Vulnerability:** Discovered that background parsing of Mp3, Word, and Excel files did not catch generic exceptions from their respective third-party libraries (TagLib, DocumentFormat.OpenXml).
 **Learning:** In a bulk processing application, unhandled exceptions from third-party parsing libraries when encountering malformed or maliciously crafted files can bubble up and cause the entire background scan to crash, leading to a Denial of Service (DoS) vulnerability.
 **Prevention:** Always use a generic exception catch block (with `#pragma warning disable CA1031`) when passing untrusted file data to third-party parsers, logging the error and failing gracefully.
+
+## 2024-05-23 - [Process Injection/Security Check Bypass via File Extension]
+**Vulnerability:** The application was vulnerable to Process Injection because the blocklist for dangerous file extensions (like .exe, .bat) in `OpenWithDefaultProgram` could be bypassed by appending trailing spaces or dots to the file name.
+**Learning:** Windows Shell `Process.Start` ignores trailing spaces and dots when executing a file, but `System.IO.Path.GetExtension()` retains them. Therefore, an attacker could create a file named `malicious.bat. ` and the blocklist logic checking `Path.GetExtension` would test `.bat. ` against the list of dangerous extensions, resulting in a false negative and execution of the malicious file.
+**Prevention:** Always sanitize input paths by removing trailing spaces and dots (`TrimEnd(' ', '.')`) before extracting the file extension for security validation.
