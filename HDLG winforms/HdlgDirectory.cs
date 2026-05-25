@@ -40,6 +40,16 @@ namespace HDLG_winforms
         public int FilesCount => files.Count;
 
         /// <summary>
+        /// Total number of directories in this subtree (computed once during Browse for performance).
+        /// </summary>
+        public long TotalDirectories { get; private set; }
+
+        /// <summary>
+        /// Total number of files in this subtree (computed once during Browse for performance).
+        /// </summary>
+        public long TotalFiles { get; private set; }
+
+        /// <summary>
         /// Logger
         /// </summary>
         private readonly ILogger log;
@@ -90,6 +100,18 @@ namespace HDLG_winforms
             foreach (HdlgDirectory d in directories)
             {
                 d.Browse(propertyBrowser);
+            }
+
+            // Compute subtree totals once (post-order) so export counts become O(1) with no extra recursion.
+            TotalDirectories = directories.Count;
+            foreach (HdlgDirectory d in directories)
+            {
+                TotalDirectories += d.TotalDirectories;
+            }
+            TotalFiles = files.Count;
+            foreach (HdlgDirectory d in directories)
+            {
+                TotalFiles += d.TotalFiles;
             }
         }
 

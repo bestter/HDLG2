@@ -10,7 +10,6 @@ You should have received a copy of the GNU General Public License along with HTM
 using Serilog;
 using System.Globalization;
 using System.Net;
-using System.Net;
 using System.Text;
 using System.Xml;
 
@@ -94,12 +93,7 @@ namespace HDLG_winforms
 		/// <returns></returns>
 		private static long DirectoriesCount (HdlgDirectory directory)
 		{
-			long count = directory.DirectoriesCount;
-			foreach (HdlgDirectory d in directory.Directories)
-			{
-				count += DirectoriesCount( d );
-			}
-			return count;
+			return directory.TotalDirectories;
 		}
 
 		/// <summary>
@@ -109,12 +103,7 @@ namespace HDLG_winforms
 		/// <returns></returns>
 		private static long FilesCount (HdlgDirectory directory)
 		{
-			long count = directory.FilesCount;
-			foreach (HdlgDirectory d in directory.Directories)
-			{
-				count += FilesCount( d );
-			}
-			return count;
+			return directory.TotalFiles;
 		}
 
 		/// <summary>

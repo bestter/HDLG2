@@ -81,6 +81,8 @@ namespace HDLG.Tests
             hdlgDirectory.FilesCount.Should().Be(1);
             hdlgDirectory.Files[0].Name.Should().Be("file1.txt");
             hdlgDirectory.DirectoriesCount.Should().Be(0);
+            hdlgDirectory.TotalDirectories.Should().Be(0);
+            hdlgDirectory.TotalFiles.Should().Be(1);
         }
 
         [Fact]
@@ -108,6 +110,11 @@ namespace HDLG.Tests
             subHdlgDir.Files[0].Name.Should().Be("file2.txt");
             subHdlgDir.IsTopDirectory.Should().BeFalse();
             subHdlgDir.BrowseSubdirectory.Should().BeTrue();
+
+            hdlgDirectory.TotalDirectories.Should().Be(1);
+            hdlgDirectory.TotalFiles.Should().Be(2);
+            subHdlgDir.TotalDirectories.Should().Be(0);
+            subHdlgDir.TotalFiles.Should().Be(1);
         }
 
         [Fact]
