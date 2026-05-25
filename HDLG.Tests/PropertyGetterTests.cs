@@ -135,6 +135,20 @@ namespace HDLG.Tests
             loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Cannot read properties from file"))), Times.Once);
         }
 
+        [Fact]
+        public void PdfPropertyGetter_GetFileProperties_EncryptedFile_LogsWarningAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new PdfPropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            // Act
+            var properties = getter.GetFileProperties("test_encrypted.pdf");
+
+            // Assert
+            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("password protected"))), Times.Once);
+        }
+
         [Theory]
         [InlineData("test.pdf", true)]
         [InlineData("test.txt", false)]
