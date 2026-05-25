@@ -1,0 +1,9 @@
+🧪 Add tests for PdfPropertyGetter.GetFileProperties
+
+🎯 **What:** Added tests for the untesteted `GetFileProperties` method in `PdfPropertyGetter.cs`
+📊 **Coverage:** Covered multiple scenarios:
+    - Reading a valid PDF with a title.
+    - Reading a valid PDF without a title.
+    - Trying to read a nonexistent file (logs Error).
+    - Trying to read an invalid PDF format (logs Warning).
+✨ **Result:** Test coverage improved with the required happy path, missing properties handling, and exception handling paths.
