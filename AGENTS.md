@@ -2,8 +2,8 @@
 
 Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
-**Version** : 1.2.0  
-**Dernière mise à jour** : 21 mai 2026  
+**Version** : 1.3.0  
+**Dernière mise à jour** : 25 mai 2026 — Synchronisation des données factuelles (versions NuGet des tests, liste des fichiers de test, description de l'export HTML sans polices Google externes, Dependabot, frameworks cibles par projet) après évolutions du code.  
 **Propriétaire** : Martin Labelle (@bestter)
 
 ---
@@ -70,14 +70,14 @@ La solution `HDLG.sln` contient **trois projets** :
 | **`MainWindow.Designer.cs`** | Code généré par le Designer Windows Forms. **Ne jamais modifier manuellement.** |
 | **`BrowserForm.cs`** | Formulaire de navigation arborescente (TreeView) avec chargement paresseux (lazy loading) des répertoires/fichiers. Affiche les propriétés d'un fichier sélectionné dans un `ListView`. |
 | **`BrowserForm.Designer.cs`** | Code généré par le Designer. **Ne jamais modifier manuellement.** |
-| **`DirectoryBrowser.cs`** | Cœur logique de l'export. Contient `SaveAsXMLAsync()` (génération XML via `XmlWriter`) et `SaveAsHTMLAsync()` (génération HTML avec CSS embarqué et Google Fonts). |
+| **`DirectoryBrowser.cs`** | Cœur logique de l'export. Contient `SaveAsXMLAsync()` (génération XML via `XmlWriter`) et `SaveAsHTMLAsync()` (génération HTML self-contained avec CSS embarqué ; polices système uniquement, sans Google Fonts externes pour offline/sécurité). |
 | **`Directory.cs`** | Modèle de données (legacy) représentant un répertoire. Implémente `IEquatable`, `IComparable`. Parcourt récursivement les sous-répertoires et fichiers. |
 | **`HdlgDirectory.cs`** | Modèle de données (version refactorisée) d'un répertoire. Même rôle que `Directory.cs` mais avec un code plus propre (utilisation de `IReadOnlyList`, `ArgumentNullException.ThrowIfNull`, etc.). |
 | **`File.cs`** | Modèle de données (legacy) d'un fichier. Contient les métadonnées (nom, chemin, extension, taille, date de création, propriétés étendues). |
 | **`HdlgFile.cs`** | Modèle de données (version refactorisée) d'un fichier. Version améliorée de `File.cs`. |
 | **`PerformanceCount.cs`** | Structure pour stocker les métriques de performance (temps de parcours, sauvegarde, total). |
 | **`credit.cs`** | Formulaire « À propos » affichant la version, la licence GPLv3, et les crédits des icônes (Flaticon). |
-| **`hdlg.css`** | Feuille de style CSS embarquée dans les fichiers HTML générés (utilise Google Fonts Roboto Serif et Source Sans Pro). |
+| **`hdlg.css`** | Feuille de style CSS embarquée dans les fichiers HTML générés (polices système uniquement pour self-containment ; version obsolète avec Google Fonts existe à la racine mais n'est pas utilisée). |
 
 ### Projet 2 : `HdlgFileProperty` (Bibliothèque d'extraction de propriétés)
 
@@ -100,20 +100,21 @@ La solution `HDLG.sln` contient **trois projets** :
 | **`FilePropertyBrowserTests.cs`** | Tests de `FilePropertyBrowser` : validation du constructeur (null logger, null getters), délégation correcte aux `IFilePropertyGetter` via mocks Moq, combinaison de propriétés de multiples getters, et vérification des statistiques de logging. |
 | **`HdlgDirectoryTests.cs`** | Tests de `HdlgDirectory` : construction avec propriétés valides, validation des paramètres null, parcours avec/sans sous-répertoires, et vérification de l'égalité par chemin. Utilise des répertoires temporaires sur le système de fichiers. |
 | **`PropertyGetterTests.cs`** | Tests des implémentations `IFilePropertyGetter` : `ImagePropertyGetter`, `Mp3PropertyGetter`, `PdfPropertyGetter`, `WordPropertyGetter`, `ExcelPropertyGetter`. Vérifie `AddLogger()`, la validation null, et `IsSupportedFile()` via `[Theory]`/`[InlineData]`. |
+| **`OpenWithDefaultProgramTests.cs`** | Tests de `MainWindow.OpenWithDefaultProgram` (sécurité : validation des extensions dangereuses pour prévenir l'injection de processus). |
 
 ---
 
 ## 📦 Dépendances NuGet
 
 ### `HDLG winforms`
+
 | Package | Version | Usage |
 |---|---|---|
-| `Microsoft.Extensions.Hosting` | 10.0.8 | Hébergement et injection de dépendances |
-| `Microsoft.Extensions.DependencyInjection` | 10.0.8 | Conteneur IoC |
-| `Microsoft.Extensions.Logging` | 10.0.8 | Abstraction de logging |
+| `Microsoft.Extensions.Hosting` | 10.0.8 | Hébergement et injection de dépendances (transitive : DependencyInjection + Logging) |
 | `Serilog.Sinks.File` | 7.0.0 | Journalisation vers fichiers |
 
 ### `HdlgFileProperty`
+
 | Package | Version | Usage |
 |---|---|---|
 | `DocumentFormat.OpenXml` | 3.5.1 | Lecture de documents Office (Word, Excel) |
@@ -124,14 +125,15 @@ La solution `HDLG.sln` contient **trois projets** :
 | `TagLibSharp` | 2.3.0 | Lecture de métadonnées audio (MP3) |
 
 ### `HDLG.Tests`
+
 | Package | Version | Usage |
 |---|---|---|
-| `coverlet.collector` | 6.0.4 | Collecte de couverture de code |
+| `coverlet.collector` | 10.0.1 | Collecte de couverture de code |
 | `FluentAssertions` | 8.10.0 | Assertions lisibles et expressives |
-| `Microsoft.NET.Test.Sdk` | 17.14.1 | Infrastructure de test .NET |
+| `Microsoft.NET.Test.Sdk` | 18.5.1 | Infrastructure de test .NET |
 | `Moq` | 4.20.72 | Mocking d'interfaces pour tests isolés |
-| `xunit` | 2.9.3 | Framework de tests unitaires |
-| `xunit.runner.visualstudio` | 3.1.4 | Runner Visual Studio pour xUnit |
+| `xunit.v3` | 3.2.2 | Framework de tests unitaires (v3) |
+| `xunit.runner.visualstudio` | 3.1.5 | Runner Visual Studio pour xUnit |
 
 ---
 
@@ -154,7 +156,7 @@ Pour toute modification de l'interface utilisateur :
 
 1. **Parcours récursif de répertoires** : Navigation dans un répertoire sélectionné et ses sous-répertoires (optionnel via checkbox).
 2. **Export XML** : Génération asynchrone d'un fichier XML structuré (`XmlWriter`) contenant l'arborescence complète avec métadonnées.
-3. **Export HTML** : Génération asynchrone d'un fichier HTML avec CSS embarqué, Google Fonts, table des matières avec ancres navigables, et liens `file:///` vers les fichiers.
+3. **Export HTML** : Génération asynchrone d'un fichier HTML self-contained avec CSS embarqué (polices système, sans Google Fonts pour offline et mitigation XSS), table des matières avec ancres navigables, et liens `file:///` vers les fichiers.
 4. **Extraction de propriétés étendues** : Pour chaque fichier, extraction automatique des métadonnées spécifiques selon le type (dimensions d'image, auteur Word/Excel, tags MP3, etc.).
 5. **Navigation arborescente** (`BrowserForm`) : Exploration interactive du système de fichiers avec lazy loading et affichage des propriétés.
 6. **Métriques de performance** : Mesure et affichage des temps de parcours, sauvegarde et total.
@@ -170,6 +172,6 @@ Pour toute modification de l'interface utilisateur :
 - **Modèles en doublon** : Il existe actuellement deux versions de modèles (`Directory.cs`/`File.cs` et `HdlgDirectory.cs`/`HdlgFile.cs`). Les versions `Hdlg*` sont la version refactorisée et doivent être privilégiées pour tout nouveau développement.
 - **Logging** : Utiliser exclusivement Serilog via l'injection du `Logger`. Ne pas créer de nouvelles instances de logger en dehors de `Program.cs`.
 - **Build** : Le projet se compile via `dotnet build HDLG.sln`. Un fichier `build.bat` est fourni à la racine pour simplifier la commande.
-- **CI/CD** : GitHub Actions (`.github/workflows/dotnet-desktop.yml`) exécute le build sur push/PR vers `main` en configurations Debug et Release. Dependabot est activé pour les mises à jour NuGet et GitHub Actions.
+- **CI/CD** : GitHub Actions (`.github/workflows/dotnet-desktop.yml`) exécute le build (via msbuild) sur push/PR vers `main` en configurations Debug et Release (tests commentés dans le workflow). Dependabot est activé pour les mises à jour NuGet (pas d'écosystème GitHub Actions configuré dans dependabot.yml).
 - **Tests** : Le projet `HDLG.Tests` (xUnit) contient les tests unitaires de la solution. Les tests utilisent **FluentAssertions** pour des assertions expressives et **Moq** pour le mocking d'interfaces. Pour exécuter les tests : `dotnet test HDLG.sln`. Tout nouveau code doit être accompagné de tests unitaires correspondants dans ce projet.
 - **Encodage des fichiers** : Les fichiers `.cs` et `.vb` utilisent des **tabulations** pour l'indentation (`indent_style = tab`, `tab_width = 4`) et les fins de ligne **CRLF** (`end_of_line = crlf`).

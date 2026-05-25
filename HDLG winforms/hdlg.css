@@ -1,122 +1,265 @@
-﻿body {
-    font-family: 'Roboto Serif', serif;
-    background-color: #5DC9C4;
-    color: black;
+﻿:root {
+	--bg: #f8fafc;
+	--surface: #ffffff;
+	--text: #0f172a;
+	--muted: #64748b;
+	--accent: #0284c8;
+	--border: #e2e8f0;
+	--card-shadow: 0 1px 3px 0 rgb(15 23 42 / 0.08), 0 1px 2px -1px rgb(15 23 42 / 0.08);
 }
 
-/*test martin 1337*/
+body {
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	background: var(--bg);
+	color: var(--text);
+	margin: 0;
+	line-height: 1.6;
+	font-size: 15px;
+	padding-bottom: 2rem;
+}
+
 a {
-    color: #C95D63;
-    text-decoration: underline;
+	color: var(--accent);
+	text-decoration: none;
 }
-
-a:link {
-    color: #717EC3;
-}
-
-a:visited {
-    color: #496DDB;
-}
-
 a:hover {
-    text-decoration: none;
+	text-decoration: underline;
 }
 
-a:active {
-    text-decoration: none;
+.hdlg {
+	max-width: 1100px;
+	margin: 0 auto;
+	padding: 1rem;
 }
 
-h1, h2, h3, h4, h5, h6, .directories {
-    font-family: 'Source Sans Pro', sans-serif;
+.version,
+.directoryHeader {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	padding: 1rem 1.25rem;
+	margin-bottom: 1rem;
+	box-shadow: var(--card-shadow);
 }
 
-h1, h2, h3, h4, h5, h6 {
-    color: #5D62C9;
+h1 {
+	font-size: 1.35rem;
+	margin: 0;
+	font-weight: 700;
+	color: #0f172a;
 }
 
-
-.directory {
-    border-bottom: 3em;
+h2 {
+	font-size: 1.05rem;
+	margin: 0.4rem 0;
+	color: #1e40af;
 }
 
-.directory .name {
-    color: #C95D98;
-}
-
-.files {
-    border-bottom: 1.5em;
-}
-
-summary.file
-{
-    font-size: 1.25em;
-}
-
-.file {
-    padding-bottom: 0.25em;
-}
-
-.extentedProperty {
-    display: inline;
-}
-
-.extentedProperty span {
-    margin-right: 2em;
-}
-
-.headerContent {
-    font-size: 1.25em;
-}
-
-span.headerContentTitle {
-    color: #160F29;
-}
-
-span.headerContentData {
-    color: #C95D98;
-}
-
-details .file {
-    font-size: 0.75em;
-    width: 620px;
-}
-
-details .file>summary {
-    padding: 2px 6px;
-    width: 15em;
-    background-color: #ddd;
-    border: none;
-    box-shadow: 3px 3px 4px black;
-    cursor: pointer;
-}
-
-details .file>p {
-    border-radius: 0 0 10px 10px;
-    background-color: #ddd;
-    padding: 2px 6px;
-    margin: 0;
-    box-shadow: 3px 3px 4px black;
-}
-details[open] > summary > a {
-    background-color: #717EC3;
-    color: #AE8799;
-  }
-
-.spacer
-{
-    display: block;
-    height: 4em;
+.directoryList {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 10px;
+	padding: 0.75rem 1rem;
+	margin: 1rem 0;
+	box-shadow: var(--card-shadow);
 }
 
 .directoryList ul {
-    column-count: 3; /* nombre de colonnes */
-    column-gap: 20px; /* espace entre les colonnes */
-    list-style-type: disc; /* type de puce */
+	list-style: none;
+	padding: 0;
+	margin: 0;
 }
 
-.directoryList ul > ul{
-    column-count: 2; /* nombre de colonnes */
-    column-gap: 20px; /* espace entre les colonnes */
-    list-style-type: disc; /* type de puce */
+.directoryList li {
+	margin: 0.1rem 0;
+}
+
+.directoryList a {
+	font-size: 0.875rem;
+	color: #334155;
+	padding: 0.15rem 0.4rem;
+	border-radius: 4px;
+	display: inline-block;
+	/* Consistent truncation + native title hover for long names in the TOC (main directory menu).
+	   Reduced to 23ch (removed 3ch) per request to prevent overly long entries while keeping hover for full name. */
+	max-width: 23ch;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	vertical-align: bottom;
+}
+
+.directoryList a:hover {
+	background: #f1f5f9;
+	color: var(--accent);
+}
+
+.directory {
+	border: 1px solid var(--border);
+	border-radius: 10px;
+	margin-bottom: 0.6rem;
+	background: var(--surface);
+	box-shadow: var(--card-shadow);
+	overflow: hidden;
+}
+
+.directory summary {
+	padding: 0.6rem 0.85rem;
+	cursor: pointer;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start; /* support multi-line directory name in header */
+	gap: 0.4rem;
+	background: #f8fafc;
+	font-weight: 600;
+	font-size: 0.95rem;
+	user-select: none;
+	border-bottom: 1px solid var(--border);
+}
+
+.directory[open] summary {
+	background: #f1f5f9;
+}
+
+.directory summary .name {
+	color: #1e40af;
+	/* Header view (the <summary> you land on after clicking a TOC directory link): show the FULL name.
+	   If WAY TOO LONG, allow display on (max) two lines via CSS line-clamp + wrap. TOC list entries stay truncated. */
+	flex: 0 1 auto;
+	min-width: 0;
+	white-space: normal;
+	overflow-wrap: break-word;
+	max-width: 100%;
+
+	/* Exactly two lines max for extremely long directory names (2026 standard technique) */
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.directory .path {
+	font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+	font-size: 0.72rem;
+	color: var(--muted);
+	flex-basis: 100%;
+	word-break: break-all;
+}
+
+.directory .creationTime {
+	font-size: 0.75rem;
+	color: var(--muted);
+}
+
+.files {
+	padding: 0.4rem 0.7rem 0.7rem;
+	background: #fff;
+}
+
+.file {
+	padding: 0.5rem 0.65rem;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	margin: 0.3rem 0;
+	background: #fafbfc;
+	font-size: 0.9rem;
+	transition: box-shadow .12s ease, transform .12s ease;
+}
+
+.file:hover {
+	box-shadow: 0 2px 5px rgb(15 23 42 / 0.07);
+	transform: translateY(-1px);
+}
+
+.file a {
+	font-weight: 500;
+}
+
+.file-meta,
+.size,
+.creationTime {
+	font-size: 0.78rem;
+	color: var(--muted);
+}
+
+.extentedProperties,
+.props {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
+	margin-top: 0.3rem;
+	list-style: none;
+	padding: 0;
+}
+
+.extentedProperty,
+.prop {
+	background: #e0f2fe;
+	color: #075985;
+	padding: 0.02rem 0.45rem;
+	border-radius: 9999px;
+	font-size: 0.68rem;
+	white-space: nowrap;
+}
+
+.headerContent {
+	margin: 0.2rem 0;
+	font-size: 0.95rem;
+}
+
+.headerContentTitle {
+	color: var(--muted);
+}
+
+.headerContentData {
+	color: #0369a1;
+	font-weight: 600;
+}
+
+.spacer {
+	height: 0.4rem;
+}
+
+.badge {
+	display: inline-block;
+	background: #bae6fd;
+	color: #0369a1;
+	font-size: 0.7rem;
+	padding: 0.05rem 0.45rem;
+	border-radius: 999px;
+	font-weight: 600;
+	margin-left: 0.3rem;
+	vertical-align: middle;
+}
+
+@media (min-width: 720px) {
+	.directoryList ul {
+		column-count: 2;
+		column-gap: 1.25rem;
+	}
+	.directoryList ul ul {
+		column-count: 1;
+	}
+}
+
+@media (min-width: 1024px) {
+	.hdlg {
+		padding: 1.25rem 2rem;
+	}
+	.directoryList {
+		column-count: 3;
+	}
+}
+
+@media print {
+	body {
+		background: white;
+	}
+	.directoryList,
+	.spacer,
+	.version .headerContent {
+		display: none;
+	}
 }
 
