@@ -106,7 +106,7 @@ namespace HDLG.Tests
             var htmlContent = await System.IO.File.ReadAllTextAsync(tempHtmlFilePath);
             htmlContent.Should().Contain("<!DOCTYPE html>");
             htmlContent.Should().Contain($"<html lang=\"{System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName}\">");
-            htmlContent.Should().Contain($"<h2>{WebUtility.HtmlEncode( testDirectory.Path )}</h2>");
+            htmlContent.Should().Contain($"<h2>{WebUtility.HtmlEncode(testDirectory.Path)}</h2>");
             htmlContent.Should().Contain("</html>");
 
             // 2026 modern responsive HTML assertions (updated for prettier redesign using details/summary + clean cards)
@@ -146,12 +146,12 @@ namespace HDLG.Tests
                 // The & character must be encoded as &amp; in the HTML output (including in new title= hover popup attrs)
                 htmlContent.Should().Contain(WebUtility.HtmlEncode(safeDangerousDirName));
                 htmlContent.Should().NotContain($"<span class=\"name\" title=\"{safeDangerousDirName}\">");
-                htmlContent.Should().Contain($"<span class=\"name\" title=\"{WebUtility.HtmlEncode( safeDangerousDirName )}\">");
+                htmlContent.Should().Contain($"<span class=\"name\" title=\"{WebUtility.HtmlEncode(safeDangerousDirName)}\">");
 
                 // Long name handling: title= provides the full name for native hover popup (both in tree and TOC).
                 // TOC ("main directory menu") uses 23ch max-width + ellipsis (reduced by 3ch for better fit).
-                htmlContent.Should().Contain($"title=\"{WebUtility.HtmlEncode( safeDangerousDirName )}\"");
-                htmlContent.Should().Contain($"<a href=\"#{WebUtility.HtmlEncode( baseDirectoryPath )}\" title=\"{WebUtility.HtmlEncode( System.IO.Path.GetFileName( baseDirectoryPath ) )}\">");
+                htmlContent.Should().Contain($"title=\"{WebUtility.HtmlEncode(safeDangerousDirName)}\"");
+                htmlContent.Should().Contain($"<a href=\"#{WebUtility.HtmlEncode(baseDirectoryPath)}\" title=\"{WebUtility.HtmlEncode(System.IO.Path.GetFileName(baseDirectoryPath))}\">");
 
                 // File name with & must also be encoded
                 htmlContent.Should().Contain(WebUtility.HtmlEncode("a&b.txt"));
