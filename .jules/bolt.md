@@ -15,3 +15,6 @@
 ## 2026-05-24 - Redundant string allocation with case-insensitive collections
 **Learning:** When using case-insensitive collections like `HashSet<string>(StringComparer.OrdinalIgnoreCase)`, calling `.ToUpperInvariant()` or similar methods on the checked string is redundant and causes unnecessary memory allocations.
 **Action:** Always check the comparer used by a collection before transforming strings for lookup. Avoid string transformations in hot loops like file enumeration.
+## 2024-05-19 - Avoid LINQ `.Any()` in Hot Loops
+**Learning:** Using `.Any()` on Collections/Lists (like `IReadOnlyList`) inside recursive or hot loops (such as XML/HTML directory serialization) causes a LINQ enumerator allocation, which creates unnecessary garbage collection overhead and reduces performance.
+**Action:** Always prefer `.Count > 0` over `.Any()` when checking if a `List` or `IReadOnlyList` has elements in performance-critical code paths.
