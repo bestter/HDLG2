@@ -18,3 +18,8 @@
 **Vulnerability:** The application was vulnerable to Process Injection because the blocklist for dangerous file extensions (like .exe, .bat) in `OpenWithDefaultProgram` could be bypassed by appending trailing spaces or dots to the file name.
 **Learning:** Windows Shell `Process.Start` ignores trailing spaces and dots when executing a file, but `System.IO.Path.GetExtension()` retains them. Therefore, an attacker could create a file named `malicious.bat. ` and the blocklist logic checking `Path.GetExtension` would test `.bat. ` against the list of dangerous extensions, resulting in a false negative and execution of the malicious file.
 **Prevention:** Always sanitize input paths by removing trailing spaces and dots (`TrimEnd(' ', '.')`) before extracting the file extension for security validation.
+
+## 2026-05-25 - XSS Vulnerability in DirectoryBrowser
+**Vulnerability:** XSS via unencoded file/directory paths.
+**Learning:** The prompt indicated an XSS vulnerability, but codebase analysis confirmed that `WebUtility.HtmlEncode()` had already been implemented in `WritHtmlDirectoryAsync` and `WriteHtmlFileAsync` by a recent commit, mitigating the risk.
+**Prevention:** Continue enforcing output encoding for all user-controllable input rendered in HTML.
