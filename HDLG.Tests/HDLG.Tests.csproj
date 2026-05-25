@@ -36,4 +36,10 @@
     <ProjectReference Include="..\HDLG file property\HdlgFileProperty.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="*.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

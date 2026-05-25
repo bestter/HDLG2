@@ -75,6 +75,66 @@ namespace HDLG.Tests
             result.Should().Be(expected);
         }
 
+
+        [Fact]
+        public void PdfPropertyGetter_GetFileProperties_ValidFileWithTitle_ReturnsTitle()
+        {
+            // Arrange
+            var getter = new PdfPropertyGetter();
+
+            // Act
+            var properties = getter.GetFileProperties("test.pdf");
+
+            // Assert
+            properties.Should().ContainKey("Title");
+            properties["Title"].Should().Be("Test PDF Title");
+        }
+
+        [Fact]
+        public void PdfPropertyGetter_GetFileProperties_ValidFileWithoutTitle_ReturnsEmptyDictionary()
+        {
+            // Arrange
+            var getter = new PdfPropertyGetter();
+
+            // Act
+            var properties = getter.GetFileProperties("test_empty_title.pdf");
+
+            // Assert
+            properties.Should().NotContainKey("Title");
+            properties.Should().BeEmpty();
+
+        }
+
+        [Fact]
+        public void PdfPropertyGetter_GetFileProperties_FileNotFound_LogsErrorAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new PdfPropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            // Act
+            var properties = getter.GetFileProperties("nonexistent.pdf");
+
+            // Assert
+
+            loggerMock.Verify(l => l.Error(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Cannot read file"))), Times.Once);
+        }
+
+        [Fact]
+        public void PdfPropertyGetter_GetFileProperties_InvalidFileFormat_LogsWarningAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new PdfPropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            // Act
+            var properties = getter.GetFileProperties("test_invalid.pdf");
+
+            // Assert
+
+            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Cannot read properties from file"))), Times.Once);
+        }
+
         [Theory]
         [InlineData("test.pdf", true)]
         [InlineData("test.txt", false)]
