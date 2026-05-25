@@ -45,13 +45,20 @@ namespace HDLG.Tests
         [InlineData("test.gif", true)]
         [InlineData("test.txt", false)]
         [InlineData("test.doc", false)]
-        public void ImagePropertyGetter_IsSupportedFile_ReturnsExpectedResult(string path, bool expected)
+        [InlineData(null, false)]
+        [InlineData("", false)]
+        [InlineData("   ", false)]
+        [InlineData("test", false)]
+        [InlineData("test.", false)]
+        [InlineData("test.JPG", true)]
+        [InlineData("test.tar.jpg", true)]
+        public void ImagePropertyGetter_IsSupportedFile_ReturnsExpectedResult(string? path, bool expected)
         {
             // Arrange
             var getter = new ImagePropertyGetter();
 
             // Act
-            var result = getter.IsSupportedFile(path);
+            var result = getter.IsSupportedFile(path!);
 
             // Assert
             result.Should().Be(expected);

@@ -27,7 +27,7 @@ namespace HdlgFileProperty
             Dictionary<string, IConvertible> properties = new();
             try
             {
-                var imageInfo = Image.Identify(path);
+                var imageInfo = SixLabors.ImageSharp.Image.Identify(path);
                 if (imageInfo != null)
                 {
                     properties.Add(nameof(imageInfo.Width), imageInfo.Width);
@@ -103,6 +103,7 @@ namespace HdlgFileProperty
         /// <returns></returns>
         public bool IsSupportedFile(string path)
         {
+            if (string.IsNullOrWhiteSpace(path)) return false;
             var extension = Path.GetExtension(path);
             return extension != null && _supportedImageExtensions.Contains(extension);
         }
