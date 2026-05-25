@@ -114,7 +114,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 						progressBar1.Style = ProgressBarStyle.Marquee;
 
 						// Exécuter le travail dans un thread de fond sans bloquer l'UI
-						var perf = await Task.Run(() => PerformDirectoryBrowseXml(selectedDirectory, saveContentFileDialog.FileName)).ConfigureAwait(true);
+						var perf = await Task.Run(() => PerformDirectoryBrowseXmlAsync(selectedDirectory, saveContentFileDialog.FileName)).ConfigureAwait(true);
 
 						progressBar1.Style = ProgressBarStyle.Blocks;
 						progressBar1.Value = 100;
@@ -151,9 +151,9 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private PerformanceCount PerformDirectoryBrowseXml(string selecteDirectory, string saveFilePath)
+		private async Task<PerformanceCount> PerformDirectoryBrowseXmlAsync(string selecteDirectory, string saveFilePath)
 		{
-			Logger.Debug( $"{nameof( PerformDirectoryBrowseXml )} started at {DateTime.Now:T}" );
+			Logger.Debug( $"{nameof( PerformDirectoryBrowseXmlAsync )} started at {DateTime.Now:T}" );
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
 			{
 				Logger.Information( selecteDirectory );
@@ -173,7 +173,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 				DirectoryBrowser db = new( Logger );
 				Logger.Debug( $"Ready to start {nameof( DirectoryBrowser.SaveAsXMLAsync )}" );
 
-				db.SaveAsXMLAsync( saveFilePath, directory ).Wait( );
+				await db.SaveAsXMLAsync( saveFilePath, directory ).ConfigureAwait( false );
 
 				Logger.Debug( $"{nameof( DirectoryBrowser.SaveAsXMLAsync )} done" );
 #if DEBUG
@@ -276,7 +276,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 
 						progressBar1.Style = ProgressBarStyle.Marquee;
 
-						var perf = await Task.Run(() => PerformDirectoryBrowseHtml(selectedDirectory, saveFileDialogHtml.FileName)).ConfigureAwait( true );
+						var perf = await Task.Run(() => PerformDirectoryBrowseHtmlAsync(selectedDirectory, saveFileDialogHtml.FileName)).ConfigureAwait(true);
 
 						progressBar1.Style = ProgressBarStyle.Blocks;
 						progressBar1.Value = 100;
@@ -302,9 +302,9 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private PerformanceCount PerformDirectoryBrowseHtml(string selecteDirectory, string saveFilePath)
+		private async Task<PerformanceCount> PerformDirectoryBrowseHtmlAsync(string selecteDirectory, string saveFilePath)
 		{
-			Debug.Write( $"{nameof( PerformDirectoryBrowseHtml )} started at {DateTime.Now:T}" );
+			Debug.Write( $"{nameof( PerformDirectoryBrowseHtmlAsync )} started at {DateTime.Now:T}" );
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
 			{
 				Logger.Information( selecteDirectory );
@@ -319,7 +319,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 				DirectoryBrowser db = new( Logger );
 				Logger.Debug( $"Ready to start {nameof( DirectoryBrowser.SaveAsHTMLAsync )}" );
 
-				db.SaveAsHTMLAsync( saveFilePath, directory ).Wait( );
+				await db.SaveAsHTMLAsync( saveFilePath, directory ).ConfigureAwait( false );
 
 				Logger.Debug( $"{nameof( DirectoryBrowser.SaveAsHTMLAsync )} done" );
 				stopwatch.Stop( );

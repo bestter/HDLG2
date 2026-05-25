@@ -18,3 +18,6 @@
 ## 2024-05-19 - Avoid LINQ `.Any()` in Hot Loops
 **Learning:** Using `.Any()` on Collections/Lists (like `IReadOnlyList`) inside recursive or hot loops (such as XML/HTML directory serialization) causes a LINQ enumerator allocation, which creates unnecessary garbage collection overhead and reduces performance.
 **Action:** Always prefer `.Count > 0` over `.Any()` when checking if a `List` or `IReadOnlyList` has elements in performance-critical code paths.
+## 2024-05-25 - Replace Synchronous Wait on Async Task in XML/HTML Browse
+**Learning:** Calling `.Wait()` on an async method like `SaveAsXMLAsync` inside a background thread pool task (created via `Task.Run`) blocks the thread until the task completes. While this doesn't block the UI thread here, it needlessly ties up a thread pool thread, which can lead to thread pool starvation and poor scalability if many such operations occur concurrently.
+**Action:** Always prefer `await` over `.Wait()` when interacting with async methods to yield the thread back to the thread pool while waiting for I/O operations (like file writing) to complete. Ensure the caller method is marked `async Task` to support this properly.
