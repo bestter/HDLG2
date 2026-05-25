@@ -221,7 +221,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 				throw new FileNotFoundException( "The specified file was not found.", path );
 			}
 
-			string extension = System.IO.Path.GetExtension( path );
+			string extension = System.IO.Path.GetExtension( path.TrimEnd(' ', '.') );
 			if (DangerousExtensions.Contains( extension ))
 			{
 				throw new InvalidOperationException( $"Opening files with extension '{extension}' is not allowed for security reasons." );
