@@ -12,7 +12,7 @@
 
 - 📁 **Recursive Folder Scanning**: Fast, lazy-loaded interactive UI tree navigation alongside configurable recursive scans.
 - 🌐 **Beautiful HTML Export**: Generates a self-contained, fully-styled HTML report featuring:
-  - Responsive inline CSS styling and premium Google Fonts (`Roboto Serif` and `Source Sans Pro`).
+  - Responsive inline CSS styling (system fonts only for full self-containment, offline support and security; no external Google Fonts).
   - Interactive table of contents with navigable anchor links.
   - Quick-click `file:///` pathways to directly open indexed items.
 - 📊 **Structured XML Export**: Employs clean, high-performance streaming writers (`XmlWriter`) for easy data migration and integration.
@@ -36,7 +36,7 @@ The solution consists of three primary layers:
 2. **`HdlgFileProperty` (Extraction Engine)**:
    - Houses the core extraction strategy (`IFilePropertyGetter`), delegating specialized tasks to respective metadata engines based on MIME/file formats.
 3. **`HDLG.Tests` (Unit Tests)**:
-   - xUnit-based test suite with FluentAssertions and Moq, covering export engines, metadata extraction orchestration, directory model logic, and property getter contracts.
+   - xUnit v3-based test suite (`xunit.v3` + runner) with FluentAssertions and Moq, covering export engines, metadata extraction orchestration, directory model logic, property getter contracts, and security helpers (e.g. OpenWithDefaultProgram).
 
 ---
 
@@ -73,6 +73,7 @@ The `HDLG.Tests` project covers:
 - **FilePropertyBrowserTests** — Property extraction orchestration (getter delegation, multi-getter combination, statistics logging).
 - **HdlgDirectoryTests** — Directory model construction, recursive browse behavior, and equality semantics.
 - **PropertyGetterTests** — File-type support detection for all property getter implementations (Image, MP3, PDF, Word, Excel).
+- **OpenWithDefaultProgramTests** — Security validation for `MainWindow.OpenWithDefaultProgram` (dangerous extension blocklist to prevent process injection).
 
 ---
 
