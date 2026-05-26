@@ -64,7 +64,7 @@ namespace HdlgFileProperty
         public bool IsSupportedFile(string path)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(path);
-            return path.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase);
+            return path.AsSpan().EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

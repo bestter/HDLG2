@@ -104,8 +104,8 @@ namespace HdlgFileProperty
         public bool IsSupportedFile(string path)
         {
             if (string.IsNullOrWhiteSpace(path)) return false;
-            var extension = Path.GetExtension(path);
-            return extension != null && _supportedImageExtensions.Contains(extension);
+            var extension = Path.GetExtension(path.AsSpan());
+            return !extension.IsEmpty && _supportedImageExtensions.GetAlternateLookup<ReadOnlySpan<char>>().Contains(extension);
         }
     }
 }

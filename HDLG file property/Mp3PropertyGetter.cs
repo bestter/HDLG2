@@ -94,10 +94,10 @@ namespace HdlgFileProperty
 
         public bool IsSupportedFile(string path)
         {
-            var extension = Path.GetExtension(path);
+            var extension = Path.GetExtension(path.AsSpan());
             // Optimization: _supportedExtensions uses StringComparer.OrdinalIgnoreCase,
             // so ToUpperInvariant() is an unnecessary allocation.
-            return extension != null && _supportedExtensions.Contains(extension);
+            return !extension.IsEmpty && _supportedExtensions.GetAlternateLookup<ReadOnlySpan<char>>().Contains(extension);
         }
     }
 }
