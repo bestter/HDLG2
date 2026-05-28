@@ -154,8 +154,6 @@ namespace HDLG_winforms
             Cursor = Cursors.WaitCursor;
             try
             {
-                btnOpenFile.Enabled = true;
-
                 var fileInfo = new FileInfo(info.Path);
 
                 if (!IsPathWithinRoot(info.Path))
@@ -165,6 +163,8 @@ namespace HDLG_winforms
                     btnOpenFile.Enabled = false;
                     return;
                 }
+
+                btnOpenFile.Enabled = true;
 
                 lblSelectedFileName.Text = fileInfo.Name;
 
@@ -209,7 +209,15 @@ namespace HDLG_winforms
         {
             if (treeView1.SelectedNode?.Tag is NodeInfo info && !info.IsDirectory)
             {
-                MainWindow.OpenWithDefaultProgram(info.Path);
+                if (IsPathWithinRoot(info.Path))
+                {
+                    MainWindow.OpenWithDefaultProgram(info.Path);
+                }
+                else
+                {
+                    logger.Warning($"Path traversal blocked on execution: {info.Path} is outside root directory {rootDirectory}");
+                    MessageBox.Show(this, "Access denied: path is outside the root directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
     }
