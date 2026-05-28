@@ -35,7 +35,7 @@ namespace HdlgFileProperty
 
                 if (!string.IsNullOrWhiteSpace(packageProperties.Title))
                 {
-                    properties ??= new Dictionary<string, IConvertible>(3);
+                    properties = new Dictionary<string, IConvertible>(3);
                     properties.Add("Title", packageProperties.Title);
                 }
 
