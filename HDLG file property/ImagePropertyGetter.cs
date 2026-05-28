@@ -15,6 +15,7 @@ namespace HdlgFileProperty
 {
     public class ImagePropertyGetter : IFilePropertyGetter
     {
+        private static readonly IReadOnlyDictionary<string, IConvertible> EmptyProperties = new System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>(new Dictionary<string, IConvertible>());
 
         public ILogger? Logger { get; private set; }
 
@@ -22,14 +23,15 @@ namespace HdlgFileProperty
         {
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
-        public Dictionary<string, IConvertible> GetFileProperties(string path)
+        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(string path)
         {
-            Dictionary<string, IConvertible> properties = new();
+            Dictionary<string, IConvertible>? properties = null;
             try
             {
                 var imageInfo = SixLabors.ImageSharp.Image.Identify(path);
                 if (imageInfo != null)
                 {
+                    properties = new Dictionary<string, IConvertible>();
                     properties.Add(nameof(imageInfo.Width), imageInfo.Width);
                     properties.Add(nameof(imageInfo.Height), imageInfo.Height);
 
@@ -63,7 +65,7 @@ namespace HdlgFileProperty
                 Logger?.Warning(e, "Cannot read properties from file: {FilePath}", path);
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
-            return properties;
+            return properties ?? EmptyProperties;
         }
 
         private static readonly HashSet<string> _supportedImageExtensions = new(StringComparer.OrdinalIgnoreCase)
