@@ -23,3 +23,8 @@
 **Vulnerability:** XSS via unencoded file/directory paths.
 **Learning:** The prompt indicated an XSS vulnerability, but codebase analysis confirmed that `WebUtility.HtmlEncode()` had already been implemented in `WritHtmlDirectoryAsync` and `WriteHtmlFileAsync` by a recent commit, mitigating the risk.
 **Prevention:** Continue enforcing output encoding for all user-controllable input rendered in HTML.
+
+## 2026-05-25 - [DoS via Symlink Infinite Recursion]
+**Vulnerability:** The application was vulnerable to Denial of Service (DoS) due to a potential `StackOverflowException` caused by recursive directory traversal not checking for directory junctions or symbolic links (`FileAttributes.ReparsePoint`).
+**Learning:** If an attacker creates a symbolic link or directory junction pointing back to its parent directory, `EnumerateDirectories` will follow it infinitely during a recursive scan.
+**Prevention:** Always check `(directoryInfo.Attributes & FileAttributes.ReparsePoint) != 0` and skip such directories when performing deep recursive traversals to prevent infinite loops and unauthorized out-of-bounds file access.
