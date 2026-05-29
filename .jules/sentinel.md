@@ -33,3 +33,8 @@
 **Vulnerability:** The application was vulnerable to Denial of Service (DoS) due to a potential `StackOverflowException` caused by recursive directory traversal not checking for directory junctions or symbolic links (`FileAttributes.ReparsePoint`).
 **Learning:** If an attacker creates a symbolic link or directory junction pointing back to its parent directory, `EnumerateDirectories` will follow it infinitely during a recursive scan.
 **Prevention:** Always check `(directoryInfo.Attributes & FileAttributes.ReparsePoint) != 0` and skip such directories when performing deep recursive traversals to prevent infinite loops and unauthorized out-of-bounds file access.
+
+## 2024-05-29 - [DoS/Unauthorized Access via Directory Traversal]
+**Vulnerability:** Recursive directory traversals using `EnumerateDirectories` did not check for reparse points (symbolic links or directory junctions).
+**Learning:** Failing to check for `FileAttributes.ReparsePoint` when enumerating directories can lead to infinite recursion (Denial of Service) if a cyclic symbolic link exists, or allow an attacker to traverse outside the intended directory scope by creating a symbolic link to an unauthorized location.
+**Prevention:** Always check for and skip directories with the `FileAttributes.ReparsePoint` attribute during recursive directory traversals (`if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;`).

@@ -97,6 +97,7 @@ namespace HDLG_winforms
                     var dirNodes = new List<TreeNode>();
                     foreach (var dir in dirInfo.EnumerateDirectories())
                     {
+                        if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;
                         var node = new TreeNode(dir.Name);
                         node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
                         node.Nodes.Add(new TreeNode("Loading..."));
