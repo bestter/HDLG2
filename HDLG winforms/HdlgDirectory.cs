@@ -84,7 +84,12 @@ namespace HDLG_winforms
             {
                 foreach (var d in directoryInfo.EnumerateDirectories())
                 {
-                    if ((d.Attributes & FileAttributes.ReparsePoint) != 0) continue;
+                    // Prevent infinite recursion / DoS from symlinks looping back to parents
+                    if ((d.Attributes & FileAttributes.ReparsePoint) != 0)
+                    {
+                        log.Warning($"Skipping symlink directory to prevent infinite recursion: {d.FullName}");
+                        continue;
+                    }
                     directories.Add(new HdlgDirectory(d, false, true, log));
                 }
                 directories.Sort();
