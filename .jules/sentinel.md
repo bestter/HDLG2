@@ -28,3 +28,8 @@
 **Vulnerability:** A "fail-open" pattern existed where an actionable UI button (`btnOpenFile`) was aggressively enabled *before* executing security validations (like `IsPathWithinRoot`), meaning an unexpected exception during validation would leave the dangerous action available.
 **Learning:** Security validations should gate state changes. Enabling UI elements that trigger privileged or dangerous actions prior to confirming the safety of those actions can result in an authorization bypass if error-handling logic returns early.
 **Prevention:** To prevent 'fail-open' authorization bypasses in UI components, ensure all security and validation checks (such as path traversal verifications) execute and pass successfully before enabling actionable UI controls. Additionally, implement defense-in-depth by re-verifying security constraints directly inside the button click execution handler.
+
+## 2026-05-25 - [DoS via Symlink Infinite Recursion]
+**Vulnerability:** The application was vulnerable to Denial of Service (DoS) due to a potential `StackOverflowException` caused by recursive directory traversal not checking for directory junctions or symbolic links (`FileAttributes.ReparsePoint`).
+**Learning:** If an attacker creates a symbolic link or directory junction pointing back to its parent directory, `EnumerateDirectories` will follow it infinitely during a recursive scan.
+**Prevention:** Always check `(directoryInfo.Attributes & FileAttributes.ReparsePoint) != 0` and skip such directories when performing deep recursive traversals to prevent infinite loops and unauthorized out-of-bounds file access.
