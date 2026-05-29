@@ -114,7 +114,7 @@ namespace HDLG_winforms
 		/// <returns></returns>
 		private async Task WriteXmlDirectoryAsync (XmlWriter writer, HdlgDirectory directory)
 		{
-			log.Debug( $"In {nameof( WriteXmlDirectoryAsync )} {nameof( HdlgDirectory )} {directory}" );
+			log.Debug( "In {Method} {Type} {Directory}", nameof( WriteXmlDirectoryAsync ), nameof( HdlgDirectory ), directory );
 			await writer.WriteStartElementAsync( null, "Directory", null ).ConfigureAwait( false );
 			await writer.WriteElementStringAsync( null, "Name", null, directory.Name ).ConfigureAwait( false );
 			await writer.WriteElementStringAsync( null, "Path", null, directory.Path ).ConfigureAwait( false );
@@ -156,7 +156,7 @@ namespace HDLG_winforms
 				throw new ArgumentNullException( nameof( writer ) );
 			}
 
-			log.Verbose( $"{nameof( WriteXmlFileAsync )} {file}" );
+			log.Verbose( "{Method} {File}", nameof( WriteXmlFileAsync ), file );
 
 			await writer.WriteStartElementAsync( null, "File", null ).ConfigureAwait( false );
 
@@ -356,7 +356,7 @@ namespace HDLG_winforms
 		/// <returns></returns>
 		private async Task WritHtmlDirectoryAsync (TextWriter writer, HdlgDirectory directory, int depth)
 		{
-			log.Debug( $"In {nameof( WritHtmlDirectoryAsync )} {nameof( HdlgDirectory )} {directory}" );
+			log.Debug( "In {Method} {Type} {Directory}", nameof( WritHtmlDirectoryAsync ), nameof( HdlgDirectory ), directory );
 			string spacer = new string( ' ', depth );
 			string id = WebUtility.HtmlEncode( directory.Path );
 			string name = WebUtility.HtmlEncode( directory.Name );
@@ -409,7 +409,7 @@ namespace HDLG_winforms
 				throw new ArgumentNullException( nameof( writer ) );
 			}
 
-			log.Verbose( $"{nameof( WriteHtmlFileAsync )} {file}" );
+			log.Verbose( "{Method} {File}", nameof( WriteHtmlFileAsync ), file );
 
 			// 2026 clean file card using div + flex-friendly structure (styled via modern CSS)
 			await writer.WriteLineAsync( spacer + "<div class=\"file\">" ).ConfigureAwait( false );

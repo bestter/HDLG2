@@ -25,7 +25,7 @@ namespace HdlgFileProperty
 
         public IReadOnlyDictionary<string, IConvertible> GetFileProperties(string path)
         {
-            Logger?.Verbose($"In {nameof(Mp3PropertyGetter)}.{nameof(GetFileProperties)}: {path}");
+            Logger?.Verbose("In {Class}.{Method}: {Path}", nameof(Mp3PropertyGetter), nameof(GetFileProperties), path);
             Dictionary<string, IConvertible>? properties = null;
             try
             {
