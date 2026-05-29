@@ -14,6 +14,8 @@ namespace HdlgFileProperty
 {
     public class PdfPropertyGetter : IFilePropertyGetter
     {
+        private static readonly IReadOnlyDictionary<string, IConvertible> EmptyProperties = new System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>(new Dictionary<string, IConvertible>());
+
         public ILogger? Logger { get; private set; }
 
         public void AddLogger(ILogger logger)
@@ -21,9 +23,9 @@ namespace HdlgFileProperty
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public Dictionary<string, IConvertible> GetFileProperties(string path)
+        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(string path)
         {
-            Dictionary<string, IConvertible> properties = new();
+            Dictionary<string, IConvertible>? properties = null;
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
             try
             {
@@ -32,6 +34,7 @@ namespace HdlgFileProperty
 
                 if (!string.IsNullOrWhiteSpace(title))
                 {
+                    properties = new Dictionary<string, IConvertible>();
                     properties.Add("Title", title);
                 }
             }
@@ -49,7 +52,7 @@ namespace HdlgFileProperty
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
 
-            return properties;
+            return properties ?? EmptyProperties;
         }
 
         public bool IsSupportedFile(string path)

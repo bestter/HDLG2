@@ -15,6 +15,8 @@ namespace HdlgFileProperty
 {
     public class ExcelPropertyGetter : IFilePropertyGetter
     {
+        private static readonly IReadOnlyDictionary<string, IConvertible> EmptyProperties = new System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>(new Dictionary<string, IConvertible>());
+
         public ILogger? Logger { get; private set; }
 
         public void AddLogger(ILogger logger)
@@ -22,9 +24,9 @@ namespace HdlgFileProperty
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public Dictionary<string, IConvertible> GetFileProperties(string path)
+        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(string path)
         {
-            Dictionary<string, IConvertible> properties = new(3);
+            Dictionary<string, IConvertible>? properties = null;
             try
             {
                 using FileStream stream = new(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -33,17 +35,20 @@ namespace HdlgFileProperty
 
                 if (!string.IsNullOrWhiteSpace(packageProperties.Title))
                 {
+                    properties = new Dictionary<string, IConvertible>(3);
                     properties.Add("Title", packageProperties.Title);
                 }
 
                 DateTime? created = packageProperties.Created;
                 if (created != null)
                 {
+                    properties ??= new Dictionary<string, IConvertible>(3);
                     properties.Add("Created", created.Value);
                 }
 
                 if (!string.IsNullOrWhiteSpace(packageProperties.Creator))
                 {
+                    properties ??= new Dictionary<string, IConvertible>(3);
                     properties.Add("Creator", packageProperties.Creator);
                 }
             }
@@ -58,7 +63,7 @@ namespace HdlgFileProperty
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
 
-            return properties;
+            return properties ?? EmptyProperties;
         }
 
         public bool IsSupportedFile(string path)
