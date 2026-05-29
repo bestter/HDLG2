@@ -28,3 +28,8 @@
 **Vulnerability:** A "fail-open" pattern existed where an actionable UI button (`btnOpenFile`) was aggressively enabled *before* executing security validations (like `IsPathWithinRoot`), meaning an unexpected exception during validation would leave the dangerous action available.
 **Learning:** Security validations should gate state changes. Enabling UI elements that trigger privileged or dangerous actions prior to confirming the safety of those actions can result in an authorization bypass if error-handling logic returns early.
 **Prevention:** To prevent 'fail-open' authorization bypasses in UI components, ensure all security and validation checks (such as path traversal verifications) execute and pass successfully before enabling actionable UI controls. Additionally, implement defense-in-depth by re-verifying security constraints directly inside the button click execution handler.
+
+## 2024-05-29 - [DoS/Unauthorized Access via Directory Traversal]
+**Vulnerability:** Recursive directory traversals using `EnumerateDirectories` did not check for reparse points (symbolic links or directory junctions).
+**Learning:** Failing to check for `FileAttributes.ReparsePoint` when enumerating directories can lead to infinite recursion (Denial of Service) if a cyclic symbolic link exists, or allow an attacker to traverse outside the intended directory scope by creating a symbolic link to an unauthorized location.
+**Prevention:** Always check for and skip directories with the `FileAttributes.ReparsePoint` attribute during recursive directory traversals (`if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;`).

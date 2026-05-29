@@ -84,6 +84,7 @@ namespace HDLG_winforms
             {
                 foreach (var d in directoryInfo.EnumerateDirectories())
                 {
+                    if ((d.Attributes & FileAttributes.ReparsePoint) != 0) continue;
                     directories.Add(new HdlgDirectory(d, false, true, log));
                 }
                 directories.Sort();
