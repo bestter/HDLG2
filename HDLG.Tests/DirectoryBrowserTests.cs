@@ -109,6 +109,8 @@ namespace HDLG.Tests
             htmlContent.Should().Contain($"<h2>{WebUtility.HtmlEncode(testDirectory.Path)}</h2>");
             htmlContent.Should().Contain("</html>");
 
+            htmlContent.Should().Contain("<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none';\">");
+
             // 2026 modern responsive HTML assertions (updated for prettier redesign using details/summary + clean cards)
             htmlContent.Should().Contain("<details class=\"directory\"");
             htmlContent.Should().Contain("<summary>");

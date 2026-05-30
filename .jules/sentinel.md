@@ -38,3 +38,8 @@
 **Vulnerability:** Recursive directory traversals using `EnumerateDirectories` did not check for reparse points (symbolic links or directory junctions).
 **Learning:** Failing to check for `FileAttributes.ReparsePoint` when enumerating directories can lead to infinite recursion (Denial of Service) if a cyclic symbolic link exists, or allow an attacker to traverse outside the intended directory scope by creating a symbolic link to an unauthorized location.
 **Prevention:** Always check for and skip directories with the `FileAttributes.ReparsePoint` attribute during recursive directory traversals (`if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;`).
+
+## 2026-05-30 - [XSS Defense in Depth via CSP]
+**Vulnerability:** While XSS vulnerabilities in HTML exports were previously mitigated via `WebUtility.HtmlEncode`, relying solely on encoding can be brittle if future changes introduce unencoded output paths.
+**Learning:** Static HTML exports should use a restrictive Content Security Policy (CSP) to ensure scripts cannot be executed and data cannot be exfiltrated, even if an XSS vulnerability is introduced later.
+**Prevention:** Add a strict CSP meta tag (`<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none';">`) to all generated HTML exports.
