@@ -87,7 +87,7 @@ namespace HDLG_winforms
                     // Prevent infinite recursion / DoS from symlinks looping back to parents
                     if ((d.Attributes & FileAttributes.ReparsePoint) != 0)
                     {
-                        log.Warning($"Skipping symlink directory to prevent infinite recursion: {d.FullName}");
+                        log.Warning("Skipping symlink directory to prevent infinite recursion: {DirectoryName}", d.FullName);
                         continue;
                     }
                     directories.Add(new HdlgDirectory(d, false, true, log));

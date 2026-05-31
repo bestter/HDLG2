@@ -71,10 +71,14 @@ namespace HdlgFileProperty
                 if (propertyGetter.TotalFiles > 0)
                 {
                     var avg = TimeSpan.FromTicks((long)Math.Ceiling(propertyGetter.GetTotalExecutionTime().Ticks / (double)propertyGetter.TotalFiles));
-                    logger.Information($"{propertyGetter.FilePropertyGetter.GetType()} total runtime: {propertyGetter.GetTotalExecutionTime().ToString("G", CultureInfo.CurrentCulture)}. Number of files: {propertyGetter.TotalFiles}. Average: {avg.ToString("G", CultureInfo.CurrentCulture)}");
+                    logger.Information("{PropertyGetterType} total runtime: {TotalExecutionTime}. Number of files: {TotalFiles}. Average: {AverageTime}",
+                        propertyGetter.FilePropertyGetter.GetType(),
+                        propertyGetter.GetTotalExecutionTime().ToString("G", CultureInfo.CurrentCulture),
+                        propertyGetter.TotalFiles,
+                        avg.ToString("G", CultureInfo.CurrentCulture));
                 }
             }
-            logger.Information($"Total number of files {TotalNumberOfFiles}");
+            logger.Information("Total number of files {TotalNumberOfFiles}", TotalNumberOfFiles);
         }
     }
 }

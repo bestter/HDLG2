@@ -108,7 +108,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 						btnStartHtml.Enabled = false;
 						if (btnStartUi != null) btnStartUi.Enabled = false;
 						UseWaitCursor = true;
-						Logger.Information( $"Start browse with {selectedDirectory}" );
+						Logger.Information( "Start browse with {SelectedDirectory}", selectedDirectory );
 
 						// Use an indeterminate progress bar if supported, or leave it at 0
 						progressBar1.Style = ProgressBarStyle.Marquee;
@@ -130,7 +130,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 #pragma warning restore CA1031
 			{
 				toolStripStatusLabelException.Text = ex.Message;
-				Logger.Fatal( ex, $"Error in {nameof( BtnStart_Click )}" );
+				Logger.Fatal( ex, "Error in {MethodName}", nameof( BtnStart_Click ) );
 			}
 			finally
 			{
@@ -153,29 +153,29 @@ toolStripStatusLabelTotalTime.Visible = false;
 
 		private async Task<PerformanceCount> PerformDirectoryBrowseXmlAsync(string selecteDirectory, string saveFilePath)
 		{
-			Logger.Debug( $"{nameof( PerformDirectoryBrowseXmlAsync )} started at {DateTime.Now:T}" );
+			Logger.Debug( "{MethodName} started at {StartTime:T}", nameof( PerformDirectoryBrowseXmlAsync ), DateTime.Now );
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
 			{
-				Logger.Information( selecteDirectory );
+				Logger.Information( "{SelectedDirectory}", selecteDirectory );
 				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
 #if DEBUG
 				Stopwatch stopwatch = Stopwatch.StartNew( );
 #endif
 
-				Logger.Debug( $"Ready to start {nameof( directory.Browse )}" );
+				Logger.Debug( "Ready to start {MethodName}", nameof( directory.Browse ) );
 				directory.Browse( propertyBrowser );
-				Logger.Debug( $"{nameof( directory.Browse )} of directory {directory.Name} done" );
+				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.Browse ), directory.Name );
 #if DEBUG
 				TimeSpan browseTime = stopwatch.Elapsed;
 #endif
 				propertyBrowser.LogGetterStatistics( );
 
 				DirectoryBrowser db = new( Logger );
-				Logger.Debug( $"Ready to start {nameof( DirectoryBrowser.SaveAsXMLAsync )}" );
+				Logger.Debug( "Ready to start {MethodName}", nameof( DirectoryBrowser.SaveAsXMLAsync ) );
 
 				await db.SaveAsXMLAsync( saveFilePath, directory ).ConfigureAwait( false );
 
-				Logger.Debug( $"{nameof( DirectoryBrowser.SaveAsXMLAsync )} done" );
+				Logger.Debug( "{MethodName} done", nameof( DirectoryBrowser.SaveAsXMLAsync ) );
 #if DEBUG
 				stopwatch.Stop( );
 
@@ -186,12 +186,12 @@ toolStripStatusLabelTotalTime.Visible = false;
 				var result = new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
 #endif
 
-				Logger.Information( $"Done at {DateTime.Now:T}" );
+				Logger.Information( "Done at {EndTime:T}", DateTime.Now );
 				return result;
 			}
 			else
 			{
-				Logger.Information( $"No {nameof( selecteDirectory )}" );
+				Logger.Information( "No {SelectedDirectoryParamName}", nameof( selecteDirectory ) );
 				return new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
 			}
 		}
@@ -273,7 +273,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 						btnStartHtml.Enabled = false;
 						if (btnStartUi != null) btnStartUi.Enabled = false;
 						UseWaitCursor = true;
-						Logger.Information( $"Start browse with {selectedDirectory}" );
+						Logger.Information( "Start browse with {SelectedDirectory}", selectedDirectory );
 
 						progressBar1.Style = ProgressBarStyle.Marquee;
 
@@ -292,7 +292,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 #pragma warning restore CA1031
 			{
 				toolStripStatusLabelException.Text = ex.Message;
-				Logger.Fatal( ex, $"Error in {nameof( BtnStartHtml_Click )}" );
+				Logger.Fatal( ex, "Error in {MethodName}", nameof( BtnStartHtml_Click ) );
 			}
 			finally
 			{
@@ -308,31 +308,31 @@ toolStripStatusLabelTotalTime.Visible = false;
 			Debug.Write( $"{nameof( PerformDirectoryBrowseHtmlAsync )} started at {DateTime.Now:T}" );
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
 			{
-				Logger.Information( selecteDirectory );
+				Logger.Information( "{SelectedDirectory}", selecteDirectory );
 				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
 				Stopwatch stopwatch = Stopwatch.StartNew( );
-				Logger.Debug( $"Ready to start {nameof( directory.Browse )}" );
+				Logger.Debug( "Ready to start {MethodName}", nameof( directory.Browse ) );
 				directory.Browse( propertyBrowser );
-				Logger.Debug( $"{nameof( directory.Browse )} of directory {directory.Name} done" );
+				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.Browse ), directory.Name );
 				TimeSpan browseTime = stopwatch.Elapsed;
 				propertyBrowser.LogGetterStatistics( );
 
 				DirectoryBrowser db = new( Logger );
-				Logger.Debug( $"Ready to start {nameof( DirectoryBrowser.SaveAsHTMLAsync )}" );
+				Logger.Debug( "Ready to start {MethodName}", nameof( DirectoryBrowser.SaveAsHTMLAsync ) );
 
 				await db.SaveAsHTMLAsync( saveFilePath, directory ).ConfigureAwait( false );
 
-				Logger.Debug( $"{nameof( DirectoryBrowser.SaveAsHTMLAsync )} done" );
+				Logger.Debug( "{MethodName} done", nameof( DirectoryBrowser.SaveAsHTMLAsync ) );
 				stopwatch.Stop( );
 				TimeSpan saveTime = stopwatch.Elapsed - browseTime;
 
 				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
-				Logger.Information( $"Done at {DateTime.Now:T}" );
+				Logger.Information( "Done at {EndTime:T}", DateTime.Now );
 				return result;
 			}
 			else
 			{
-				Logger.Information( $"No {nameof( selecteDirectory )}" );
+				Logger.Information( "No {SelectedDirectoryParamName}", nameof( selecteDirectory ) );
 				return new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
 			}
 		}
@@ -363,7 +363,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			{
 				UseWaitCursor = false;
 				toolStripStatusLabelException.Text = ex.Message;
-				Logger.Fatal( ex, $"Error opening UI Explorer" );
+				Logger.Fatal( ex, "Error opening UI Explorer" );
 				MessageBox.Show( this, $"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 		}
