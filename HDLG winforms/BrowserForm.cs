@@ -87,7 +87,7 @@ namespace HDLG_winforms
                 {
                     if (!IsPathWithinRoot(info.Path))
                     {
-                        logger.Warning($"Path traversal blocked: {info.Path} is outside root directory {rootDirectory}");
+                        logger.Warning("Path traversal blocked: {Path} is outside root directory {RootDirectory}", info.Path, rootDirectory);
                         e.Node.Nodes.Add(new TreeNode("Access Denied"));
                         return;
                     }
@@ -116,14 +116,14 @@ namespace HDLG_winforms
                 }
                 catch (UnauthorizedAccessException ex)
                 {
-                    logger.Warning(ex, $"Access denied to directory: {info.Path}");
+                    logger.Warning(ex, "Access denied to directory: {Path}", info.Path);
                     e.Node.Nodes.Add(new TreeNode("Access Denied"));
                 }
 #pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
 				catch (Exception ex)
 #pragma warning restore CA1031
 				{
-					logger.Error(ex, $"Error loading directory: {info.Path}");
+					logger.Error(ex, "Error loading directory: {Path}", info.Path);
                     e.Node.Nodes.Add(new TreeNode("Error"));
                 }
                 finally
@@ -159,7 +159,7 @@ namespace HDLG_winforms
 
                 if (!IsPathWithinRoot(info.Path))
                 {
-                    logger.Warning($"Path traversal blocked: {info.Path} is outside root directory {rootDirectory}");
+                    logger.Warning("Path traversal blocked: {Path} is outside root directory {RootDirectory}", info.Path, rootDirectory);
                     AddPropertyToListView("Error", "Access denied: path is outside the root directory.");
                     btnOpenFile.Enabled = false;
                     return;
@@ -190,7 +190,7 @@ namespace HDLG_winforms
 			catch (Exception ex)
 #pragma warning restore CA1031
 			{
-				logger.Error(ex, $"Error reading properties for file: {info.Path}");
+				logger.Error(ex, "Error reading properties for file: {Path}", info.Path);
                 AddPropertyToListView("Error", ex.Message);
             }
             finally
@@ -216,7 +216,7 @@ namespace HDLG_winforms
                 }
                 else
                 {
-                    logger.Warning($"Path traversal blocked on execution: {info.Path} is outside root directory {rootDirectory}");
+                    logger.Warning("Path traversal blocked on execution: {Path} is outside root directory {RootDirectory}", info.Path, rootDirectory);
                     MessageBox.Show(this, "Access denied: path is outside the root directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }

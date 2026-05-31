@@ -57,7 +57,7 @@ namespace HDLG_winforms
         /// <param name="propertyBrowser"></param>
         public void Browse(FilePropertyBrowser propertyBrowser)
         {
-            log.Debug($"Directory: {Path} {nameof(IsTopDirectory)}: {IsTopDirectory} {nameof(BrowseSubdirectory)}: {BrowseSubdirectory}");
+            log.Debug("Directory: {Path} {IsTopDirectoryName}: {IsTopDirectory} {BrowseSubdirectoryName}: {BrowseSubdirectory}", Path, nameof(IsTopDirectory), IsTopDirectory, nameof(BrowseSubdirectory), BrowseSubdirectory);
 
             if (BrowseSubdirectory)
             {

@@ -220,7 +220,7 @@ namespace HDLG_winforms
 				}
 				else
 				{
-					log.Warning( $"CSS file does not exist at path {directory}" );
+					log.Warning( "CSS file does not exist at path {DirectoryPath}", directory );
 				}
 			}
 			return CssContent ?? string.Empty;
