@@ -40,15 +40,15 @@ namespace HdlgFileProperty
             }
             catch (IOException ioe)
             {
-                Logger?.Error(ioe, $"Cannot read file {path}");
+                Logger?.Error(ioe, "Cannot read file {Path}", path);
             }
             catch (Exception e) when (e.GetType().Name.Contains("PdfDocumentEncryptedException", StringComparison.InvariantCultureIgnoreCase))
             {
-                Logger?.Warning(e, $"File {path} is password protected and cannot be read");
+                Logger?.Warning(e, "File {Path} is password protected and cannot be read", path);
             }
             catch (Exception e)
             {
-                Logger?.Warning(e, $"Cannot read properties from file {path}");
+                Logger?.Warning(e, "Cannot read properties from file {Path}", path);
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
 
