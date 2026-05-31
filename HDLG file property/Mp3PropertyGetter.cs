@@ -65,20 +65,20 @@ namespace HdlgFileProperty
                 }
                 else
                 {
-                    Logger?.Warning($"File {path} might be corrupted because {string.Join(",", f.CorruptionReasons)}");
+                    Logger?.Warning("File {Path} might be corrupted because {CorruptionReasons}", path, string.Join(",", f.CorruptionReasons));
                 }
             }
             catch(IOException ioe)
             {
-                Logger?.Error(ioe, $"Cannot read file {path}");
+                Logger?.Error(ioe, "Cannot read file {Path}", path);
             }
             catch (TagLib.UnsupportedFormatException ufe)
             {
-                Logger?.Warning(ufe, $"File {path} is not supported");
+                Logger?.Warning(ufe, "File {Path} is not supported", path);
             }
             catch (TagLib.CorruptFileException cfe)
             {
-                Logger?.Warning(cfe, $"File {path} is corrupted");
+                Logger?.Warning(cfe, "File {Path} is corrupted", path);
             }
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
             catch (Exception e)

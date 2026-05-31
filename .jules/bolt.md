@@ -27,3 +27,7 @@
 ## 2026-05-24 - Serilog structured logging vs string interpolation in hot loops
 **Learning:** Using string interpolation (`$"{var}"`) in Serilog method calls (like `log.Debug`) forces the .NET runtime to allocate strings even if the log level is disabled. In hot paths, like recursive directory scanning and serialization for every single file/folder, this generates massive amounts of garbage.
 **Action:** Always use Serilog's structured logging message templates (e.g., `log.Debug("Value: {Value}", value)`) instead of string interpolation. This defers execution and completely avoids string allocation overhead when the log level is not active.
+
+## 2024-06-03 - Prevent eager string allocations in logging
+**Learning:** Using interpolated strings (`$""`) inside logging calls (e.g., `Logger?.Warning($"File {path} might be corrupted...");`) forces the string to be allocated and formatted eagerly *before* the logger checks if the log level is actually enabled. This creates unnecessary garbage collection overhead, especially during repetitive operations or inside loops.
+**Action:** Always use structured logging message templates provided by Serilog (e.g., `Logger?.Warning("File {Path} might be corrupted...", path);`) instead of string interpolation to ensure strings are only allocated if the corresponding log level is enabled.
