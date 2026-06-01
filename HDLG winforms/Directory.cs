@@ -57,23 +57,24 @@ namespace HDLG_winforms
         /// <param name="propertyBrowser"></param>
         public void Browse(FilePropertyBrowser propertyBrowser)
         {
+            ArgumentNullException.ThrowIfNull(propertyBrowser);
             log.Debug("Directory: {Path} {IsTopDirectoryName}: {IsTopDirectory} {BrowseSubdirectoryName}: {BrowseSubdirectory}", Path, nameof(IsTopDirectory), IsTopDirectory, nameof(BrowseSubdirectory), BrowseSubdirectory);
 
             if (BrowseSubdirectory)
             {
-                directoryInfo.EnumerateDirectories().ToList().ForEach(d =>
+                foreach (var d in directoryInfo.EnumerateDirectories())
                 {
                     directories.Add(new Directory(d.FullName, false, true, log));
-                });
+                }
                 directories.Sort();
             }
 
-            directoryInfo.EnumerateFiles().ToList().ForEach(f =>
+            foreach (var f in directoryInfo.EnumerateFiles())
             {
                 var properties = propertyBrowser.GetFileProperty(f.FullName);
                 var file = new File(f.FullName, properties ?? new Dictionary<string, IConvertible>());
                 files.Add(file);
-            });
+            }
             files.Sort();
 
             foreach (Directory d in directories)
