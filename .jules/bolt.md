@@ -34,3 +34,7 @@
 ## 2024-05-19 - Combine Directory and File Enumeration for Single-Pass I/O
 **Learning:** Making separate consecutive calls to `DirectoryInfo.EnumerateDirectories()` and `DirectoryInfo.EnumerateFiles()` on the same path forces the OS to scan the directory contents twice. In hot paths like deep recursive traversal, this severely degrades performance and wastes I/O bandwidth.
 **Action:** Always prefer a single pass using `DirectoryInfo.EnumerateFileSystemInfos()`, checking `if (info is DirectoryInfo)` and `else if (info is FileInfo)` inside the loop, halving system calls and allocation overhead for directory reads.
+
+## 2024-05-24 - Remove redundant List allocation during directory enumeration
+**Learning:** Using `EnumerateDirectories().ToList().ForEach(...)` performs a completely redundant allocation of a `List<T>` to hold all items in memory just to iterate them. This increases memory pressure and slows down iteration compared to lazy enumeration.
+**Action:** Prefer using a standard `foreach` loop to consume `IEnumerable<T>` sequentially without allocating intermediate collections unless randomly indexing elements is strictly required.
