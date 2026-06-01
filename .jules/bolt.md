@@ -31,3 +31,6 @@
 ## 2024-06-03 - Prevent eager string allocations in logging
 **Learning:** Using interpolated strings (`$""`) inside logging calls (e.g., `Logger?.Warning($"File {path} might be corrupted...");`) forces the string to be allocated and formatted eagerly *before* the logger checks if the log level is actually enabled. This creates unnecessary garbage collection overhead, especially during repetitive operations or inside loops.
 **Action:** Always use structured logging message templates provided by Serilog (e.g., `Logger?.Warning("File {Path} might be corrupted...", path);`) instead of string interpolation to ensure strings are only allocated if the corresponding log level is enabled.
+## 2024-05-19 - Combine Directory and File Enumeration for Single-Pass I/O
+**Learning:** Making separate consecutive calls to `DirectoryInfo.EnumerateDirectories()` and `DirectoryInfo.EnumerateFiles()` on the same path forces the OS to scan the directory contents twice. In hot paths like deep recursive traversal, this severely degrades performance and wastes I/O bandwidth.
+**Action:** Always prefer a single pass using `DirectoryInfo.EnumerateFileSystemInfos()`, checking `if (info is DirectoryInfo)` and `else if (info is FileInfo)` inside the loop, halving system calls and allocation overhead for directory reads.

@@ -95,23 +95,27 @@ namespace HDLG_winforms
                     var dirInfo = new DirectoryInfo(info.Path);
 
                     var dirNodes = new List<TreeNode>();
-                    foreach (var dir in dirInfo.EnumerateDirectories())
-                    {
-                        if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;
-                        var node = new TreeNode(dir.Name);
-                        node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
-                        node.Nodes.Add(new TreeNode("Loading..."));
-                        dirNodes.Add(node);
-                    }
-                    if (dirNodes.Count > 0) e.Node.Nodes.AddRange(dirNodes.ToArray());
-
                     var fileNodes = new List<TreeNode>();
-                    foreach (var file in dirInfo.EnumerateFiles())
+
+                    foreach (var fsInfo in dirInfo.EnumerateFileSystemInfos())
                     {
-                        var node = new TreeNode(file.Name);
-                        node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
-                        fileNodes.Add(node);
+                        if (fsInfo is DirectoryInfo dir)
+                        {
+                            if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;
+                            var node = new TreeNode(dir.Name);
+                            node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
+                            node.Nodes.Add(new TreeNode("Loading..."));
+                            dirNodes.Add(node);
+                        }
+                        else if (fsInfo is FileInfo file)
+                        {
+                            var node = new TreeNode(file.Name);
+                            node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
+                            fileNodes.Add(node);
+                        }
                     }
+
+                    if (dirNodes.Count > 0) e.Node.Nodes.AddRange(dirNodes.ToArray());
                     if (fileNodes.Count > 0) e.Node.Nodes.AddRange(fileNodes.ToArray());
                 }
                 catch (UnauthorizedAccessException ex)

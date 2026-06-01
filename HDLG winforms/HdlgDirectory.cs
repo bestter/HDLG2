@@ -82,24 +82,35 @@ namespace HDLG_winforms
 
             if (BrowseSubdirectory)
             {
-                foreach (var d in directoryInfo.EnumerateDirectories())
+                foreach (var info in directoryInfo.EnumerateFileSystemInfos())
                 {
-                    // Prevent infinite recursion / DoS from symlinks looping back to parents
-                    if ((d.Attributes & FileAttributes.ReparsePoint) != 0)
+                    if (info is DirectoryInfo d)
                     {
-                        log.Warning("Skipping symlink directory to prevent infinite recursion: {DirectoryName}", d.FullName);
-                        continue;
+                        // Prevent infinite recursion / DoS from symlinks looping back to parents
+                        if ((d.Attributes & FileAttributes.ReparsePoint) != 0)
+                        {
+                            log.Warning("Skipping symlink directory to prevent infinite recursion: {DirectoryName}", d.FullName);
+                            continue;
+                        }
+                        directories.Add(new HdlgDirectory(d, false, true, log));
                     }
-                    directories.Add(new HdlgDirectory(d, false, true, log));
+                    else if (info is FileInfo f)
+                    {
+                        var properties = propertyBrowser.GetFileProperty(f.FullName);
+                        var file = new HdlgFile(f, properties);
+                        files.Add(file);
+                    }
                 }
                 directories.Sort();
             }
-
-            foreach (var f in directoryInfo.EnumerateFiles())
+            else
             {
-                var properties = propertyBrowser.GetFileProperty(f.FullName);
-                var file = new HdlgFile(f, properties);
-                files.Add(file);
+                foreach (var f in directoryInfo.EnumerateFiles())
+                {
+                    var properties = propertyBrowser.GetFileProperty(f.FullName);
+                    var file = new HdlgFile(f, properties);
+                    files.Add(file);
+                }
             }
             files.Sort();
 
