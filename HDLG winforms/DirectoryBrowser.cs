@@ -174,14 +174,15 @@ namespace HDLG_winforms
 				{
 					if (!string.IsNullOrWhiteSpace( property.Key ) && property.Value != null)
 					{
+						string encodedKey = XmlConvert.EncodeLocalName( property.Key ) ?? "UnknownProperty";
 						if (property.Value is DateTime dtValue)
 						{
-							await writer.WriteElementStringAsync( null, property.Key, null, dtValue.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
+							await writer.WriteElementStringAsync( null, encodedKey, null, dtValue.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
 						}
 						else
 						{
 							var value = property.Value.ToString( CultureInfo.InvariantCulture );
-							await writer.WriteElementStringAsync( null, property.Key, null, value ).ConfigureAwait( false );
+							await writer.WriteElementStringAsync( null, encodedKey, null, SanitizeXmlString(value) ).ConfigureAwait( false );
 						}
 					}
 				}
@@ -189,6 +190,34 @@ namespace HDLG_winforms
 			}
 
 			await writer.WriteEndElementAsync( ).ConfigureAwait( false );
+		}
+
+		private static string SanitizeXmlString(string? xml)
+		{
+			if (string.IsNullOrEmpty(xml))
+			{
+				return xml ?? string.Empty;
+			}
+
+			StringBuilder sb = new StringBuilder(xml.Length);
+			foreach (char c in xml)
+			{
+				if (IsLegalXmlChar(c))
+				{
+					sb.Append(c);
+				}
+			}
+			return sb.ToString();
+		}
+
+		private static bool IsLegalXmlChar(int character)
+		{
+			return character == 0x9 /* == '\t' == 9   */          ||
+				   character == 0xA /* == '\n' == 10  */          ||
+				   character == 0xD /* == '\r' == 13  */          ||
+				  (character >= 0x20    && character <= 0xD7FF  ) ||
+				  (character >= 0xE000  && character <= 0xFFFD  ) ||
+				  (character >= 0x10000 && character <= 0x10FFFF);
 		}
 		#endregion
 

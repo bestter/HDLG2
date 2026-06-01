@@ -43,3 +43,8 @@
 **Vulnerability:** While XSS vulnerabilities in HTML exports were previously mitigated via `WebUtility.HtmlEncode`, relying solely on encoding can be brittle if future changes introduce unencoded output paths.
 **Learning:** Static HTML exports should use a restrictive Content Security Policy (CSP) to ensure scripts cannot be executed and data cannot be exfiltrated, even if an XSS vulnerability is introduced later.
 **Prevention:** Add a strict CSP meta tag (`<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none';">`) to all generated HTML exports.
+
+## 2024-06-01 - [XML DoS via Unhandled Control Characters in Export]
+**Vulnerability:** Found an issue where the XML export function in `DirectoryBrowser.cs` could crash if file metadata (such as an MP3 tag) contained characters that are invalid in XML (e.g., spaces in element names like "Camera Model", or control characters in the content).
+**Learning:** `XmlWriter` throws an unhandled exception if it attempts to write invalid element names or values, causing the entire directory export to fail. This constitutes a Denial of Service via malformed third-party files.
+**Prevention:** When generating XML with `XmlWriter` using untrusted data, encode element keys with `XmlConvert.EncodeLocalName()` and sanitize values with a custom method that filters out invalid XML control characters.
