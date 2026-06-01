@@ -202,7 +202,8 @@ toolStripStatusLabelTotalTime.Visible = false;
 		private static readonly HashSet<string> DangerousExtensions = new( StringComparer.OrdinalIgnoreCase )
 		{
 			".exe", ".bat", ".cmd", ".ps1", ".vbs", ".js", ".wsf", ".scr", ".com", ".msi", ".pif", ".hta", ".cpl",
-			".jar", ".reg", ".lnk", ".msc", ".vbe", ".jse", ".scf", ".ws", ".wsh"
+			".jar", ".reg", ".lnk", ".msc", ".vbe", ".jse", ".scf", ".ws", ".wsh",
+			".iso", ".img", ".vhd", ".vhdx", ".url", ".appref-ms", ".theme", ".themepack"
 		};
 
 		/// <summary>

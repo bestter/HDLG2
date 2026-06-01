@@ -43,3 +43,8 @@
 **Vulnerability:** While XSS vulnerabilities in HTML exports were previously mitigated via `WebUtility.HtmlEncode`, relying solely on encoding can be brittle if future changes introduce unencoded output paths.
 **Learning:** Static HTML exports should use a restrictive Content Security Policy (CSP) to ensure scripts cannot be executed and data cannot be exfiltrated, even if an XSS vulnerability is introduced later.
 **Prevention:** Add a strict CSP meta tag (`<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none';">`) to all generated HTML exports.
+
+## 2026-06-05 - [MOTW Bypass via Container/Shortcut Extensions]
+**Vulnerability:** Container files (like .iso, .img, .vhd) and shortcut/theme files bypass Mark of the Web (MOTW) and can lead to arbitrary code execution if opened automatically.
+**Learning:** Certain extensions not traditionally considered executables (e.g., .iso, .url, .theme) can be abused by attackers to bypass security warnings and execute code.
+**Prevention:** Always include MOTW-bypass and container extensions in blocklists when directly launching user-supplied files via `Process.Start`.
