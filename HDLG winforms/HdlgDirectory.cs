@@ -121,13 +121,10 @@ namespace HDLG_winforms
 
             // Compute subtree totals once (post-order) so export counts become O(1) with no extra recursion.
             TotalDirectories = directories.Count;
-            foreach (HdlgDirectory d in directories)
-            {
-                TotalDirectories += d.TotalDirectories;
-            }
             TotalFiles = files.Count;
             foreach (HdlgDirectory d in directories)
             {
+                TotalDirectories += d.TotalDirectories;
                 TotalFiles += d.TotalFiles;
             }
         }
