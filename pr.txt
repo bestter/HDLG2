@@ -1,9 +1,5 @@
-🧪 Add tests for PdfPropertyGetter.GetFileProperties
+🧪 Add tests for FilePropertyBrowser.LogGetterStatistics
 
-🎯 **What:** Added tests for the untesteted `GetFileProperties` method in `PdfPropertyGetter.cs`
-📊 **Coverage:** Covered multiple scenarios:
-    - Reading a valid PDF with a title.
-    - Reading a valid PDF without a title.
-    - Trying to read a nonexistent file (logs Error).
-    - Trying to read an invalid PDF format (logs Warning).
-✨ **Result:** Test coverage improved with the required happy path, missing properties handling, and exception handling paths.
+🎯 **What:** Corrected and enhanced tests for `FilePropertyBrowser.LogGetterStatistics`.
+📊 **Coverage:** Adjusted the test to verify Serilog structured logging matches the template and parameters exactly for `LogGetterStatistics_FilesProcessed_LogsAveragesAndTotal` and `LogGetterStatistics_NoFilesProcessed_DoesNotLogAverages`.
+✨ **Result:** Test correctly asserts exact log template match in `LogGetterStatistics`, improving test assertions and verifying correct behaviour.

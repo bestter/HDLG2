@@ -5,6 +5,7 @@ using HdlgFileProperty;
 using Moq;
 using Serilog;
 using Xunit;
+using System.Globalization;
 
 namespace HDLG.Tests
 {
@@ -117,7 +118,7 @@ namespace HDLG.Tests
 
             // Assert
             // It should only log the total files line, which is 0
-            loggerMock.Verify(l => l.Information(It.Is<string>(s => s.Contains("Total number of files 0"))), Times.Once);
+            loggerMock.Verify(l => l.Information("Total number of files {TotalNumberOfFiles}", 0L), Times.Once);
         }
 
         [Fact]
@@ -135,8 +136,15 @@ namespace HDLG.Tests
             browser.LogGetterStatistics();
 
             // Assert
-            loggerMock.Verify(l => l.Information(It.Is<string>(s => s.Contains("total runtime"))), Times.Once);
-            loggerMock.Verify(l => l.Information(It.Is<string>(s => s.Contains("Total number of files 1"))), Times.Once);
+            loggerMock.Verify(l => l.Information(
+                "{PropertyGetterType} total runtime: {TotalExecutionTime}. Number of files: {TotalFiles}. Average: {AverageTime}",
+                propertyGetterMock1.Object.GetType(),
+                It.IsAny<string>(), // TotalExecutionTime
+                1L, // TotalFiles
+                It.IsAny<string>() // AverageTime
+            ), Times.Once);
+
+            loggerMock.Verify(l => l.Information("Total number of files {TotalNumberOfFiles}", 1L), Times.Once);
         }
     }
 }
