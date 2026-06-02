@@ -38,3 +38,6 @@
 ## 2024-05-24 - Remove redundant List allocation during directory enumeration
 **Learning:** Using `EnumerateDirectories().ToList().ForEach(...)` performs a completely redundant allocation of a `List<T>` to hold all items in memory just to iterate them. This increases memory pressure and slows down iteration compared to lazy enumeration.
 **Action:** Prefer using a standard `foreach` loop to consume `IEnumerable<T>` sequentially without allocating intermediate collections unless randomly indexing elements is strictly required.
+## 2024-05-15 - Loop Fusion in Directory Traversal
+**Learning:** Consecutive `foreach` loops iterating over the same list (like aggregating totals from subdirectories) cause unnecessary redundant iteration and increase overhead, especially on deep or wide folder hierarchies.
+**Action:** When aggregating multiple independent properties from a collection of objects, fuse the loops and calculate all aggregates in a single iteration pass over the collection to immediately halve the loop iteration time.
