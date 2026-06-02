@@ -48,3 +48,8 @@
 **Vulnerability:** Container files (like .iso, .img, .vhd) and shortcut/theme files bypass Mark of the Web (MOTW) and can lead to arbitrary code execution if opened automatically.
 **Learning:** Certain extensions not traditionally considered executables (e.g., .iso, .url, .theme) can be abused by attackers to bypass security warnings and execute code.
 **Prevention:** Always include MOTW-bypass and container extensions in blocklists when directly launching user-supplied files via `Process.Start`.
+
+## 2024-06-01 - [XML DoS via Unhandled Control Characters in Export]
+**Vulnerability:** Found an issue where the XML export function in `DirectoryBrowser.cs` could crash if file metadata (such as an MP3 tag) contained characters that are invalid in XML (e.g., spaces in element names like "Camera Model", or control characters in the content).
+**Learning:** `XmlWriter` throws an unhandled exception if it attempts to write invalid element names or values, causing the entire directory export to fail. This constitutes a Denial of Service via malformed third-party files.
+**Prevention:** When generating XML with `XmlWriter` using untrusted data, encode element keys with `XmlConvert.EncodeLocalName()` and sanitize values with a custom method that filters out invalid XML control characters.
