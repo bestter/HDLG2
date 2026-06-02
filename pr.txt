@@ -1,5 +1,3 @@
-🧪 Add tests for FilePropertyBrowser.LogGetterStatistics
-
-🎯 **What:** Corrected and enhanced tests for `FilePropertyBrowser.LogGetterStatistics`.
-📊 **Coverage:** Adjusted the test to verify Serilog structured logging matches the template and parameters exactly for `LogGetterStatistics_FilesProcessed_LogsAveragesAndTotal` and `LogGetterStatistics_NoFilesProcessed_DoesNotLogAverages`.
-✨ **Result:** Test correctly asserts exact log template match in `LogGetterStatistics`, improving test assertions and verifying correct behaviour.
+💡 **What:** Merged two consecutive loops over `directories` inside `HdlgDirectory.Browse()`. The first loop traversed `directories` to recursively call `.Browse()`, and the immediate following loop traversed the same collection to sum `TotalDirectories` and `TotalFiles`. These are now computed in a single iteration.
+🎯 **Why:** To eliminate the CPU and iterator overhead of traversing the collection a second time, especially noticeable in deeply nested directory structures with a high count of folders.
+📊 **Measured Improvement:** No direct baseline was collected due to execution constraints in the provided Linux environment lacking `Microsoft.WindowsDesktop.App` runtime for benchmarking WinForms. However, this optimization reduces N iterator steps to 0 extra overhead by combining logic into an existing O(N) loop.
