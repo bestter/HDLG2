@@ -82,6 +82,50 @@ namespace HDLG.Tests
         }
 
         [Fact]
+        public async Task SaveAsXMLAsync_FileWithInvalidXmlCharacters_SanitizesAndSucceeds()
+        {
+            // Arrange
+            var testFilePath = Path.Combine(baseDirectoryPath, "badxml.mp3");
+            System.IO.File.WriteAllText(testFilePath, "dummy");
+
+            var properties = new System.Collections.Generic.Dictionary<string, IConvertible>
+            {
+                { "Camera Model", "Nikon" }, // Space is invalid in XML element name
+                { "InvalidVal", "Test\x0BText" } // \x0B is invalid XML character
+            };
+
+            var browserMock = new Mock<HdlgFileProperty.FilePropertyBrowser>(loggerMock.Object, new HdlgFileProperty.IFilePropertyGetter[0]);
+            browserMock.Setup(b => b.GetFileProperty(testFilePath)).Returns(properties);
+
+            var dir = new HdlgDirectory(baseDirectoryPath, true, false, loggerMock.Object);
+            dir.Browse(browserMock.Object);
+
+            var xmlPath = Path.Combine(Path.GetTempPath(), "test_badxml_" + Guid.NewGuid().ToString() + ".xml");
+
+            try
+            {
+                // Act
+                await directoryBrowser.SaveAsXMLAsync(xmlPath, dir);
+
+                // Assert
+                System.IO.File.Exists(xmlPath).Should().BeTrue();
+
+                var xmlContent = await System.IO.File.ReadAllTextAsync(xmlPath);
+
+                // Should use encoded local name for 'Camera Model'
+                xmlContent.Should().Contain("<Camera_x0020_Model>Nikon</Camera_x0020_Model>");
+
+                // Should sanitize value by removing the invalid XML character (\x0B)
+                xmlContent.Should().Contain("<InvalidVal>TestText</InvalidVal>");
+            }
+            finally
+            {
+                if (System.IO.File.Exists(xmlPath))
+                    System.IO.File.Delete(xmlPath);
+            }
+        }
+
+        [Fact]
         public async Task SaveAsHTMLAsync_NullFilePath_ThrowsArgumentException()
         {
             await Assert.ThrowsAsync<ArgumentException>(() => directoryBrowser.SaveAsHTMLAsync(null!, testDirectory));
