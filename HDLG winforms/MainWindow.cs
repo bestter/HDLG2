@@ -232,7 +232,8 @@ toolStripStatusLabelTotalTime.Visible = false;
 			using Process fileopener = new( );
 			fileopener.StartInfo = new ProcessStartInfo( path )
 			{
-				UseShellExecute = true
+				UseShellExecute = true,
+				WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
 			};
 			fileopener.Start( );
 		}
