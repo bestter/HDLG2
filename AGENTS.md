@@ -126,14 +126,14 @@ La solution `HDLG.sln` contient **trois projets** :
 
 ### `HDLG.Tests`
 
-| Package | Version | Usage |
-|---|---|---|
-| `coverlet.collector` | 10.0.1 | Collecte de couverture de code |
-| `FluentAssertions` | 8.10.0 | Assertions lisibles et expressives |
-| `Microsoft.NET.Test.Sdk` | 18.5.1 | Infrastructure de test .NET |
-| `Moq` | 4.20.72 | Mocking d'interfaces pour tests isolés |
-| `xunit.v3` | 3.2.2 | Framework de tests unitaires (v3) |
-| `xunit.runner.visualstudio` | 3.1.5 | Runner Visual Studio pour xUnit |
+| Package                     | Version | Usage                                  |
+| -----------------------------| ---------| ----------------------------------------|
+| `coverlet.collector`        | 10.0.1  | Collecte de couverture de code         |
+| `FluentAssertions`          | 8.10.0  | Assertions lisibles et expressives     |
+| `Microsoft.NET.Test.Sdk`    | 18.5.1  | Infrastructure de test .NET            |
+| `Moq`                       | 4.20.72 | Mocking d'interfaces pour tests isolés |
+| `xunit.v3`                  | 3.2.2   | Framework de tests unitaires (v3)      |
+| `xunit.runner.visualstudio` | 3.1.5   | Runner Visual Studio pour xUnit        |
 
 ---
 
@@ -175,3 +175,12 @@ Pour toute modification de l'interface utilisateur :
 - **CI/CD** : GitHub Actions (`.github/workflows/dotnet-desktop.yml`) exécute le build (via msbuild) sur push/PR vers `main` en configurations Debug et Release (tests commentés dans le workflow). Dependabot est activé pour les mises à jour NuGet (pas d'écosystème GitHub Actions configuré dans dependabot.yml).
 - **Tests** : Le projet `HDLG.Tests` (xUnit) contient les tests unitaires de la solution. Les tests utilisent **FluentAssertions** pour des assertions expressives et **Moq** pour le mocking d'interfaces. Pour exécuter les tests : `dotnet test HDLG.sln`. Tout nouveau code doit être accompagné de tests unitaires correspondants dans ce projet.
 - **Encodage des fichiers** : Les fichiers `.cs` et `.vb` utilisent des **tabulations** pour l'indentation (`indent_style = tab`, `tab_width = 4`) et les fins de ligne **CRLF** (`end_of_line = crlf`).
+
+## 🐙 Conventions Git et Historique
+
+- **Gestion des branches (Branching) :** Ne pousse **jamais** de code directement sur les branches principales (`main` ou `master`). Crée toujours une branche de travail distincte, courte et descriptive (ex: `feature/nom-de-la-fonctionnalite`, `bugfix/nom-du-bug`, `refactor/nom-du-composant`).
+- **Pull Requests (PR) :** Tout changement doit obligatoirement passer par la création d'une Pull Request. Aucune fusion (merge) ne doit être effectuée sans une revue préalable.
+- **Commits atomiques :** Chaque commit doit représenter une unité de travail cohérente et complète. Évite les commits qui mélangent plusieurs changements non liés.
+- **Format des messages :** Utilise la spécification *Conventional Commits* (`feat:`, `fix:`, `refactor:`, `chore:`, etc.) pour structurer les titres de tes commits.
+- **Signature de l'IA :** Signe toujours tes commits avec ton nom et ton nom de modèle exact à la fin de la description (ex: `Generated-by: Hermes 2 Pro` ou `Generated-by: OpenClaw`). Cette traçabilité est essentielle pour auditer avec précision le code produit par les différents agents locaux ou distants.
+- **Langue :** Conformément à la Règle Dorée #4, l'intégralité des messages de commit (titre et description) doit être rédigée **strictement en anglais**.
