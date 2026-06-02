@@ -114,16 +114,13 @@ namespace HDLG_winforms
             }
             files.Sort();
 
-            foreach (HdlgDirectory d in directories)
-            {
-                d.Browse(propertyBrowser);
-            }
-
             // Compute subtree totals once (post-order) so export counts become O(1) with no extra recursion.
             TotalDirectories = directories.Count;
             TotalFiles = files.Count;
+
             foreach (HdlgDirectory d in directories)
             {
+                d.Browse(propertyBrowser);
                 TotalDirectories += d.TotalDirectories;
                 TotalFiles += d.TotalFiles;
             }

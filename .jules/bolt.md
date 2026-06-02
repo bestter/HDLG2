@@ -41,3 +41,6 @@
 ## 2024-05-15 - Loop Fusion in Directory Traversal
 **Learning:** Consecutive `foreach` loops iterating over the same list (like aggregating totals from subdirectories) cause unnecessary redundant iteration and increase overhead, especially on deep or wide folder hierarchies.
 **Action:** When aggregating multiple independent properties from a collection of objects, fuse the loops and calculate all aggregates in a single iteration pass over the collection to immediately halve the loop iteration time.
+## 2024-06-02 - Merge consecutive directory loops during Browse
+**Learning:** Traversing the same collection in multiple, consecutive loops can be combined to reduce O(N) overhead iterations, lowering instruction counts and cache misses especially when processing thousands of entries recursively.
+**Action:** Always combine loops iterating over the same collection doing independent sub-tasks if doing so does not compromise readability.
