@@ -199,12 +199,32 @@ namespace HDLG_winforms
 				return xml ?? string.Empty;
 			}
 
-			StringBuilder sb = new StringBuilder(xml.Length);
-			foreach (char c in xml)
+			// Performance optimization: Fast-path for valid strings to avoid StringBuilder allocation.
+			// Most XML strings (paths, names) are valid, so scanning first saves significant memory overhead.
+			int firstIllegalCharIndex = -1;
+			for (int i = 0; i < xml.Length; i++)
 			{
-				if (IsLegalXmlChar(c))
+				if (!IsLegalXmlChar(xml[i]))
 				{
-					sb.Append(c);
+					firstIllegalCharIndex = i;
+					break;
+				}
+			}
+
+			// If no invalid characters are found, immediately return the original string.
+			if (firstIllegalCharIndex == -1)
+			{
+				return xml;
+			}
+
+			// Only allocate StringBuilder if sanitization is actually required.
+			StringBuilder sb = new StringBuilder(xml.Length);
+			sb.Append(xml, 0, firstIllegalCharIndex);
+			for (int i = firstIllegalCharIndex + 1; i < xml.Length; i++)
+			{
+				if (IsLegalXmlChar(xml[i]))
+				{
+					sb.Append(xml[i]);
 				}
 			}
 			return sb.ToString();
