@@ -47,3 +47,7 @@
 ## 2024-05-19 - Merging Loops for Aggregate Counts
 **Learning:** Merging consecutive iterations of the same collection, when their side-effects are independent (e.g. aggregating distinct running totals), yields significant and immediate CPU/time savings with minimal code alteration.
 **Action:** Always inspect subsequent loops to identify identical iteration sets and, when logic allows, fold their inner contents into a single unified pass.
+
+## 2024-05-24 - Fast-Pathing String Sanitization to Avoid Allocations
+**Learning:** In string sanitization routines (like removing invalid XML characters), eagerly allocating a `StringBuilder` for every string causes significant garbage collection overhead, particularly because most strings (e.g., standard file paths) do not contain invalid characters.
+**Action:** When writing sanitization or validation methods, always scan the string first to find the first invalid character. If none are found, return the original string immediately. Only allocate a `StringBuilder` and perform character-by-character appending if an invalid character is actually detected.
