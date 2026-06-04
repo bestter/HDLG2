@@ -35,7 +35,8 @@ namespace HDLG_winforms
 			ProcessStartInfo psInfo = new( )
 			{
 				FileName = "https://www.flaticon.com/free-icons/root-directory",
-				UseShellExecute = true
+				UseShellExecute = true,
+				WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
 			};
 			Process.Start( psInfo );
 
@@ -46,7 +47,8 @@ namespace HDLG_winforms
 			ProcessStartInfo psInfo = new( )
 			{
 				FileName = "https://www.gnu.org/licenses/gpl-3.0.en.html",
-				UseShellExecute = true
+				UseShellExecute = true,
+				WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
 			};
 			Process.Start( psInfo );
 		}
@@ -57,7 +59,8 @@ namespace HDLG_winforms
 			ProcessStartInfo psInfo = new( )
 			{
 				FileName = "https://www.gnu.org/licenses/gpl-3.0.en.html",
-				UseShellExecute = true
+				UseShellExecute = true,
+				WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
 			};
 			Process.Start( psInfo );
 		}
