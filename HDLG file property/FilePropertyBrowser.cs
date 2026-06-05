@@ -49,13 +49,17 @@ namespace HdlgFileProperty
                     propertyGetters.IncrementFile();
                     propertyGetters.StartTimer();
                     var currentProperties = propertyGetters.FilePropertyGetter.GetFileProperties(path);
-                    if (currentProperties.Count > 0 && properties == null)
+                    // Performance optimization: Avoid allocating a dictionary enumerator when there are no properties
+                    if (currentProperties.Count > 0)
                     {
-                        properties = new();
-                    }
-                    foreach (var currentProperty in currentProperties)
-                    {
-                        _ = properties!.TryAdd(currentProperty.Key, currentProperty.Value);
+                        if (properties == null)
+                        {
+                            properties = new();
+                        }
+                        foreach (var currentProperty in currentProperties)
+                        {
+                            _ = properties!.TryAdd(currentProperty.Key, currentProperty.Value);
+                        }
                     }
                     propertyGetters.StopTimer();
 
