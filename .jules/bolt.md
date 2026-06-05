@@ -51,3 +51,7 @@
 ## 2024-05-24 - Fast-Pathing String Sanitization to Avoid Allocations
 **Learning:** In string sanitization routines (like removing invalid XML characters), eagerly allocating a `StringBuilder` for every string causes significant garbage collection overhead, particularly because most strings (e.g., standard file paths) do not contain invalid characters.
 **Action:** When writing sanitization or validation methods, always scan the string first to find the first invalid character. If none are found, return the original string immediately. Only allocate a `StringBuilder` and perform character-by-character appending if an invalid character is actually detected.
+
+## 2026-05-25 - Avoid empty enumerator allocation in foreach loops
+**Learning:** Using `foreach` on collections that might be empty (like dictionaries returned when a file has no extractable properties) causes an unnecessary allocation of the enumerator object. When processing thousands of files, this adds up to significant garbage collection overhead.
+**Action:** When iterating over a collection that is frequently empty, wrap the `foreach` loop in an `if (collection.Count > 0)` check to prevent the enumerator allocation.
