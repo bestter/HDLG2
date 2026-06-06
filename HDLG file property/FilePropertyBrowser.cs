@@ -14,7 +14,7 @@ namespace HdlgFileProperty
 {
     public class FilePropertyBrowser
     {
-        private readonly List<FilePropertyGetterStatistic> filePropertyGetters;
+        private readonly FilePropertyGetterStatistic[] filePropertyGetters;
 
         private readonly Serilog.ILogger logger;
 
@@ -26,22 +26,25 @@ namespace HdlgFileProperty
             ArgumentNullException.ThrowIfNull(imagePropertyGetters);
 
             this.logger = logger;
-            filePropertyGetters = new(imagePropertyGetters.Length);
+            filePropertyGetters = new FilePropertyGetterStatistic[imagePropertyGetters.Length];
             TotalNumberOfFiles = 0;
 
-            foreach (var propertyGetter in imagePropertyGetters)
+            for (int i = 0; i < imagePropertyGetters.Length; i++)
             {
+                var propertyGetter = imagePropertyGetters[i];
                 propertyGetter.AddLogger(logger);
-                FilePropertyGetterStatistic filePropertyGetterStatistic = new(propertyGetter);
-                filePropertyGetters.Add(filePropertyGetterStatistic);
+                filePropertyGetters[i] = new FilePropertyGetterStatistic(propertyGetter);
             }
         }
 
-        public Dictionary<string, IConvertible>? GetFileProperty(string path)
+        public IReadOnlyDictionary<string, IConvertible>? GetFileProperty(string path)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(path);
             TotalNumberOfFiles++;
-            Dictionary<string, IConvertible>? properties = null;
+
+            IReadOnlyDictionary<string, IConvertible>? firstProperties = null;
+            Dictionary<string, IConvertible>? mergedProperties = null;
+
             foreach (var propertyGetters in filePropertyGetters)
             {
                 if (propertyGetters.FilePropertyGetter.IsSupportedFile(path))
@@ -49,23 +52,38 @@ namespace HdlgFileProperty
                     propertyGetters.IncrementFile();
                     propertyGetters.StartTimer();
                     var currentProperties = propertyGetters.FilePropertyGetter.GetFileProperties(path);
+
                     // Performance optimization: Avoid allocating a dictionary enumerator when there are no properties
                     if (currentProperties.Count > 0)
                     {
-                        if (properties == null)
+                        if (firstProperties == null)
                         {
-                            properties = new();
+                            // Most common case: only one getter returns properties, so we just hold a reference to it
+                            firstProperties = currentProperties;
                         }
-                        foreach (var currentProperty in currentProperties)
+                        else
                         {
-                            _ = properties!.TryAdd(currentProperty.Key, currentProperty.Value);
+                            // Rare case: multiple getters returned properties, now we need to merge them
+                            if (mergedProperties == null)
+                            {
+                                mergedProperties = new Dictionary<string, IConvertible>(firstProperties.Count + currentProperties.Count);
+                                foreach (var prop in firstProperties)
+                                {
+                                    mergedProperties.TryAdd(prop.Key, prop.Value);
+                                }
+                            }
+
+                            foreach (var prop in currentProperties)
+                            {
+                                mergedProperties.TryAdd(prop.Key, prop.Value);
+                            }
                         }
                     }
                     propertyGetters.StopTimer();
-
                 }
             }
-            return properties;
+
+            return mergedProperties ?? firstProperties;
         }
 
         public void LogGetterStatistics()

@@ -25,12 +25,12 @@ namespace HDLG_winforms
 
 		private static readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible> EmptyProperties = new(new Dictionary<string, IConvertible>());
 
-        public HdlgFile(string path, Dictionary<string, IConvertible>? properties)
+        public HdlgFile(string path, IReadOnlyDictionary<string, IConvertible>? properties)
             : this(new FileInfo(path ?? throw new ArgumentNullException(nameof(path))), properties)
         {
         }
 
-        public HdlgFile(FileInfo info, Dictionary<string, IConvertible>? properties)
+        public HdlgFile(FileInfo info, IReadOnlyDictionary<string, IConvertible>? properties)
         {
             ArgumentNullException.ThrowIfNull(info);
 
@@ -43,7 +43,7 @@ namespace HDLG_winforms
 				Size = info.Length;
 				CreationTime = info.CreationTime;
 				Properties = properties != null && properties.Count > 0
-					? new System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>( properties )
+					? properties
 					: EmptyProperties;
 			}
 			else
