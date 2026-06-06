@@ -55,3 +55,10 @@
 ## 2026-05-25 - Avoid empty enumerator allocation in foreach loops
 **Learning:** Using `foreach` on collections that might be empty (like dictionaries returned when a file has no extractable properties) causes an unnecessary allocation of the enumerator object. When processing thousands of files, this adds up to significant garbage collection overhead.
 **Action:** When iterating over a collection that is frequently empty, wrap the `foreach` loop in an `if (collection.Count > 0)` check to prevent the enumerator allocation.
+## 2026-05-25 - Avoid Dictionary allocation and merging when only one property getter returns data
+**Learning:** During directory file enumeration, allocating a `new Dictionary<string, IConvertible>()` and copying values `O(N)` for every file causes massive GC overhead. In most directory scenarios, files like `.mp3`, `.docx`, or `.jpg` only trigger ONE specific property getter (e.g. `ImagePropertyGetter`).
+**Action:** When gathering properties from multiple providers, use an `IReadOnlyDictionary<string, IConvertible>?` return type. Hold the reference to the first returned dictionary and only allocate a new `Dictionary` to merge keys if a *second* getter also returns data. This fast-path avoids O(N) copying and dictionary instantiation for the vast majority of files.
+
+## 2026-05-25 - Arrays over Lists in hot loops
+**Learning:** Iterating over a `List<T>` in a high-frequency hot loop (like checking every single file against a list of property getters) forces the allocation of a `List<T>.Enumerator` struct and introduces slight overhead compared to a primitive array.
+**Action:** When a collection's size is fixed at instantiation and is iterated continuously in a hot path, use an array (`T[]`) instead of a `List<T>` to eliminate enumerator overhead and improve sequential access speed.

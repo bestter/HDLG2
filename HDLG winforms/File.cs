@@ -15,9 +15,9 @@ namespace HDLG_winforms
 
         public DateTime CreationTime { get; private set; }
 
-        public Dictionary<string, IConvertible> Properties { get; private set; }
+        public IReadOnlyDictionary<string, IConvertible> Properties { get; private set; }
 
-        public File(string path, Dictionary<string, IConvertible> properties)
+        public File(string path, IReadOnlyDictionary<string, IConvertible> properties)
         {
             Path = path;
             FileInfo info = new(Path);
@@ -27,7 +27,7 @@ namespace HDLG_winforms
                 Extension = info.Extension;
                 Size = info.Length;
                 CreationTime = info.CreationTime;
-                Properties = new Dictionary<string, IConvertible>(properties);
+                Properties = properties;
             }
             else
             {
