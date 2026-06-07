@@ -62,3 +62,6 @@
 ## 2026-05-25 - Arrays over Lists in hot loops
 **Learning:** Iterating over a `List<T>` in a high-frequency hot loop (like checking every single file against a list of property getters) forces the allocation of a `List<T>.Enumerator` struct and introduces slight overhead compared to a primitive array.
 **Action:** When a collection's size is fixed at instantiation and is iterated continuously in a hot path, use an array (`T[]`) instead of a `List<T>` to eliminate enumerator overhead and improve sequential access speed.
+## 2024-05-25 - Use for loops for arrays in hot loops
+**Learning:** While iterating over an array with `foreach` is generally fast, it still incurs minor overhead for the iterator state machine and enumerator struct allocation. In a hot path (like `FilePropertyBrowser.GetFileProperty` which executes for every single file in a recursive directory scan), explicitly changing an array `foreach` to a `for (int i = 0; i < array.Length; i++)` loop eliminates this overhead completely for a measurable reduction in instruction count.
+**Action:** To strictly avoid `IEnumerator` struct allocation and iterator state machine overhead in C# hot paths, explicitly use standard `for` loops with index-based access instead of `foreach` loops when iterating over primitive arrays.
