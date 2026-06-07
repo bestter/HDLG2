@@ -203,7 +203,8 @@ toolStripStatusLabelTotalTime.Visible = false;
 		{
 			".exe", ".bat", ".cmd", ".ps1", ".vbs", ".js", ".wsf", ".scr", ".com", ".msi", ".pif", ".hta", ".cpl",
 			".jar", ".reg", ".lnk", ".msc", ".vbe", ".jse", ".scf", ".ws", ".wsh",
-			".iso", ".img", ".vhd", ".vhdx", ".url", ".appref-ms", ".theme", ".themepack"
+			".iso", ".img", ".vhd", ".vhdx", ".url", ".appref-ms", ".theme", ".themepack",
+			".application", ".settingcontent-ms", ".library-ms", ".appx", ".msix", ".msixbundle", ".msp", ".chm"
 		};
 
 		/// <summary>
