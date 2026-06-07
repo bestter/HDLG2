@@ -79,6 +79,14 @@ namespace HDLG.Tests
         [InlineData(".bat ")]
         [InlineData(".exe.")]
         [InlineData(".cmd.  ")]
+        [InlineData(".application")]
+        [InlineData(".settingcontent-ms")]
+        [InlineData(".library-ms")]
+        [InlineData(".appx")]
+        [InlineData(".msix")]
+        [InlineData(".msixbundle")]
+        [InlineData(".msp")]
+        [InlineData(".chm")]
         public void OpenWithDefaultProgram_DangerousExtension_ThrowsInvalidOperationException(string extension)
         {
             var dangerousFile = System.IO.Path.Combine(tempDir, $"malicious{extension}");
