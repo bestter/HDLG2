@@ -45,8 +45,9 @@ namespace HdlgFileProperty
             IReadOnlyDictionary<string, IConvertible>? firstProperties = null;
             Dictionary<string, IConvertible>? mergedProperties = null;
 
-            foreach (var propertyGetters in filePropertyGetters)
+            for (int i = 0; i < filePropertyGetters.Length; i++)
             {
+                var propertyGetters = filePropertyGetters[i];
                 if (propertyGetters.FilePropertyGetter.IsSupportedFile(path))
                 {
                     propertyGetters.IncrementFile();
