@@ -82,34 +82,56 @@ namespace HDLG_winforms
 
             if (BrowseSubdirectory)
             {
-                foreach (var info in directoryInfo.EnumerateFileSystemInfos())
+                try
                 {
-                    if (info is DirectoryInfo d)
+                    foreach (var info in directoryInfo.EnumerateFileSystemInfos())
                     {
-                        // Prevent infinite recursion / DoS from symlinks looping back to parents
-                        if ((d.Attributes & FileAttributes.ReparsePoint) != 0)
+                        if (info is DirectoryInfo d)
                         {
-                            log.Warning("Skipping symlink directory to prevent infinite recursion: {DirectoryName}", d.FullName);
-                            continue;
+                            // Prevent infinite recursion / DoS from symlinks looping back to parents
+                            if ((d.Attributes & FileAttributes.ReparsePoint) != 0)
+                            {
+                                log.Warning("Skipping symlink directory to prevent infinite recursion: {DirectoryName}", d.FullName);
+                                continue;
+                            }
+                            directories.Add(new HdlgDirectory(d, false, true, log));
                         }
-                        directories.Add(new HdlgDirectory(d, false, true, log));
+                        else if (info is FileInfo f)
+                        {
+                            var properties = propertyBrowser.GetFileProperty(f.FullName);
+                            var file = new HdlgFile(f, properties);
+                            files.Add(file);
+                        }
                     }
-                    else if (info is FileInfo f)
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    log.Warning(ex, "Access denied to directory: {Path}", Path);
+                }
+                catch (System.Security.SecurityException ex)
+                {
+                    log.Warning(ex, "Security error accessing directory: {Path}", Path);
+                }
+                directories.Sort();
+            }
+            else
+            {
+                try
+                {
+                    foreach (var f in directoryInfo.EnumerateFiles())
                     {
                         var properties = propertyBrowser.GetFileProperty(f.FullName);
                         var file = new HdlgFile(f, properties);
                         files.Add(file);
                     }
                 }
-                directories.Sort();
-            }
-            else
-            {
-                foreach (var f in directoryInfo.EnumerateFiles())
+                catch (UnauthorizedAccessException ex)
                 {
-                    var properties = propertyBrowser.GetFileProperty(f.FullName);
-                    var file = new HdlgFile(f, properties);
-                    files.Add(file);
+                    log.Warning(ex, "Access denied to directory: {Path}", Path);
+                }
+                catch (System.Security.SecurityException ex)
+                {
+                    log.Warning(ex, "Security error accessing directory: {Path}", Path);
                 }
             }
             files.Sort();
