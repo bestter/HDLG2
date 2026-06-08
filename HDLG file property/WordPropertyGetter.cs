@@ -12,64 +12,61 @@ using Serilog;
 
 namespace HdlgFileProperty
 {
-    public class WordPropertyGetter : IFilePropertyGetter
-    {
+	public class WordPropertyGetter : IFilePropertyGetter
+	{
+		public ILogger? Logger { get; private set; }
 
+		public void AddLogger(ILogger logger)
+		{
+			Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+		}
 
+		public IReadOnlyDictionary<string, IConvertible> GetFileProperties(string path)
+		{
+			Dictionary<string, IConvertible>? properties = null;
+			try
+			{
+				using FileStream stream = new(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+				using WordprocessingDocument wordDoc = WordprocessingDocument.Open(stream, false);
+				var packageProperties = wordDoc.PackageProperties;
 
-        public ILogger? Logger { get; private set; }
+				if (!string.IsNullOrWhiteSpace(packageProperties.Title))
+				{
+					properties = new Dictionary<string, IConvertible>(3);
+					properties.Add("Title", packageProperties.Title);
+				}
 
-        public void AddLogger(ILogger logger)
-        {
-            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+				DateTime? created = packageProperties.Created;
+				if (created != null)
+				{
+					properties ??= new Dictionary<string, IConvertible>(3);
+					properties.Add("Created", created.Value);
+				}
 
-        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(string path)
-        {
-            Dictionary<string, IConvertible>? properties = null;
-            try
-            {
-                using FileStream stream = new(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                using WordprocessingDocument wordDoc = WordprocessingDocument.Open(stream, false);
-                var packageProperties = wordDoc.PackageProperties;
-
-                if (!string.IsNullOrWhiteSpace(packageProperties.Title))
-                {
-                    properties = new Dictionary<string, IConvertible>(3);
-                    properties.Add("Title", packageProperties.Title);
-                }
-
-                DateTime? created = packageProperties.Created;
-                if (created != null)
-                {
-                    properties ??= new Dictionary<string, IConvertible>(3);
-                    properties.Add("Created", created.Value);
-                }
-
-                if (!string.IsNullOrWhiteSpace(packageProperties.Creator))
-                {
-                    properties ??= new Dictionary<string, IConvertible>(3);
-                    properties.Add("Creator", packageProperties.Creator);
-                }
-            }
-            catch (Exception ex) when (ex is IOException || ex is InvalidDataException || ex is OpenXmlPackageException || ex is FileFormatException)
-            {
-                Logger?.Warning(ex, "Could not open Word file or extract properties for {Path}", path);
-            }
+				if (!string.IsNullOrWhiteSpace(packageProperties.Creator))
+				{
+					properties ??= new Dictionary<string, IConvertible>(3);
+					properties.Add("Creator", packageProperties.Creator);
+				}
+			}
+			catch (Exception ex) when (ex is IOException || ex is InvalidDataException || ex is OpenXmlPackageException || ex is FileFormatException)
+			{
+				Logger?.Warning(ex, "Could not open Word file or extract properties for {Path}", path);
+			}
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
-            catch (Exception ex)
-            {
-                Logger?.Warning(ex, "Cannot read properties from file {Path}", path);
-            }
+			catch (Exception ex)
+			{
+				Logger?.Warning(ex, "Cannot read properties from file {Path}", path);
+			}
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
 
-            return (IReadOnlyDictionary<string, IConvertible>?)properties ?? IFilePropertyGetter.EmptyProperties;
-        }
+			return (IReadOnlyDictionary<string, IConvertible>?)properties ?? IFilePropertyGetter.EmptyProperties;
+		}
 
-        public bool IsSupportedFile(string path)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(path);
-            return path.AsSpan().EndsWith(".docx", StringComparison.OrdinalIgnoreCase);
-        }
-    }
+		public bool IsSupportedFile(string path)
+		{
+			ArgumentException.ThrowIfNullOrWhiteSpace(path);
+			return path.AsSpan().EndsWith(".docx", StringComparison.OrdinalIgnoreCase);
+		}
+	}
 }
