@@ -14,6 +14,7 @@ namespace HDLG.Tests
         public PropertyGetterTests()
         {
             loggerMock = new Mock<ILogger>();
+            ImageSetup.CreateImages();
         }
 
         [Fact]
@@ -62,6 +63,72 @@ namespace HDLG.Tests
 
             // Assert
             result.Should().Be(expected);
+        }
+
+
+        [Fact]
+        public void ImagePropertyGetter_GetFileProperties_ValidFileWithExif_ReturnsPropertiesAndCameraModel()
+        {
+            // Arrange
+            var getter = new ImagePropertyGetter();
+
+            // Act
+            var properties = getter.GetFileProperties("test.jpg");
+
+            // Assert
+            properties.Should().ContainKey("Width");
+            properties["Width"].Should().Be(100);
+            properties.Should().ContainKey("Height");
+            properties["Height"].Should().Be(50);
+            properties.Should().ContainKey("CameraModel");
+            properties["CameraModel"].Should().Be("TestCameraModel");
+        }
+
+        [Fact]
+        public void ImagePropertyGetter_GetFileProperties_ValidFileWithoutExif_ReturnsPropertiesWithoutCameraModel()
+        {
+            // Arrange
+            var getter = new ImagePropertyGetter();
+
+            // Act
+            var properties = getter.GetFileProperties("test_no_exif.jpg");
+
+            // Assert
+            properties.Should().ContainKey("Width");
+            properties["Width"].Should().Be(100);
+            properties.Should().ContainKey("Height");
+            properties["Height"].Should().Be(50);
+            properties.Should().NotContainKey("CameraModel");
+        }
+
+        [Fact]
+        public void ImagePropertyGetter_GetFileProperties_FileNotFound_LogsWarningAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new ImagePropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            // Act
+            var properties = getter.GetFileProperties("nonexistent.jpg");
+
+            // Assert
+            properties.Should().BeEmpty();
+            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Cannot read properties from file")), It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public void ImagePropertyGetter_GetFileProperties_InvalidFileFormat_LogsWarningAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new ImagePropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            // Act
+            var properties = getter.GetFileProperties("test_invalid.jpg");
+
+            // Assert
+            properties.Should().BeEmpty();
+            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Unsupported image format") || s.Contains("Cannot read properties")), It.IsAny<string>()), Times.Once);
         }
 
         [Theory]
