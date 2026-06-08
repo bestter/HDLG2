@@ -15,6 +15,7 @@ namespace HdlgFileProperty
     public class PdfPropertyGetter : IFilePropertyGetter
     {
 
+
         public ILogger? Logger { get; private set; }
 
         public void AddLogger(ILogger logger)
@@ -28,6 +29,10 @@ namespace HdlgFileProperty
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
             try
             {
+                if (!System.IO.File.Exists(path))
+                {
+                    throw new FileNotFoundException("File not found", path);
+                }
                 using PdfDocument document = PdfDocument.Open(path);
                 string? title = document.Information.Title;
 

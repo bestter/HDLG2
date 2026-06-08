@@ -16,6 +16,7 @@ namespace HdlgFileProperty
     public class ExcelPropertyGetter : IFilePropertyGetter
     {
 
+
         public ILogger? Logger { get; private set; }
 
         public void AddLogger(ILogger logger)
@@ -51,7 +52,7 @@ namespace HdlgFileProperty
                     properties.Add("Creator", packageProperties.Creator);
                 }
             }
-            catch (Exception ex) when (ex is IOException || ex is InvalidDataException || ex is OpenXmlPackageException)
+            catch (Exception ex) when (ex is IOException || ex is InvalidDataException || ex is OpenXmlPackageException || ex is FileFormatException)
             {
                 Logger?.Warning(ex, "Could not open Excel file or extract properties for {Path}", path);
             }

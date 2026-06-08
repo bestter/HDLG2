@@ -16,6 +16,7 @@ namespace HdlgFileProperty
     public class ImagePropertyGetter : IFilePropertyGetter
     {
 
+
         public ILogger? Logger { get; private set; }
 
         public void AddLogger(ILogger logger)
@@ -27,14 +28,14 @@ namespace HdlgFileProperty
             Dictionary<string, IConvertible>? properties = null;
             try
             {
-                var imageInfo = SixLabors.ImageSharp.Image.Identify(path);
-                if (imageInfo != null)
+                using var image = SixLabors.ImageSharp.Image.Load(path);
+                if (image != null)
                 {
                     properties = new Dictionary<string, IConvertible>();
-                    properties.Add(nameof(imageInfo.Width), imageInfo.Width);
-                    properties.Add(nameof(imageInfo.Height), imageInfo.Height);
+                    properties.Add(nameof(image.Width), image.Width);
+                    properties.Add(nameof(image.Height), image.Height);
 
-                    var exifProfile = imageInfo.Metadata?.ExifProfile;
+                    var exifProfile = image.Metadata?.ExifProfile;
                     if (exifProfile != null)
                     {
                         if (exifProfile.TryGetValue(ExifTag.Model, out var cameraModel) && cameraModel.Value != null)

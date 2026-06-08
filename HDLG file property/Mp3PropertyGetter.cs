@@ -15,6 +15,7 @@ namespace HdlgFileProperty
     public class Mp3PropertyGetter : IFilePropertyGetter
     {
 
+
         public ILogger? Logger { get; private set; }
 
         public void AddLogger(ILogger logger)

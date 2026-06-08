@@ -23,6 +23,7 @@ namespace HDLG_winforms
 
 		public IReadOnlyDictionary<string, IConvertible> Properties { get; }
 
+
         public HdlgFile(string path, IReadOnlyDictionary<string, IConvertible>? properties)
             : this(new FileInfo(path ?? throw new ArgumentNullException(nameof(path))), properties)
         {
