@@ -1,3 +1,4 @@
+using DocumentFormat.OpenXml.Packaging;
 using System;
 using FluentAssertions;
 using HdlgFileProperty;
@@ -392,10 +393,11 @@ namespace HDLG.Tests
             properties["Title"].Should().Be("Test Excel Title");
             properties.Should().ContainKey("Creator");
             properties["Creator"].Should().Be("Test Creator");
+            properties.Should().ContainKey("Created");
         }
 
         [Fact]
-        public void ExcelPropertyGetter_GetFileProperties_ValidFileWithoutProperties_ReturnsEmptyDictionary()
+        public void ExcelPropertyGetter_GetFileProperties_ValidFileWithoutProperties_ReturnsCreatedOnly()
         {
             // Arrange
             var getter = new ExcelPropertyGetter();
@@ -406,6 +408,42 @@ namespace HDLG.Tests
             // Assert
             properties.Should().NotContainKey("Title");
             properties.Should().NotContainKey("Creator");
+            properties.Should().ContainKey("Created");
+        }
+
+        [Fact]
+        public void ExcelPropertyGetter_GetFileProperties_FileWithNoProperties_ReturnsEmptyDictionary()
+        {
+            // Arrange
+            var getter = new ExcelPropertyGetter();
+            var path = "test_gen.xlsx";
+            using (var spreadsheetDocument = DocumentFormat.OpenXml.Packaging.SpreadsheetDocument.Create(path, DocumentFormat.OpenXml.SpreadsheetDocumentType.Workbook))
+            {
+                var workbookpart = spreadsheetDocument.AddWorkbookPart();
+                workbookpart.Workbook = new DocumentFormat.OpenXml.Spreadsheet.Workbook();
+                var worksheetPart = workbookpart.AddNewPart<DocumentFormat.OpenXml.Packaging.WorksheetPart>();
+                worksheetPart.Worksheet = new DocumentFormat.OpenXml.Spreadsheet.Worksheet(new DocumentFormat.OpenXml.Spreadsheet.SheetData());
+                var sheets = spreadsheetDocument.WorkbookPart.Workbook.AppendChild(new DocumentFormat.OpenXml.Spreadsheet.Sheets());
+                var sheet = new DocumentFormat.OpenXml.Spreadsheet.Sheet() { Id = spreadsheetDocument.WorkbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "mySheet" };
+                sheets.Append(sheet);
+                workbookpart.Workbook.Save();
+            }
+
+            try
+            {
+                // Act
+                var properties = getter.GetFileProperties(path);
+
+                // Assert
+                properties.Should().BeEmpty();
+            }
+            finally
+            {
+                if (System.IO.File.Exists(path))
+                {
+                    System.IO.File.Delete(path);
+                }
+            }
         }
 
         [Fact]
