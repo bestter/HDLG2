@@ -14,7 +14,7 @@ namespace HdlgFileProperty
 {
     public class PdfPropertyGetter : IFilePropertyGetter
     {
-        private static readonly IReadOnlyDictionary<string, IConvertible> EmptyProperties = System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>.Empty;
+
 
         public ILogger? Logger { get; private set; }
 
@@ -29,6 +29,10 @@ namespace HdlgFileProperty
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
             try
             {
+                if (!System.IO.File.Exists(path))
+                {
+                    throw new FileNotFoundException("File not found", path);
+                }
                 using PdfDocument document = PdfDocument.Open(path);
                 string? title = document.Information.Title;
 

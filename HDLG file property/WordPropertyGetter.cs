@@ -14,7 +14,7 @@ namespace HdlgFileProperty
 {
     public class WordPropertyGetter : IFilePropertyGetter
     {
-        private static readonly IReadOnlyDictionary<string, IConvertible> EmptyProperties = System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>.Empty;
+
 
         public ILogger? Logger { get; private set; }
 
@@ -51,7 +51,7 @@ namespace HdlgFileProperty
                     properties.Add("Creator", packageProperties.Creator);
                 }
             }
-            catch (Exception ex) when (ex is IOException || ex is InvalidDataException || ex is OpenXmlPackageException)
+            catch (Exception ex) when (ex is IOException || ex is InvalidDataException || ex is OpenXmlPackageException || ex is FileFormatException)
             {
                 Logger?.Warning(ex, "Could not open Word file or extract properties for {Path}", path);
             }

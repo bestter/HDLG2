@@ -14,7 +14,7 @@ namespace HdlgFileProperty
 {
     public class Mp3PropertyGetter : IFilePropertyGetter
     {
-        private static readonly IReadOnlyDictionary<string, IConvertible> EmptyProperties = System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>.Empty;
+
 
         public ILogger? Logger { get; private set; }
 

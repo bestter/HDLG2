@@ -2,8 +2,8 @@
 
 Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
-**Version** : 1.3.0  
-**Dernière mise à jour** : 25 mai 2026 — Synchronisation des données factuelles (versions NuGet des tests, liste des fichiers de test, description de l'export HTML sans polices Google externes, Dependabot, frameworks cibles par projet) après évolutions du code.  
+**Version** : 1.4.0  
+**Dernière mise à jour** : 8 juin 2026 — Synchronisation des données factuelles (ajout de FilePropertyGetterStatisticTests.cs et HdlgFileTests.cs à la liste des fichiers de test, documentation des tests suite aux corrections de compatibilité).  
 **Propriétaire** : Martin Labelle (@bestter)
 
 ---
@@ -100,6 +100,8 @@ La solution `HDLG.sln` contient **trois projets** :
 | **`FilePropertyBrowserTests.cs`** | Tests de `FilePropertyBrowser` : validation du constructeur (null logger, null getters), délégation correcte aux `IFilePropertyGetter` via mocks Moq, combinaison de propriétés de multiples getters, et vérification des statistiques de logging. |
 | **`HdlgDirectoryTests.cs`** | Tests de `HdlgDirectory` : construction avec propriétés valides, validation des paramètres null, parcours avec/sans sous-répertoires, et vérification de l'égalité par chemin. Utilise des répertoires temporaires sur le système de fichiers. |
 | **`PropertyGetterTests.cs`** | Tests des implémentations `IFilePropertyGetter` : `ImagePropertyGetter`, `Mp3PropertyGetter`, `PdfPropertyGetter`, `WordPropertyGetter`, `ExcelPropertyGetter`. Vérifie `AddLogger()`, la validation null, et `IsSupportedFile()` via `[Theory]`/`[InlineData]`. |
+| **`FilePropertyGetterStatisticTests.cs`** | Tests de `FilePropertyGetterStatistic` : validation des statistiques d'exécution d'un getter (temps écoulé, nombre de fichiers traités). |
+| **`HdlgFileTests.cs`** | Tests de `HdlgFile` : validation de la construction, propriétés, calculs de taille et extension. |
 | **`OpenWithDefaultProgramTests.cs`** | Tests de `MainWindow.OpenWithDefaultProgram` (sécurité : validation des extensions dangereuses pour prévenir l'injection de processus). |
 
 ---
