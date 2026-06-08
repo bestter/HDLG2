@@ -71,7 +71,9 @@ dotnet test HDLG.sln
 The `HDLG.Tests` project covers:
 - **DirectoryBrowserTests** — XML and HTML export validation (parameter guards, output structure).
 - **FilePropertyBrowserTests** — Property extraction orchestration (getter delegation, multi-getter combination, statistics logging).
+- **FilePropertyGetterStatisticTests** — Execution statistics validation for getters (elapsed time, file count).
 - **HdlgDirectoryTests** — Directory model construction, recursive browse behavior, and equality semantics.
+- **HdlgFileTests** — File model validation (construction, properties, size/extension computation).
 - **PropertyGetterTests** — File-type support detection for all property getter implementations (Image, MP3, PDF, Word, Excel).
 - **OpenWithDefaultProgramTests** — Security validation for `MainWindow.OpenWithDefaultProgram` (dangerous extension blocklist to prevent process injection).
 

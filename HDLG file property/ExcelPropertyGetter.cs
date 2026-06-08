@@ -63,7 +63,7 @@ namespace HdlgFileProperty
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
 
-            return (IReadOnlyDictionary<string, IConvertible>?)properties ?? IFilePropertyGetter.EmptyProperties;
+            return properties ?? IFilePropertyGetter.EmptyProperties;
         }
 
         public bool IsSupportedFile(string path)

@@ -57,7 +57,7 @@ namespace HdlgFileProperty
             catch (InvalidImageContentException e)
             {
                 //The image content is corrupted or invalid.
-                Logger?.Warning(e,"Invalid image content for file: {FilePath}", path);
+                Logger?.Warning(e, "Invalid image content for file: {FilePath}", path);
             }
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
             catch (Exception e)
