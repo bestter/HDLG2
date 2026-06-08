@@ -15,6 +15,7 @@ namespace HDLG.Tests
         {
             loggerMock = new Mock<ILogger>();
             ImageSetup.CreateImages();
+            WordPropertyGetterTestSetup.EnsureTestFilesExist();
         }
 
 
@@ -299,6 +300,7 @@ namespace HDLG.Tests
             // Assert
             result.Should().Be(expected);
         }
+
 
 
         [Fact]

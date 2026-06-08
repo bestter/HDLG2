@@ -14,224 +14,224 @@ using System.Collections.ObjectModel;
 namespace HDLG_winforms
 {
 
-    public class HdlgDirectory : IEquatable<HdlgDirectory>, IComparable, IComparable<HdlgDirectory>
-    {
-        public string Name { get; private set; }
+	public class HdlgDirectory : IEquatable<HdlgDirectory>, IComparable, IComparable<HdlgDirectory>
+	{
+		public string Name { get; private set; }
 
-        public string Path { get; private set; }
+		public string Path { get; private set; }
 
-        public DateTime CreationTime { get; private set; }
+		public DateTime CreationTime { get; private set; }
 
-        private readonly DirectoryInfo directoryInfo;
+		private readonly DirectoryInfo directoryInfo;
 
-		private readonly List<HdlgDirectory> directories = [];
+		private readonly List<HdlgDirectory> directories = [ ];
 
-        public bool IsTopDirectory { get; private set; }
+		public bool IsTopDirectory { get; private set; }
 
-        public bool BrowseSubdirectory { get; private set; }
+		public bool BrowseSubdirectory { get; private set; }
 
-        public IReadOnlyList<HdlgDirectory> Directories => directories;
+		public IReadOnlyList<HdlgDirectory> Directories => directories;
 
-        private readonly List<HdlgFile> files = [];
+		private readonly List<HdlgFile> files = [ ];
 
-        public IReadOnlyList<HdlgFile> Files => files;
+		public IReadOnlyList<HdlgFile> Files => files;
 
-        public int DirectoriesCount => directories.Count;
-        public int FilesCount => files.Count;
+		public int DirectoriesCount => directories.Count;
+		public int FilesCount => files.Count;
 
-        /// <summary>
-        /// Total number of directories in this subtree (computed once during Browse for performance).
-        /// </summary>
-        public long TotalDirectories { get; private set; }
+		/// <summary>
+		/// Total number of directories in this subtree (computed once during Browse for performance).
+		/// </summary>
+		public long TotalDirectories { get; private set; }
 
-        /// <summary>
-        /// Total number of files in this subtree (computed once during Browse for performance).
-        /// </summary>
-        public long TotalFiles { get; private set; }
+		/// <summary>
+		/// Total number of files in this subtree (computed once during Browse for performance).
+		/// </summary>
+		public long TotalFiles { get; private set; }
 
-        /// <summary>
-        /// Logger
-        /// </summary>
-        private readonly ILogger log;
+		/// <summary>
+		/// Logger
+		/// </summary>
+		private readonly ILogger log;
 
-        public HdlgDirectory(string path, bool isTopDirectory, bool browseSubdirectory, ILogger log) : this(new DirectoryInfo(path), isTopDirectory, browseSubdirectory, log)
-        {
+		public HdlgDirectory (string path, bool isTopDirectory, bool browseSubdirectory, ILogger log) : this( new DirectoryInfo( path ), isTopDirectory, browseSubdirectory, log )
+		{
 
-        }
+		}
 
-        public HdlgDirectory(DirectoryInfo directory, bool isTopDirectory, bool browseSubdirectory, ILogger log)
-        {
-            directoryInfo = directory ?? throw new ArgumentNullException( nameof( directory ) );
-            Path = directory.FullName;
-            Name = directory.Name;
-            CreationTime = directory.CreationTimeUtc.ToLocalTime();
-            IsTopDirectory = isTopDirectory;
-            BrowseSubdirectory = browseSubdirectory;
-            this.log = log ?? throw new ArgumentNullException( nameof( log ) );
-        }
+		public HdlgDirectory (DirectoryInfo directory, bool isTopDirectory, bool browseSubdirectory, ILogger log)
+		{
+			directoryInfo = directory ?? throw new ArgumentNullException( nameof( directory ) );
+			Path = directory.FullName;
+			Name = directory.Name;
+			CreationTime = directory.CreationTimeUtc.ToLocalTime( );
+			IsTopDirectory = isTopDirectory;
+			BrowseSubdirectory = browseSubdirectory;
+			this.log = log ?? throw new ArgumentNullException( nameof( log ) );
+		}
 
 
-        /// <summary>
-        /// Browse the content
-        /// </summary>
-        /// <param name="propertyBrowser"></param>
-        public void Browse(FilePropertyBrowser propertyBrowser)
-        {
+		/// <summary>
+		/// Browse the content
+		/// </summary>
+		/// <param name="propertyBrowser"></param>
+		public void Browse (FilePropertyBrowser propertyBrowser)
+		{
 			ArgumentNullException.ThrowIfNull( propertyBrowser );
-			log.Debug("Directory: {Path} {IsTopDirectoryName}: {IsTopDirectory} {BrowseSubdirectoryName}: {BrowseSubdirectory}", Path, nameof(IsTopDirectory), IsTopDirectory, nameof(BrowseSubdirectory), BrowseSubdirectory);
+			log.Debug( "Directory: {Path} {IsTopDirectoryName}: {IsTopDirectory} {BrowseSubdirectoryName}: {BrowseSubdirectory}", Path, nameof( IsTopDirectory ), IsTopDirectory, nameof( BrowseSubdirectory ), BrowseSubdirectory );
 
-            if (BrowseSubdirectory)
-            {
-                try
-                {
-                    foreach (var info in directoryInfo.EnumerateFileSystemInfos())
-                    {
-                        if (info is DirectoryInfo d)
-                        {
-                            // Prevent infinite recursion / DoS from symlinks looping back to parents
-                            if ((d.Attributes & FileAttributes.ReparsePoint) != 0)
-                            {
-                                log.Warning("Skipping symlink directory to prevent infinite recursion: {DirectoryName}", d.FullName);
-                                continue;
-                            }
-                            directories.Add(new HdlgDirectory(d, false, true, log));
-                        }
-                        else if (info is FileInfo f)
-                        {
-                            var properties = propertyBrowser.GetFileProperty(f.FullName);
-                            var file = new HdlgFile(f, properties);
-                            files.Add(file);
-                        }
-                    }
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    log.Warning(ex, "Access denied to directory: {Path}", Path);
-                }
-                catch (System.Security.SecurityException ex)
-                {
-                    log.Warning(ex, "Security error accessing directory: {Path}", Path);
-                }
-                directories.Sort();
-            }
-            else
-            {
-                try
-                {
-                    foreach (var f in directoryInfo.EnumerateFiles())
-                    {
-                        var properties = propertyBrowser.GetFileProperty(f.FullName);
-                        var file = new HdlgFile(f, properties);
-                        files.Add(file);
-                    }
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    log.Warning(ex, "Access denied to directory: {Path}", Path);
-                }
-                catch (System.Security.SecurityException ex)
-                {
-                    log.Warning(ex, "Security error accessing directory: {Path}", Path);
-                }
-            }
-            files.Sort();
+			if (BrowseSubdirectory)
+			{
+				try
+				{
+					foreach (var info in directoryInfo.EnumerateFileSystemInfos( ))
+					{
+						if (info is DirectoryInfo d)
+						{
+							// Prevent infinite recursion / DoS from symlinks looping back to parents
+							if ((d.Attributes & FileAttributes.ReparsePoint) != 0)
+							{
+								log.Warning( "Skipping symlink directory to prevent infinite recursion: {DirectoryName}", d.FullName );
+								continue;
+							}
+							directories.Add( new HdlgDirectory( d, false, true, log ) );
+						}
+						else if (info is FileInfo f)
+						{
+							var properties = propertyBrowser.GetFileProperty( f.FullName );
+							var file = new HdlgFile( f, properties );
+							files.Add( file );
+						}
+					}
+				}
+				catch (UnauthorizedAccessException ex)
+				{
+					log.Warning( ex, "Access denied to directory: {Path}", Path );
+				}
+				catch (System.Security.SecurityException ex)
+				{
+					log.Warning( ex, "Security error accessing directory: {Path}", Path );
+				}
+				directories.Sort( );
+			}
+			else
+			{
+				try
+				{
+					foreach (var f in directoryInfo.EnumerateFiles( ))
+					{
+						var properties = propertyBrowser.GetFileProperty( f.FullName );
+						var file = new HdlgFile( f, properties );
+						files.Add( file );
+					}
+				}
+				catch (UnauthorizedAccessException ex)
+				{
+					log.Warning( ex, "Access denied to directory: {Path}", Path );
+				}
+				catch (System.Security.SecurityException ex)
+				{
+					log.Warning( ex, "Security error accessing directory: {Path}", Path );
+				}
+			}
+			files.Sort( );
 
-            // Compute subtree totals once (post-order) so export counts become O(1) with no extra recursion.
-            TotalDirectories = directories.Count;
-            TotalFiles = files.Count;
+			// Compute subtree totals once (post-order) so export counts become O(1) with no extra recursion.
+			TotalDirectories = directories.Count;
+			TotalFiles = files.Count;
 
-            foreach (HdlgDirectory d in directories)
-            {
-                d.Browse(propertyBrowser);
-                TotalDirectories += d.TotalDirectories;
-                TotalFiles += d.TotalFiles;
-            }
-        }
+			foreach (HdlgDirectory d in directories)
+			{
+				d.Browse( propertyBrowser );
+				TotalDirectories += d.TotalDirectories;
+				TotalFiles += d.TotalFiles;
+			}
+		}
 
 
 
-        public override string ToString() { return Path; }
+		public override string ToString () { return Path; }
 
-        public override int GetHashCode()
-        {
-            return Path.GetHashCode(StringComparison.OrdinalIgnoreCase);
-        }
+		public override int GetHashCode ()
+		{
+			return Path.GetHashCode( StringComparison.OrdinalIgnoreCase );
+		}
 
-        public override bool Equals(object? obj)
-        {
-            if (obj is HdlgDirectory directory)
-            {
-                return Equals(directory);
-            }
-            return false;
-        }
+		public override bool Equals (object? obj)
+		{
+			if (obj is HdlgDirectory directory)
+			{
+				return Equals( directory );
+			}
+			return false;
+		}
 
-        public bool Equals(HdlgDirectory? other)
-        {
-            if (other is not null)
-            {
-                return string.Equals(Path, other.Path, StringComparison.OrdinalIgnoreCase);
-            }
-            return false;
-        }
+		public bool Equals (HdlgDirectory? other)
+		{
+			if (other is not null)
+			{
+				return string.Equals( Path, other.Path, StringComparison.OrdinalIgnoreCase );
+			}
+			return false;
+		}
 
-        public int CompareTo(object? obj)
-        {
-            if (obj is null) return 1;
-            if (obj is HdlgDirectory directory)
-            {
-                return CompareTo(directory);
-            }
-            throw new ArgumentException("Object is not a HdlgDirectory");
-        }
+		public int CompareTo (object? obj)
+		{
+			if (obj is null) return 1;
+			if (obj is HdlgDirectory directory)
+			{
+				return CompareTo( directory );
+			}
+			throw new ArgumentException( "Object is not a HdlgDirectory" );
+		}
 
-        public int CompareTo(HdlgDirectory? other)
-        {
-            if (other is null)
-            {
-                return 1;
-            }
-            int compareValue = other.IsTopDirectory.CompareTo(IsTopDirectory);
-            if (compareValue == 0)
-            {
-                compareValue = string.Compare(Path, other.Path, StringComparison.OrdinalIgnoreCase);
-            }
-            return compareValue;
-        }
+		public int CompareTo (HdlgDirectory? other)
+		{
+			if (other is null)
+			{
+				return 1;
+			}
+			int compareValue = other.IsTopDirectory.CompareTo( IsTopDirectory );
+			if (compareValue == 0)
+			{
+				compareValue = string.Compare( Path, other.Path, StringComparison.OrdinalIgnoreCase );
+			}
+			return compareValue;
+		}
 
-        public static bool operator ==(HdlgDirectory left, HdlgDirectory right)
-        {
-            if (left is null)
-            {
-                return right is null;
-            }
+		public static bool operator == (HdlgDirectory left, HdlgDirectory right)
+		{
+			if (left is null)
+			{
+				return right is null;
+			}
 
-            return left.Equals(right);
-        }
+			return left.Equals( right );
+		}
 
-        public static bool operator !=(HdlgDirectory left, HdlgDirectory right)
-        {
-            return !(left == right);
-        }
+		public static bool operator != (HdlgDirectory left, HdlgDirectory right)
+		{
+			return !(left == right);
+		}
 
-        public static bool operator <(HdlgDirectory left, HdlgDirectory right)
-        {
-            return left is null ? right is not null : left.CompareTo(right) < 0;
-        }
+		public static bool operator < (HdlgDirectory left, HdlgDirectory right)
+		{
+			return left is null ? right is not null : left.CompareTo( right ) < 0;
+		}
 
-        public static bool operator <=(HdlgDirectory left, HdlgDirectory right)
-        {
-            return left is null || left.CompareTo(right) <= 0;
-        }
+		public static bool operator <= (HdlgDirectory left, HdlgDirectory right)
+		{
+			return left is null || left.CompareTo( right ) <= 0;
+		}
 
-        public static bool operator >(HdlgDirectory left, HdlgDirectory right)
-        {
-            return left is not null && left.CompareTo(right) > 0;
-        }
+		public static bool operator > (HdlgDirectory left, HdlgDirectory right)
+		{
+			return left is not null && left.CompareTo( right ) > 0;
+		}
 
-        public static bool operator >=(HdlgDirectory left, HdlgDirectory right)
-        {
-            return left is null ? right is null : left.CompareTo(right) >= 0;
-        }
-    }
+		public static bool operator >= (HdlgDirectory left, HdlgDirectory right)
+		{
+			return left is null ? right is null : left.CompareTo( right ) >= 0;
+		}
+	}
 }

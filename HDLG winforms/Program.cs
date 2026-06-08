@@ -42,8 +42,8 @@ namespace HDLG_winforms
 					services.AddTransient<ExcelPropertyGetter, ExcelPropertyGetter>( );
 					services.AddTransient<PdfPropertyGetter, PdfPropertyGetter>( );
 					services.AddTransient<Mp3PropertyGetter, Mp3PropertyGetter>( );
-					services.AddSingleton<ILogger>(log);
-					services.AddSingleton<Logger>(log);
+					services.AddSingleton<ILogger>( log );
+					services.AddSingleton<Logger>( log );
 					services.AddTransient<MainWindow>( );
 				} );
 		}
