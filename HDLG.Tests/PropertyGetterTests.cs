@@ -82,6 +82,67 @@ namespace HDLG.Tests
             result.Should().Be(expected);
         }
 
+        [Fact]
+        public void Mp3PropertyGetter_GetFileProperties_ValidFileWithTitle_ReturnsProperties()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+
+            // Act
+            var properties = getter.GetFileProperties("test.mp3");
+
+            // Assert
+            properties.Should().ContainKey("Title");
+            properties["Title"].Should().Be("Test Title");
+            properties.Should().ContainKey("Album");
+            properties["Album"].Should().Be("Test Album");
+            properties.Should().ContainKey("Year");
+            properties["Year"].Should().Be(2023u);
+        }
+
+        [Fact]
+        public void Mp3PropertyGetter_GetFileProperties_FileNotFound_LogsErrorAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            // Act
+            var properties = getter.GetFileProperties("nonexistent.mp3");
+
+            // Assert
+            loggerMock.Verify(l => l.Error(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Cannot read file"))), Times.Once);
+            properties.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void Mp3PropertyGetter_GetFileProperties_InvalidFileFormat_LogsWarningAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+            var invalidFile = "test_invalid.mp3";
+            System.IO.File.WriteAllText(invalidFile, "invalid mp3 content");
+
+            try
+            {
+                // Act
+                var properties = getter.GetFileProperties(invalidFile);
+
+                // Assert
+                loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("is corrupted") || s.Contains("is not supported") || s.Contains("Cannot read properties from file"))), Times.Once);
+                properties.Should().BeEmpty();
+            }
+            finally
+            {
+                if (System.IO.File.Exists(invalidFile))
+                {
+                    System.IO.File.Delete(invalidFile);
+                }
+            }
+        }
+
+
 
         [Fact]
         public void PdfPropertyGetter_GetFileProperties_ValidFileWithTitle_ReturnsTitle()
@@ -169,6 +230,67 @@ namespace HDLG.Tests
 
             // Assert
             result.Should().Be(expected);
+        }
+
+
+        [Fact]
+        public void WordPropertyGetter_GetFileProperties_ValidFileWithProperties_ReturnsProperties()
+        {
+            // Arrange
+            var getter = new WordPropertyGetter();
+
+            // Act
+            var properties = getter.GetFileProperties("test_word.docx");
+
+            // Assert
+            properties.Should().ContainKey("Title");
+            properties["Title"].Should().Be("Test Title");
+            properties.Should().ContainKey("Creator");
+            properties["Creator"].Should().Be("Test Creator");
+            properties.Should().ContainKey("Created");
+        }
+
+        [Fact]
+        public void WordPropertyGetter_GetFileProperties_ValidFileWithoutProperties_ReturnsEmptyDictionary()
+        {
+            // Arrange
+            var getter = new WordPropertyGetter();
+
+            // Act
+            var properties = getter.GetFileProperties("test_word_empty.docx");
+
+            // Assert
+            properties.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void WordPropertyGetter_GetFileProperties_FileNotFound_LogsWarningAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new WordPropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            // Act
+            var properties = getter.GetFileProperties("nonexistent_word.docx");
+
+            // Assert
+            properties.Should().BeEmpty();
+            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Could not open Word file"))), Times.Once);
+        }
+
+        [Fact]
+        public void WordPropertyGetter_GetFileProperties_InvalidFileFormat_LogsWarningAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new WordPropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            // Act
+            var properties = getter.GetFileProperties("test_word_invalid.docx");
+
+            // Assert
+            properties.Should().BeEmpty();
+            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Could not open Word file"))), Times.Once);
         }
 
         [Theory]

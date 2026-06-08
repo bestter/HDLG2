@@ -1,0 +1,7 @@
+🎯 **What:** Removed extra spaces in the `catch` block statement for `UnknownImageFormatException` in `ImagePropertyGetter.cs`.
+
+💡 **Why:** This is a trivial code health improvement to maintain code hygiene and readability. Extraneous spacing inside parentheses does not conform to standard C# formatting guidelines and creates unnecessary visual clutter.
+
+✅ **Verification:** Verified by ensuring the code compiles successfully (`dotnet build -p:EnableWindowsTargeting=true`). Ran `dotnet test` to confirm tests remain unaffected. The change is restricted entirely to whitespace within a catch block declaration.
+
+✨ **Result:** Improved readability and formatting consistency in `ImagePropertyGetter.cs`.
