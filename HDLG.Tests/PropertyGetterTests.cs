@@ -133,6 +133,89 @@ namespace HDLG.Tests
             loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Unsupported image format") || s.Contains("Cannot read properties")), It.IsAny<string>()), Times.Once);
         }
 
+
+        [Fact]
+        public void Mp3PropertyGetter_AddLogger_SetsLogger()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+
+            // Act
+            getter.AddLogger(loggerMock.Object);
+
+            // Assert
+            getter.Logger.Should().Be(loggerMock.Object);
+        }
+
+        [Fact]
+        public void Mp3PropertyGetter_AddLogger_NullLogger_ThrowsArgumentNullException()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => getter.AddLogger(null!));
+        }
+
+        [Fact]
+        public void Mp3PropertyGetter_GetFileProperties_AllProperties_ReturnsCompleteDictionary()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+            var testFile = "test_full.mp3";
+
+            // Create a test file with all properties filled to verify they are extracted correctly
+            System.IO.File.Copy("test.mp3", testFile, true);
+            using (var f = TagLib.File.Create(testFile))
+            {
+                f.Tag.Title = "Test Complete Title";
+                f.Tag.Album = "Test Complete Album";
+                f.Tag.Year = 2024;
+                f.Tag.Performers = new[] { "John Doe", "Jane Doe" };
+                f.Tag.AlbumArtists = new[] { "Band A", "Band B" };
+                f.Tag.Composers = new[] { "Mozart", "Beethoven" };
+                f.Tag.Copyright = "2024 Test Corp";
+                f.Save();
+            }
+
+            try
+            {
+                // Act
+                var properties = getter.GetFileProperties(testFile);
+
+                // Assert
+                properties.Should().ContainKey("Title");
+                properties["Title"].Should().Be("Test Complete Title");
+
+                properties.Should().ContainKey("Album");
+                properties["Album"].Should().Be("Test Complete Album");
+
+                properties.Should().ContainKey("Year");
+                properties["Year"].Should().Be(2024u);
+
+                properties.Should().ContainKey("Performers");
+                properties["Performers"].Should().Be("John Doe, Jane Doe");
+
+                properties.Should().ContainKey("AlbumArtists");
+                properties["AlbumArtists"].Should().Be("Band A, Band B");
+
+                properties.Should().ContainKey("Composers");
+                properties["Composers"].Should().Be("Mozart, Beethoven");
+
+                properties.Should().ContainKey("Copyright");
+                properties["Copyright"].Should().Be("2024 Test Corp");
+
+                properties.Should().ContainKey("Duration");
+            }
+            finally
+            {
+                if (System.IO.File.Exists(testFile))
+                {
+                    System.IO.File.Delete(testFile);
+                }
+            }
+        }
+
         [Theory]
         [InlineData("test.mp3", true)]
         [InlineData("test.flac", true)]
