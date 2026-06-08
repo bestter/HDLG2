@@ -1,0 +1,3 @@
+🎯 **What:** Handled explicit security and unauthorized access exceptions in the `BrowserForm` tree view and property loader.
+⚠️ **Risk:** Generic exceptions on I/O failure could mask underlying security constraints, or display full system exception messages (like paths) that disclose internal details to the user unnecessarily.
+🛡️ **Solution:** Added specific `catch (UnauthorizedAccessException)` and `catch (SecurityException)` blocks prior to the generic exception catch blocks. This allows specific handling (like logging warnings rather than errors and displaying a clean 'Access Denied' message) and gracefully recovering from restricted file access events.
