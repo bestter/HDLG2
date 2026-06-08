@@ -48,7 +48,7 @@ namespace HdlgFileProperty
                     }
                 }
             }
-            catch (UnknownImageFormatException e    )
+            catch (UnknownImageFormatException e)
             {
                 //The stream does not have a valid image format.
                 Logger?.Warning(e, "Unsupported image format for file: {FilePath}", path);

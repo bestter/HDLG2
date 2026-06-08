@@ -1,3 +1,14 @@
+💡 **What:**
+The `ExcelPropertyGetter.GetFileProperties` method was completely untested. Added comprehensive unit tests in `PropertyGetterTests.cs` to verify its behavior. Included valid, empty, and invalid `.xlsx` dummy files.
+
+🎯 **Coverage:**
+- `GetFileProperties_ValidFileWithTitle_ReturnsTitle`: Verifies extraction of Title and Creator properties from a valid XLSX.
+- `GetFileProperties_ValidFileWithoutProperties_ReturnsEmptyDictionary`: Verifies handling of files without relevant properties.
+- `GetFileProperties_FileNotFound_LogsWarningAndReturnsEmpty`: Verifies error handling and logging when file is missing.
+- `GetFileProperties_InvalidFileFormat_LogsWarningAndReturnsEmpty`: Verifies error handling and logging for invalid file formats.
+
+📊 **Result:**
+Test coverage for `ExcelPropertyGetter` is now robust, ensuring reliable extraction of Excel file properties and correct error handling.
 Title: 🧹 [code deduplication] Extract duplicate EmptyProperties to IFilePropertyGetter
 
 🎯 What: Centralize the initialization of empty dictionary property to a static readonly member in the interface `IFilePropertyGetter`.
