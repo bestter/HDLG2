@@ -12,57 +12,55 @@ using UglyToad.PdfPig;
 
 namespace HdlgFileProperty
 {
-    public class PdfPropertyGetter : IFilePropertyGetter
-    {
+	public class PdfPropertyGetter : IFilePropertyGetter
+	{
+		public ILogger? Logger { get; private set; }
 
+		public void AddLogger(ILogger logger)
+		{
+			Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+		}
 
-        public ILogger? Logger { get; private set; }
-
-        public void AddLogger(ILogger logger)
-        {
-            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
-
-        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(string path)
-        {
-            Dictionary<string, IConvertible>? properties = null;
+		public IReadOnlyDictionary<string, IConvertible> GetFileProperties(string path)
+		{
+			Dictionary<string, IConvertible>? properties = null;
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
-            try
-            {
-                if (!System.IO.File.Exists(path))
-                {
-                    throw new FileNotFoundException("File not found", path);
-                }
-                using PdfDocument document = PdfDocument.Open(path);
-                string? title = document.Information.Title;
+			try
+			{
+				if (!System.IO.File.Exists(path))
+				{
+					throw new FileNotFoundException("File not found", path);
+				}
+				using PdfDocument document = PdfDocument.Open(path);
+				string? title = document.Information.Title;
 
-                if (!string.IsNullOrWhiteSpace(title))
-                {
-                    properties = new Dictionary<string, IConvertible>();
-                    properties.Add("Title", title);
-                }
-            }
-            catch (IOException ioe)
-            {
-                Logger?.Error(ioe, "Cannot read file {Path}", path);
-            }
-            catch (Exception e) when (e.GetType().Name.Contains("PdfDocumentEncryptedException", StringComparison.InvariantCultureIgnoreCase))
-            {
-                Logger?.Warning(e, "File {Path} is password protected and cannot be read", path);
-            }
-            catch (Exception e)
-            {
-                Logger?.Warning(e, "Cannot read properties from file {Path}", path);
-            }
+				if (!string.IsNullOrWhiteSpace(title))
+				{
+					properties = new Dictionary<string, IConvertible>();
+					properties.Add("Title", title);
+				}
+			}
+			catch (IOException ioe)
+			{
+				Logger?.Error(ioe, "Cannot read file {Path}", path);
+			}
+			catch (Exception e) when (e.GetType().Name.Contains("PdfDocumentEncryptedException", StringComparison.InvariantCultureIgnoreCase))
+			{
+				Logger?.Warning(e, "File {Path} is password protected and cannot be read", path);
+			}
+			catch (Exception e)
+			{
+				Logger?.Warning(e, "Cannot read properties from file {Path}", path);
+			}
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
 
-            return (IReadOnlyDictionary<string, IConvertible>?)properties ?? IFilePropertyGetter.EmptyProperties;
-        }
+			return (IReadOnlyDictionary<string, IConvertible>?)properties ?? IFilePropertyGetter.EmptyProperties;
+		}
 
-        public bool IsSupportedFile(string path)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(path);
-            return path.AsSpan().EndsWith(".pdf", StringComparison.OrdinalIgnoreCase);
-        }
-    }
+		public bool IsSupportedFile(string path)
+		{
+			ArgumentException.ThrowIfNullOrWhiteSpace(path);
+			return path.AsSpan().EndsWith(".pdf", StringComparison.OrdinalIgnoreCase);
+		}
+	}
 }
