@@ -169,8 +169,6 @@ namespace HDLG_winforms
                     return;
                 }
 
-                btnOpenFile.Enabled = true;
-
                 lblSelectedFileName.Text = fileInfo.Name;
 
                 AddPropertyToListView("Name", fileInfo.Name);
@@ -189,6 +187,8 @@ namespace HDLG_winforms
                         AddPropertyToListView(kvp.Key, kvp.Value?.ToString() ?? "");
                     }
                 }
+
+                btnOpenFile.Enabled = true;
             }
 #pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
 			catch (Exception ex)

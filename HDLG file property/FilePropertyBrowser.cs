@@ -37,7 +37,7 @@ namespace HdlgFileProperty
             }
         }
 
-        public IReadOnlyDictionary<string, IConvertible>? GetFileProperty(string path)
+        public virtual IReadOnlyDictionary<string, IConvertible>? GetFileProperty(string path)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(path);
             TotalNumberOfFiles++;
