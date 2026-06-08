@@ -13,6 +13,8 @@ namespace HdlgFileProperty
 {
     public interface IFilePropertyGetter
     {
+        public static readonly IReadOnlyDictionary<string, IConvertible> EmptyProperties = new System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>(new Dictionary<string, IConvertible>());
+
         /// <summary>
         /// Add valid <see cref="ILogger"/> to this property getter
         /// </summary>
