@@ -71,7 +71,7 @@ namespace HDLG_winforms
 
 				await writer.WriteStartElementAsync( null, "Hdlg", null ).ConfigureAwait( false );
 				await writer.WriteAttributeStringAsync( null, "Version", null, typeof( DirectoryBrowser ).Assembly.GetName( ).Version?.ToString( ) ).ConfigureAwait( false );
-				await writer.WriteElementStringAsync( null, "Directory", null, directory.Path ).ConfigureAwait( false );
+				await writer.WriteElementStringAsync( null, "Directory", null, SanitizeXmlString(directory.Path) ).ConfigureAwait( false );
 				await writer.WriteElementStringAsync( null, "DateTime", null, DateTime.Now.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
 
 				await writer.WriteElementStringAsync( null, "DirectoriesCount", null, DirectoriesCount( directory ).ToString( CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
@@ -116,8 +116,8 @@ namespace HDLG_winforms
 		{
 			log.Debug( "In {Method} {Type} {Directory}", nameof( WriteXmlDirectoryAsync ), nameof( HdlgDirectory ), directory );
 			await writer.WriteStartElementAsync( null, "Directory", null ).ConfigureAwait( false );
-			await writer.WriteElementStringAsync( null, "Name", null, directory.Name ).ConfigureAwait( false );
-			await writer.WriteElementStringAsync( null, "Path", null, directory.Path ).ConfigureAwait( false );
+			await writer.WriteElementStringAsync( null, "Name", null, SanitizeXmlString(directory.Name) ).ConfigureAwait( false );
+			await writer.WriteElementStringAsync( null, "Path", null, SanitizeXmlString(directory.Path) ).ConfigureAwait( false );
 			await writer.WriteElementStringAsync( null, "CreationTime", null, directory.CreationTime.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
 			if (directory.Directories.Count > 0)
 			{
@@ -160,9 +160,9 @@ namespace HDLG_winforms
 
 			await writer.WriteStartElementAsync( null, "File", null ).ConfigureAwait( false );
 
-			await writer.WriteElementStringAsync( null, "Name", null, file.Name ).ConfigureAwait( false );
-			await writer.WriteElementStringAsync( null, "Path", null, file.Path ).ConfigureAwait( false );
-			await writer.WriteElementStringAsync( null, "Extension", null, file.Extension ).ConfigureAwait( false );
+			await writer.WriteElementStringAsync( null, "Name", null, SanitizeXmlString(file.Name) ).ConfigureAwait( false );
+			await writer.WriteElementStringAsync( null, "Path", null, SanitizeXmlString(file.Path) ).ConfigureAwait( false );
+			await writer.WriteElementStringAsync( null, "Extension", null, SanitizeXmlString(file.Extension) ).ConfigureAwait( false );
 			await writer.WriteElementStringAsync( null, "Size", null, file.Size.ToString( CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
 			await writer.WriteElementStringAsync( null, "CreationTime", null, file.CreationTime.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
 
