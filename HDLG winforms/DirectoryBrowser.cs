@@ -71,7 +71,7 @@ namespace HDLG_winforms
 
 				await writer.WriteStartElementAsync( null, "Hdlg", null ).ConfigureAwait( false );
 				await writer.WriteAttributeStringAsync( null, "Version", null, typeof( DirectoryBrowser ).Assembly.GetName( ).Version?.ToString( ) ).ConfigureAwait( false );
-				await writer.WriteElementStringAsync( null, "Directory", null, SanitizeXmlString( directory.Path ) ).ConfigureAwait( false );
+				await writer.WriteElementStringAsync( null, "Directory", null, SanitizeXmlString(directory.Path) ).ConfigureAwait( false );
 				await writer.WriteElementStringAsync( null, "DateTime", null, DateTime.Now.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
 
 				await writer.WriteElementStringAsync( null, "DirectoriesCount", null, DirectoriesCount( directory ).ToString( CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
@@ -116,8 +116,8 @@ namespace HDLG_winforms
 		{
 			log.Debug( "In {Method} {Type} {Directory}", nameof( WriteXmlDirectoryAsync ), nameof( HdlgDirectory ), directory );
 			await writer.WriteStartElementAsync( null, "Directory", null ).ConfigureAwait( false );
-			await writer.WriteElementStringAsync( null, "Name", null, SanitizeXmlString( directory.Name ) ).ConfigureAwait( false );
-			await writer.WriteElementStringAsync( null, "Path", null, SanitizeXmlString( directory.Path ) ).ConfigureAwait( false );
+			await writer.WriteElementStringAsync( null, "Name", null, SanitizeXmlString(directory.Name) ).ConfigureAwait( false );
+			await writer.WriteElementStringAsync( null, "Path", null, SanitizeXmlString(directory.Path) ).ConfigureAwait( false );
 			await writer.WriteElementStringAsync( null, "CreationTime", null, directory.CreationTime.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
 			if (directory.Directories.Count > 0)
 			{
@@ -160,9 +160,9 @@ namespace HDLG_winforms
 
 			await writer.WriteStartElementAsync( null, "File", null ).ConfigureAwait( false );
 
-			await writer.WriteElementStringAsync( null, "Name", null, SanitizeXmlString( file.Name ) ).ConfigureAwait( false );
-			await writer.WriteElementStringAsync( null, "Path", null, SanitizeXmlString( file.Path ) ).ConfigureAwait( false );
-			await writer.WriteElementStringAsync( null, "Extension", null, SanitizeXmlString( file.Extension ) ).ConfigureAwait( false );
+			await writer.WriteElementStringAsync( null, "Name", null, SanitizeXmlString(file.Name) ).ConfigureAwait( false );
+			await writer.WriteElementStringAsync( null, "Path", null, SanitizeXmlString(file.Path) ).ConfigureAwait( false );
+			await writer.WriteElementStringAsync( null, "Extension", null, SanitizeXmlString(file.Extension) ).ConfigureAwait( false );
 			await writer.WriteElementStringAsync( null, "Size", null, file.Size.ToString( CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
 			await writer.WriteElementStringAsync( null, "CreationTime", null, file.CreationTime.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
 
@@ -182,7 +182,7 @@ namespace HDLG_winforms
 						else
 						{
 							var value = property.Value.ToString( CultureInfo.InvariantCulture );
-							await writer.WriteElementStringAsync( null, encodedKey, null, SanitizeXmlString( value ) ).ConfigureAwait( false );
+							await writer.WriteElementStringAsync( null, encodedKey, null, SanitizeXmlString(value) ).ConfigureAwait( false );
 						}
 					}
 				}
@@ -192,9 +192,9 @@ namespace HDLG_winforms
 			await writer.WriteEndElementAsync( ).ConfigureAwait( false );
 		}
 
-		private static string SanitizeXmlString (string? xml)
+		private static string SanitizeXmlString(string? xml)
 		{
-			if (string.IsNullOrEmpty( xml ))
+			if (string.IsNullOrEmpty(xml))
 			{
 				return xml ?? string.Empty;
 			}
@@ -204,7 +204,7 @@ namespace HDLG_winforms
 			int firstIllegalCharIndex = -1;
 			for (int i = 0; i < xml.Length; i++)
 			{
-				if (!IsLegalXmlChar( xml [i] ))
+				if (!IsLegalXmlChar(xml[i]))
 				{
 					firstIllegalCharIndex = i;
 					break;
@@ -218,25 +218,25 @@ namespace HDLG_winforms
 			}
 
 			// Only allocate StringBuilder if sanitization is actually required.
-			StringBuilder sb = new StringBuilder( xml.Length );
-			sb.Append( xml, 0, firstIllegalCharIndex );
+			StringBuilder sb = new StringBuilder(xml.Length);
+			sb.Append(xml, 0, firstIllegalCharIndex);
 			for (int i = firstIllegalCharIndex + 1; i < xml.Length; i++)
 			{
-				if (IsLegalXmlChar( xml [i] ))
+				if (IsLegalXmlChar(xml[i]))
 				{
-					sb.Append( xml [i] );
+					sb.Append(xml[i]);
 				}
 			}
-			return sb.ToString( );
+			return sb.ToString();
 		}
 
-		private static bool IsLegalXmlChar (int character)
+		private static bool IsLegalXmlChar(int character)
 		{
 			return character == 0x9 /* == '\t' == 9   */          ||
 				   character == 0xA /* == '\n' == 10  */          ||
 				   character == 0xD /* == '\r' == 13  */          ||
-				  (character >= 0x20 && character <= 0xD7FF) ||
-				  (character >= 0xE000 && character <= 0xFFFD) ||
+				  (character >= 0x20    && character <= 0xD7FF  ) ||
+				  (character >= 0xE000  && character <= 0xFFFD  ) ||
 				  (character >= 0x10000 && character <= 0x10FFFF);
 		}
 		#endregion
@@ -294,7 +294,7 @@ namespace HDLG_winforms
 			using FileStream fileStream = new( fileInfo.FullName, FileMode.Create, FileAccess.Write, FileShare.None );
 			using StreamWriter sw = new( fileStream, encoding, 4096, false );
 			var title = $"HTML Directory list generator  {version} {directory.Path} {DateTimeOffset.Now.ToString( "F", CultureInfo.CurrentCulture )}";
-			var encodedTitle = WebUtility.HtmlEncode( title );
+			var encodedTitle = WebUtility.HtmlEncode(title);
 			await sw.WriteLineAsync( "<!DOCTYPE html>" ).ConfigureAwait( false );
 
 			await sw.WriteLineAsync( $"<html lang=\"{CultureInfo.CurrentCulture.TwoLetterISOLanguageName}\">" ).ConfigureAwait( false );

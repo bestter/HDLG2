@@ -114,14 +114,14 @@ toolStripStatusLabelTotalTime.Visible = false;
 						progressBar1.Style = ProgressBarStyle.Marquee;
 
 						// Exécuter le travail dans un thread de fond sans bloquer l'UI
-						var perf = await Task.Run( () => PerformDirectoryBrowseXmlAsync( selectedDirectory, saveContentFileDialog.FileName ) ).ConfigureAwait( true );
+						var perf = await Task.Run(() => PerformDirectoryBrowseXmlAsync(selectedDirectory, saveContentFileDialog.FileName)).ConfigureAwait(true);
 
 						progressBar1.Style = ProgressBarStyle.Blocks;
 						progressBar1.Value = 100;
 
 						// Mettre à jour l'UI après le traitement
-						UpdateUIWithPerformance( perf );
-						OpenWithDefaultProgram( saveContentFileDialog.FileName );
+						UpdateUIWithPerformance(perf);
+						OpenWithDefaultProgram(saveContentFileDialog.FileName);
 					}
 				}
 			}
@@ -141,7 +141,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private void UpdateUIWithPerformance (PerformanceCount perf)
+		private void UpdateUIWithPerformance(PerformanceCount perf)
 		{
 			if (perf.TotalTime != TimeSpan.MinValue)
 			{
@@ -151,7 +151,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private async Task<PerformanceCount> PerformDirectoryBrowseXmlAsync (string selecteDirectory, string saveFilePath)
+		private async Task<PerformanceCount> PerformDirectoryBrowseXmlAsync(string selecteDirectory, string saveFilePath)
 		{
 			Logger.Debug( "{MethodName} started at {StartTime:T}", nameof( PerformDirectoryBrowseXmlAsync ), DateTime.Now );
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
@@ -215,7 +215,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 		/// <exception cref="ArgumentException">Thrown when path is null or whitespace</exception>
 		/// <exception cref="FileNotFoundException">Thrown when the file does not exist</exception>
 		/// <exception cref="InvalidOperationException">Thrown when the file has a dangerous extension</exception>
-		public static void OpenWithDefaultProgram (string path)
+		public static void OpenWithDefaultProgram(string path)
 		{
 			ArgumentException.ThrowIfNullOrWhiteSpace( path );
 
@@ -224,7 +224,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 				throw new FileNotFoundException( "The specified file was not found.", path );
 			}
 
-			string extension = System.IO.Path.GetExtension( path.TrimEnd( ' ', '.' ) );
+			string extension = System.IO.Path.GetExtension( path.TrimEnd(' ', '.') );
 			if (DangerousExtensions.Contains( extension ))
 			{
 				throw new InvalidOperationException( $"Opening files with extension '{extension}' is not allowed for security reasons." );
@@ -280,13 +280,13 @@ toolStripStatusLabelTotalTime.Visible = false;
 
 						progressBar1.Style = ProgressBarStyle.Marquee;
 
-						var perf = await Task.Run( () => PerformDirectoryBrowseHtmlAsync( selectedDirectory, saveFileDialogHtml.FileName ) ).ConfigureAwait( true );
+						var perf = await Task.Run(() => PerformDirectoryBrowseHtmlAsync(selectedDirectory, saveFileDialogHtml.FileName)).ConfigureAwait(true);
 
 						progressBar1.Style = ProgressBarStyle.Blocks;
 						progressBar1.Value = 100;
 
-						UpdateUIWithPerformance( perf );
-						OpenWithDefaultProgram( saveFileDialogHtml.FileName );
+						UpdateUIWithPerformance(perf);
+						OpenWithDefaultProgram(saveFileDialogHtml.FileName);
 					}
 				}
 			}
@@ -306,7 +306,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private async Task<PerformanceCount> PerformDirectoryBrowseHtmlAsync (string selecteDirectory, string saveFilePath)
+		private async Task<PerformanceCount> PerformDirectoryBrowseHtmlAsync(string selecteDirectory, string saveFilePath)
 		{
 			Debug.Write( $"{nameof( PerformDirectoryBrowseHtmlAsync )} started at {DateTime.Now:T}" );
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))

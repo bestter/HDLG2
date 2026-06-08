@@ -302,7 +302,6 @@ namespace HDLG.Tests
         }
 
 
-
         [Fact]
         public void WordPropertyGetter_GetFileProperties_ValidFileWithProperties_ReturnsProperties()
         {
