@@ -14,7 +14,6 @@ namespace HdlgFileProperty
 {
     public class Mp3PropertyGetter : IFilePropertyGetter
     {
-        private static readonly IReadOnlyDictionary<string, IConvertible> EmptyProperties = new System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>(new Dictionary<string, IConvertible>());
 
         public ILogger? Logger { get; private set; }
 
@@ -86,7 +85,7 @@ namespace HdlgFileProperty
                 Logger?.Warning(e, "Cannot read properties from file {Path}", path);
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
-            return properties ?? EmptyProperties;
+            return (IReadOnlyDictionary<string, IConvertible>?)properties ?? IFilePropertyGetter.EmptyProperties;
         }
 
         private static readonly HashSet<string> _supportedExtensions = new(StringComparer.OrdinalIgnoreCase)

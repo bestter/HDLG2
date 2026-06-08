@@ -9,3 +9,12 @@ The `ExcelPropertyGetter.GetFileProperties` method was completely untested. Adde
 
 📊 **Result:**
 Test coverage for `ExcelPropertyGetter` is now robust, ensuring reliable extraction of Excel file properties and correct error handling.
+Title: 🧹 [code deduplication] Extract duplicate EmptyProperties to IFilePropertyGetter
+
+🎯 What: Centralize the initialization of empty dictionary property to a static readonly member in the interface `IFilePropertyGetter`.
+
+💡 Why: `EmptyProperties` was duplicated across multiple classes, instantiating several unnecessary objects per class. By using `ReadOnlyDictionary<TKey, TValue>.Empty` (introduced in .NET 8+) or initializing it once on the interface, we avoid code duplication and unnecessary runtime allocations.
+
+✅ Verification: The codebase compiles correctly and functionality behaves the same since `IFilePropertyGetter.EmptyProperties` is identical to what each individual getter was originally creating and providing when empty.
+
+✨ Result: Reduced duplicate code across multiple files, reduced memory allocations per instantiation context.

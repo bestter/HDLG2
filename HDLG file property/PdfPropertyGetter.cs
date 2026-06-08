@@ -14,7 +14,6 @@ namespace HdlgFileProperty
 {
     public class PdfPropertyGetter : IFilePropertyGetter
     {
-        private static readonly IReadOnlyDictionary<string, IConvertible> EmptyProperties = new System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>(new Dictionary<string, IConvertible>());
 
         public ILogger? Logger { get; private set; }
 
@@ -52,7 +51,7 @@ namespace HdlgFileProperty
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
 
-            return properties ?? EmptyProperties;
+            return (IReadOnlyDictionary<string, IConvertible>?)properties ?? IFilePropertyGetter.EmptyProperties;
         }
 
         public bool IsSupportedFile(string path)
