@@ -14,7 +14,7 @@ namespace HdlgFileProperty
 {
     public class WordPropertyGetter : IFilePropertyGetter
     {
-        private static readonly IReadOnlyDictionary<string, IConvertible> EmptyProperties = new System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>(new Dictionary<string, IConvertible>());
+        private static readonly IReadOnlyDictionary<string, IConvertible> EmptyProperties = System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>.Empty;
 
         public ILogger? Logger { get; private set; }
 
