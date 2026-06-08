@@ -74,7 +74,7 @@ namespace HDLG.Tests
             var getter = new ImagePropertyGetter();
 
             // Act
-            var properties = getter.GetFileProperties("test.jpg");
+            var properties = getter.GetFileProperties("test_valid_exif.jpg");
 
             // Assert
             properties.Should().ContainKey("Width");
@@ -92,7 +92,7 @@ namespace HDLG.Tests
             var getter = new ImagePropertyGetter();
 
             // Act
-            var properties = getter.GetFileProperties("test_no_exif.jpg");
+            var properties = getter.GetFileProperties("test_valid_no_exif.jpg");
 
             // Assert
             properties.Should().ContainKey("Width");
@@ -115,6 +115,22 @@ namespace HDLG.Tests
             // Assert
             properties.Should().BeEmpty();
             loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Cannot read properties from file")), It.IsAny<string>()), Times.Once);
+        }
+
+
+        [Fact]
+        public void ImagePropertyGetter_GetFileProperties_CorruptedImageContent_LogsWarningAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new ImagePropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            // Act
+            var properties = getter.GetFileProperties("test_corrupted.png");
+
+            // Assert
+            properties.Should().BeEmpty();
+            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Invalid image content")), It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
