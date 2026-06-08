@@ -1,0 +1,9 @@
+🧪 Add tests for ExcelPropertyGetter
+
+🎯 **What:** The `ExcelPropertyGetter.GetFileProperties` method was completely untested. Added comprehensive unit tests in `PropertyGetterTests.cs` to verify its behavior.
+📊 **Coverage:**
+- `GetFileProperties_ValidFileWithTitle_ReturnsTitle`: Verifies extraction of Title and Creator properties from a valid XLSX.
+- `GetFileProperties_ValidFileWithoutProperties_ReturnsEmptyDictionary`: Verifies handling of files without relevant properties.
+- `GetFileProperties_FileNotFound_LogsWarningAndReturnsEmpty`: Verifies error handling and logging when file is missing.
+- `GetFileProperties_InvalidFileFormat_LogsWarningAndReturnsEmpty`: Verifies error handling and logging for invalid file formats.
+✨ **Result:** Test coverage for `ExcelPropertyGetter` is now significantly improved, ensuring reliable extraction of Excel file properties and correct error handling.

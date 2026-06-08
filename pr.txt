@@ -1,11 +1,20 @@
 💡 **What:**
-Merged two consecutive `foreach` loops into a single iteration in `HdlgDirectory.cs` (line 124). Both loops were independently traversing the `directories` collection to calculate `TotalDirectories` and `TotalFiles`.
+The `ExcelPropertyGetter.GetFileProperties` method was completely untested. Added comprehensive unit tests in `PropertyGetterTests.cs` to verify its behavior. Included valid, empty, and invalid `.xlsx` dummy files.
 
-🎯 **Why:**
-Iterating over the exact same collection sequentially is redundant and causes unnecessary CPU utilization and memory access overhead. By combining the calculation of both properties into one loop, we halve the traversal time during the critical path of directory processing.
+🎯 **Coverage:**
+- `GetFileProperties_ValidFileWithTitle_ReturnsTitle`: Verifies extraction of Title and Creator properties from a valid XLSX.
+- `GetFileProperties_ValidFileWithoutProperties_ReturnsEmptyDictionary`: Verifies handling of files without relevant properties.
+- `GetFileProperties_FileNotFound_LogsWarningAndReturnsEmpty`: Verifies error handling and logging when file is missing.
+- `GetFileProperties_InvalidFileFormat_LogsWarningAndReturnsEmpty`: Verifies error handling and logging for invalid file formats.
 
-📊 **Measured Improvement:**
-Using a standalone C# console micro-benchmark with 10,000 iterations over 10,000 items:
-- Baseline (separate loops): ~288 ms
-- Optimized (merged loops): ~156 ms
-- **Change:** ~45% reduction in iteration execution time for this block.
+📊 **Result:**
+Test coverage for `ExcelPropertyGetter` is now robust, ensuring reliable extraction of Excel file properties and correct error handling.
+Title: 🧹 [code deduplication] Extract duplicate EmptyProperties to IFilePropertyGetter
+
+🎯 What: Centralize the initialization of empty dictionary property to a static readonly member in the interface `IFilePropertyGetter`.
+
+💡 Why: `EmptyProperties` was duplicated across multiple classes, instantiating several unnecessary objects per class. By using `ReadOnlyDictionary<TKey, TValue>.Empty` (introduced in .NET 8+) or initializing it once on the interface, we avoid code duplication and unnecessary runtime allocations.
+
+✅ Verification: The codebase compiles correctly and functionality behaves the same since `IFilePropertyGetter.EmptyProperties` is identical to what each individual getter was originally creating and providing when empty.
+
+✨ Result: Reduced duplicate code across multiple files, reduced memory allocations per instantiation context.

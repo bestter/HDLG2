@@ -44,7 +44,7 @@ namespace HDLG_winforms
 				CreationTime = info.CreationTime;
 				Properties = properties != null && properties.Count > 0
 					? properties
-					: EmptyProperties;
+					: HdlgFileProperty.IFilePropertyGetter.EmptyProperties;
 			}
 			else
 			{

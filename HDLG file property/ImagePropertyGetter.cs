@@ -49,7 +49,7 @@ namespace HdlgFileProperty
                     }
                 }
             }
-            catch (UnknownImageFormatException e    )
+            catch (UnknownImageFormatException e)
             {
                 //The stream does not have a valid image format.
                 Logger?.Warning(e, "Unsupported image format for file: {FilePath}", path);
@@ -65,7 +65,7 @@ namespace HdlgFileProperty
                 Logger?.Warning(e, "Cannot read properties from file: {FilePath}", path);
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
-            return properties ?? EmptyProperties;
+            return (IReadOnlyDictionary<string, IConvertible>?)properties ?? IFilePropertyGetter.EmptyProperties;
         }
 
         private static readonly HashSet<string> _supportedImageExtensions = new(StringComparer.OrdinalIgnoreCase)
