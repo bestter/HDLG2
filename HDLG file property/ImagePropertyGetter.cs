@@ -15,7 +15,6 @@ namespace HdlgFileProperty
 {
     public class ImagePropertyGetter : IFilePropertyGetter
     {
-        private static readonly IReadOnlyDictionary<string, IConvertible> EmptyProperties = new System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>(new Dictionary<string, IConvertible>());
 
         public ILogger? Logger { get; private set; }
 
@@ -65,7 +64,7 @@ namespace HdlgFileProperty
                 Logger?.Warning(e, "Cannot read properties from file: {FilePath}", path);
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
-            return properties ?? EmptyProperties;
+            return (IReadOnlyDictionary<string, IConvertible>?)properties ?? IFilePropertyGetter.EmptyProperties;
         }
 
         private static readonly HashSet<string> _supportedImageExtensions = new(StringComparer.OrdinalIgnoreCase)

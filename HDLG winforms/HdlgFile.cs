@@ -23,8 +23,6 @@ namespace HDLG_winforms
 
 		public IReadOnlyDictionary<string, IConvertible> Properties { get; }
 
-		private static readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible> EmptyProperties = new(new Dictionary<string, IConvertible>());
-
         public HdlgFile(string path, IReadOnlyDictionary<string, IConvertible>? properties)
             : this(new FileInfo(path ?? throw new ArgumentNullException(nameof(path))), properties)
         {
@@ -44,7 +42,7 @@ namespace HDLG_winforms
 				CreationTime = info.CreationTime;
 				Properties = properties != null && properties.Count > 0
 					? properties
-					: EmptyProperties;
+					: HdlgFileProperty.IFilePropertyGetter.EmptyProperties;
 			}
 			else
 			{
