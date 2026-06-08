@@ -16,6 +16,7 @@ namespace HdlgFileProperty
     {
 
 
+
         public ILogger? Logger { get; private set; }
 
         public void AddLogger(ILogger logger)
@@ -51,7 +52,7 @@ namespace HdlgFileProperty
                     properties.Add("Creator", packageProperties.Creator);
                 }
             }
-            catch (Exception ex) when (ex is IOException || ex is InvalidDataException || ex is OpenXmlPackageException)
+            catch (Exception ex) when (ex is IOException || ex is InvalidDataException || ex is OpenXmlPackageException || ex is FileFormatException)
             {
                 Logger?.Warning(ex, "Could not open Word file or extract properties for {Path}", path);
             }
@@ -62,7 +63,7 @@ namespace HdlgFileProperty
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
 
-            return (IReadOnlyDictionary<string, IConvertible>?)properties ?? System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>.Empty;
+            return (IReadOnlyDictionary<string, IConvertible>?)properties ?? IFilePropertyGetter.EmptyProperties;
         }
 
         public bool IsSupportedFile(string path)

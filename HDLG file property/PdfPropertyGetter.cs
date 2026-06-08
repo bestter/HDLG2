@@ -16,6 +16,7 @@ namespace HdlgFileProperty
     {
 
 
+
         public ILogger? Logger { get; private set; }
 
         public void AddLogger(ILogger logger)
@@ -29,6 +30,10 @@ namespace HdlgFileProperty
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
             try
             {
+                if (!System.IO.File.Exists(path))
+                {
+                    throw new FileNotFoundException("File not found", path);
+                }
                 using PdfDocument document = PdfDocument.Open(path);
                 string? title = document.Information.Title;
 
@@ -52,7 +57,7 @@ namespace HdlgFileProperty
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
 
-            return (IReadOnlyDictionary<string, IConvertible>?)properties ?? System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>.Empty;
+            return (IReadOnlyDictionary<string, IConvertible>?)properties ?? IFilePropertyGetter.EmptyProperties;
         }
 
         public bool IsSupportedFile(string path)

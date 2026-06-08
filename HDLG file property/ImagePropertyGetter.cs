@@ -17,6 +17,7 @@ namespace HdlgFileProperty
     {
 
 
+
         public ILogger? Logger { get; private set; }
 
         public void AddLogger(ILogger logger)
@@ -28,14 +29,14 @@ namespace HdlgFileProperty
             Dictionary<string, IConvertible>? properties = null;
             try
             {
-                var imageInfo = SixLabors.ImageSharp.Image.Identify(path);
-                if (imageInfo != null)
+                using var image = SixLabors.ImageSharp.Image.Load(path);
+                if (image != null)
                 {
                     properties = new Dictionary<string, IConvertible>();
-                    properties.Add(nameof(imageInfo.Width), imageInfo.Width);
-                    properties.Add(nameof(imageInfo.Height), imageInfo.Height);
+                    properties.Add(nameof(image.Width), image.Width);
+                    properties.Add(nameof(image.Height), image.Height);
 
-                    var exifProfile = imageInfo.Metadata?.ExifProfile;
+                    var exifProfile = image.Metadata?.ExifProfile;
                     if (exifProfile != null)
                     {
                         if (exifProfile.TryGetValue(ExifTag.Model, out var cameraModel) && cameraModel.Value != null)
@@ -49,7 +50,7 @@ namespace HdlgFileProperty
                     }
                 }
             }
-            catch (UnknownImageFormatException e    )
+            catch (UnknownImageFormatException e)
             {
                 //The stream does not have a valid image format.
                 Logger?.Warning(e, "Unsupported image format for file: {FilePath}", path);
@@ -57,7 +58,7 @@ namespace HdlgFileProperty
             catch (InvalidImageContentException e)
             {
                 //The image content is corrupted or invalid.
-                Logger?.Warning(e,"Invalid image content for file: {FilePath}", path);
+                Logger?.Warning(e, "Invalid image content for file: {FilePath}", path);
             }
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
             catch (Exception e)
@@ -65,7 +66,7 @@ namespace HdlgFileProperty
                 Logger?.Warning(e, "Cannot read properties from file: {FilePath}", path);
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
-            return (IReadOnlyDictionary<string, IConvertible>?)properties ?? System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>.Empty;
+            return (IReadOnlyDictionary<string, IConvertible>?)properties ?? IFilePropertyGetter.EmptyProperties;
         }
 
         private static readonly HashSet<string> _supportedImageExtensions = new(StringComparer.OrdinalIgnoreCase)
