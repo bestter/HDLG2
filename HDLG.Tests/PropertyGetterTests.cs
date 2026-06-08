@@ -187,6 +187,67 @@ namespace HDLG.Tests
             result.Should().Be(expected);
         }
 
+
+        [Fact]
+        public void ExcelPropertyGetter_GetFileProperties_ValidFileWithTitle_ReturnsTitle()
+        {
+            // Arrange
+            var getter = new ExcelPropertyGetter();
+
+            // Act
+            var properties = getter.GetFileProperties("test.xlsx");
+
+            // Assert
+            properties.Should().ContainKey("Title");
+            properties["Title"].Should().Be("Test Excel Title");
+            properties.Should().ContainKey("Creator");
+            properties["Creator"].Should().Be("Test Creator");
+        }
+
+        [Fact]
+        public void ExcelPropertyGetter_GetFileProperties_ValidFileWithoutProperties_ReturnsEmptyDictionary()
+        {
+            // Arrange
+            var getter = new ExcelPropertyGetter();
+
+            // Act
+            var properties = getter.GetFileProperties("test_empty.xlsx");
+
+            // Assert
+            properties.Should().NotContainKey("Title");
+            properties.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void ExcelPropertyGetter_GetFileProperties_FileNotFound_LogsWarningAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new ExcelPropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            // Act
+            var properties = getter.GetFileProperties("nonexistent.xlsx");
+
+            // Assert
+            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Could not open Excel file"))), Times.Once);
+            properties.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void ExcelPropertyGetter_GetFileProperties_InvalidFileFormat_LogsWarningAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new ExcelPropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            // Act
+            var properties = getter.GetFileProperties("test_invalid.xlsx");
+
+            // Assert
+            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Could not open Excel file"))), Times.Once);
+            properties.Should().BeEmpty();
+        }
+
         [Theory]
         [InlineData("test.xls", false)]
         [InlineData("test.xlsx", true)]
