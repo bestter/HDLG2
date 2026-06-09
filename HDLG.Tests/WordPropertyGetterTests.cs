@@ -39,7 +39,7 @@ namespace HDLG.Tests
             properties["Creator"].Should().Be("Test Creator");
             properties.Should().ContainKey("Created");
             properties["Created"].Should().BeOfType<DateTime>();
-            ((DateTime)properties["Created"]).Should().BeCloseTo(new DateTime(2023, 1, 1, 12, 0, 0), TimeSpan.FromSeconds(1));
+            ((DateTime)properties["Created"]).ToUniversalTime().Should().BeCloseTo(new DateTime(2023, 1, 1, 12, 0, 0, DateTimeKind.Utc), TimeSpan.FromSeconds(1));
         }
 
         [Fact]

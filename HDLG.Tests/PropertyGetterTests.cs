@@ -22,6 +22,7 @@ namespace HDLG.Tests
             loggerMock = new Mock<ILogger>();
             ImageSetup.CreateImages();
             WordSetup.CreateWordDocs();
+            WordPropertyGetterTestSetup.EnsureTestFilesExist();
         }
 
 
