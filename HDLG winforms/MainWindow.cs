@@ -217,6 +217,21 @@ toolStripStatusLabelTotalTime.Visible = false;
 		/// <exception cref="InvalidOperationException">Thrown when the file has a dangerous extension</exception>
 		public static void OpenWithDefaultProgram(string path)
 		{
+			OpenWithDefaultProgram(path, p =>
+			{
+				using Process fileopener = new( );
+				fileopener.StartInfo = new ProcessStartInfo( p )
+				{
+					UseShellExecute = true,
+					WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
+				};
+				fileopener.Start( );
+			});
+		}
+
+		public static void OpenWithDefaultProgram(string path, Action<string> processStarter)
+		{
+			ArgumentNullException.ThrowIfNull( processStarter );
 			ArgumentException.ThrowIfNullOrWhiteSpace( path );
 
 			if (!System.IO.File.Exists( path ))
@@ -230,13 +245,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 				throw new InvalidOperationException( $"Opening files with extension '{extension}' is not allowed for security reasons." );
 			}
 
-			using Process fileopener = new( );
-			fileopener.StartInfo = new ProcessStartInfo( path )
-			{
-				UseShellExecute = true,
-				WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
-			};
-			fileopener.Start( );
+			processStarter( path );
 		}
 
 		/// <summary>
