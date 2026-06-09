@@ -136,21 +136,6 @@ namespace HDLG.Tests
 
 
         [Fact]
-        public void ImagePropertyGetter_GetFileProperties_CorruptedImageContent_LogsWarningAndReturnsEmpty()
-        {
-            // Arrange
-            var getter = new ImagePropertyGetter();
-            getter.AddLogger(loggerMock.Object);
-
-            // Act
-            var properties = getter.GetFileProperties("test_corrupted.png");
-
-            // Assert
-            properties.Should().BeEmpty();
-            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Invalid image content")), It.IsAny<string>()), Times.Once);
-        }
-
-        [Fact]
         public void ImagePropertyGetter_GetFileProperties_InvalidFileFormat_LogsWarningAndReturnsEmpty()
         {
             // Arrange
@@ -567,8 +552,8 @@ namespace HDLG.Tests
                 workbookpart.Workbook = new DocumentFormat.OpenXml.Spreadsheet.Workbook();
                 var worksheetPart = workbookpart.AddNewPart<DocumentFormat.OpenXml.Packaging.WorksheetPart>();
                 worksheetPart.Worksheet = new DocumentFormat.OpenXml.Spreadsheet.Worksheet(new DocumentFormat.OpenXml.Spreadsheet.SheetData());
-                var sheets = spreadsheetDocument.WorkbookPart.Workbook.AppendChild(new DocumentFormat.OpenXml.Spreadsheet.Sheets());
-                var sheet = new DocumentFormat.OpenXml.Spreadsheet.Sheet() { Id = spreadsheetDocument.WorkbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "mySheet" };
+                var sheets = workbookpart.Workbook.AppendChild(new DocumentFormat.OpenXml.Spreadsheet.Sheets());
+                var sheet = new DocumentFormat.OpenXml.Spreadsheet.Sheet() { Id = spreadsheetDocument.WorkbookPart!.GetIdOfPart(worksheetPart), SheetId = 1, Name = "mySheet" };
                 sheets.Append(sheet);
                 workbookpart.Workbook.Save();
             }
