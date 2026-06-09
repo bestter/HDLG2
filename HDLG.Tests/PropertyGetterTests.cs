@@ -110,6 +110,22 @@ namespace HDLG.Tests
         }
 
         [Fact]
+        public void ImagePropertyGetter_GetFileProperties_ValidPngFile_ReturnsProperties()
+        {
+            // Arrange
+            var getter = new ImagePropertyGetter();
+
+            // Act
+            var properties = getter.GetFileProperties("test.png");
+
+            // Assert
+            properties.Should().ContainKey("Width");
+            properties["Width"].Should().Be(1);
+            properties.Should().ContainKey("Height");
+            properties["Height"].Should().Be(1);
+        }
+
+        [Fact]
         public void ImagePropertyGetter_GetFileProperties_FileNotFound_LogsWarningAndReturnsEmpty()
         {
             // Arrange
@@ -126,21 +142,6 @@ namespace HDLG.Tests
 
 
         [Fact]
-        public void ImagePropertyGetter_GetFileProperties_CorruptedImageContent_LogsWarningAndReturnsEmpty()
-        {
-            // Arrange
-            var getter = new ImagePropertyGetter();
-            getter.AddLogger(loggerMock.Object);
-
-            // Act
-            var properties = getter.GetFileProperties("test_corrupted.png");
-
-            // Assert
-            properties.Should().BeEmpty();
-            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Invalid image content")), It.IsAny<string>()), Times.Once);
-        }
-
-        [Fact]
         public void ImagePropertyGetter_GetFileProperties_InvalidFileFormat_LogsWarningAndReturnsEmpty()
         {
             // Arrange
@@ -153,6 +154,21 @@ namespace HDLG.Tests
             // Assert
             properties.Should().BeEmpty();
             loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Unsupported image format") || s.Contains("Cannot read properties")), It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public void ImagePropertyGetter_GetFileProperties_CorruptedImageContent_LogsWarningAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new ImagePropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            // Act
+            var properties = getter.GetFileProperties("test_corrupted.jpg");
+
+            // Assert
+            properties.Should().BeEmpty();
+            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Invalid image content") || s.Contains("Cannot read properties")), It.IsAny<string>()), Times.Once);
         }
 
 
@@ -468,8 +484,8 @@ namespace HDLG.Tests
                 workbookpart.Workbook = new DocumentFormat.OpenXml.Spreadsheet.Workbook();
                 var worksheetPart = workbookpart.AddNewPart<DocumentFormat.OpenXml.Packaging.WorksheetPart>();
                 worksheetPart.Worksheet = new DocumentFormat.OpenXml.Spreadsheet.Worksheet(new DocumentFormat.OpenXml.Spreadsheet.SheetData());
-                var sheets = spreadsheetDocument.WorkbookPart.Workbook.AppendChild(new DocumentFormat.OpenXml.Spreadsheet.Sheets());
-                var sheet = new DocumentFormat.OpenXml.Spreadsheet.Sheet() { Id = spreadsheetDocument.WorkbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "mySheet" };
+                var sheets = workbookpart.Workbook.AppendChild(new DocumentFormat.OpenXml.Spreadsheet.Sheets());
+                var sheet = new DocumentFormat.OpenXml.Spreadsheet.Sheet() { Id = spreadsheetDocument.WorkbookPart!.GetIdOfPart(worksheetPart), SheetId = 1, Name = "mySheet" };
                 sheets.Append(sheet);
                 workbookpart.Workbook.Save();
             }
