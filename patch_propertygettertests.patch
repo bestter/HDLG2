@@ -1,0 +1,20 @@
+--- HDLG.Tests/PropertyGetterTests.cs
++++ HDLG.Tests/PropertyGetterTests.cs
+@@ -133,2 +133,16 @@
+         }
+
++        [Fact]
++        public void ImagePropertyGetter_GetFileProperties_CorruptedImage_LogsWarningAndReturnsEmpty()
++        {
++            // Arrange
++            var getter = new ImagePropertyGetter();
++            getter.AddLogger(loggerMock.Object);
++
++            // Act
++            var properties = getter.GetFileProperties("test_corrupted.jpg");
++
++            // Assert
++            properties.Should().BeEmpty();
++            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Invalid image content")), It.IsAny<string>()), Times.Once);
++        }
++
