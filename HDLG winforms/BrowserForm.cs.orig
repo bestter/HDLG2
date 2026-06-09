@@ -11,7 +11,6 @@ using HdlgFileProperty;
 using Serilog;
 using System.Diagnostics;
 using System.Globalization;
-using System.Security;
 
 namespace HDLG_winforms
 {
@@ -124,11 +123,6 @@ namespace HDLG_winforms
                     logger.Warning(ex, "Access denied to directory: {Path}", info.Path);
                     e.Node.Nodes.Add(new TreeNode("Access Denied"));
                 }
-                catch (SecurityException ex)
-                {
-                    logger.Warning(ex, "Security exception accessing directory: {Path}", info.Path);
-                    e.Node.Nodes.Add(new TreeNode("Access Denied"));
-                }
 #pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
 				catch (Exception ex)
 #pragma warning restore CA1031
@@ -195,16 +189,6 @@ namespace HDLG_winforms
                 }
 
                 btnOpenFile.Enabled = true;
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                logger.Warning(ex, "Access denied reading properties for file: {Path}", info.Path);
-                AddPropertyToListView("Error", "Access Denied: " + ex.Message);
-            }
-            catch (SecurityException ex)
-            {
-                logger.Warning(ex, "Security exception reading properties for file: {Path}", info.Path);
-                AddPropertyToListView("Error", "Access Denied: " + ex.Message);
             }
 #pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
 			catch (Exception ex)
