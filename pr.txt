@@ -1,20 +1,9 @@
-💡 **What:**
-The `ExcelPropertyGetter.GetFileProperties` method was completely untested. Added comprehensive unit tests in `PropertyGetterTests.cs` to verify its behavior. Included valid, empty, and invalid `.xlsx` dummy files.
+🧪 [testing improvement] Add coverage for InvalidImageContentException in ImagePropertyGetter
 
-🎯 **Coverage:**
-- `GetFileProperties_ValidFileWithTitle_ReturnsTitle`: Verifies extraction of Title and Creator properties from a valid XLSX.
-- `GetFileProperties_ValidFileWithoutProperties_ReturnsEmptyDictionary`: Verifies handling of files without relevant properties.
-- `GetFileProperties_FileNotFound_LogsWarningAndReturnsEmpty`: Verifies error handling and logging when file is missing.
-- `GetFileProperties_InvalidFileFormat_LogsWarningAndReturnsEmpty`: Verifies error handling and logging for invalid file formats.
+🎯 **What:** The `ImagePropertyGetter.GetFileProperties` method was mostly tested, but missing test coverage for corrupted image files that trigger `InvalidImageContentException`.
 
-📊 **Result:**
-Test coverage for `ExcelPropertyGetter` is now robust, ensuring reliable extraction of Excel file properties and correct error handling.
-Title: 🧹 [code deduplication] Extract duplicate EmptyProperties to IFilePropertyGetter
+📊 **Coverage:**
+- Added `ImagePropertyGetter_GetFileProperties_CorruptedImage_LogsWarningAndReturnsEmpty` to verify the handling of corrupted images.
+- Updated `ImageSetup.cs` to generate `test_corrupted.jpg` which is a valid JPEG truncated halfway through.
 
-🎯 What: Centralize the initialization of empty dictionary property to a static readonly member in the interface `IFilePropertyGetter`.
-
-💡 Why: `EmptyProperties` was duplicated across multiple classes, instantiating several unnecessary objects per class. By using `ReadOnlyDictionary<TKey, TValue>.Empty` (introduced in .NET 8+) or initializing it once on the interface, we avoid code duplication and unnecessary runtime allocations.
-
-✅ Verification: The codebase compiles correctly and functionality behaves the same since `IFilePropertyGetter.EmptyProperties` is identical to what each individual getter was originally creating and providing when empty.
-
-✨ Result: Reduced duplicate code across multiple files, reduced memory allocations per instantiation context.
+✨ **Result:** Test coverage for `ImagePropertyGetter` is complete, ensuring that corrupted images are caught correctly via `InvalidImageContentException` instead of bubbling up generic exceptions or crashing.
