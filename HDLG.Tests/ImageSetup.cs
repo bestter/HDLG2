@@ -35,14 +35,10 @@ namespace HDLG.Tests
             File.WriteAllBytes("test_valid_no_exif.jpg", validJpegNoExif);
 
 
-            using (var image = new Image<Rgba32>(100, 50))
-            {
-                image.SaveAsJpeg("test_corrupted.jpg");
-            }
-            using (var fs = new FileStream("test_corrupted.jpg", FileMode.Open))
-            {
-                fs.SetLength(30); // Truncate to cause InvalidImageContentException
-            }
+            // Create a truncated JPEG to cause InvalidImageContentException
+            byte[] corruptedJpeg = new byte[30];
+            Array.Copy(validJpegNoExif, corruptedJpeg, 30);
+            File.WriteAllBytes("test_corrupted.jpg", corruptedJpeg);
         }
     }
 }

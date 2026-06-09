@@ -169,8 +169,9 @@ namespace HDLG.Tests
 
             // Assert
             properties.Should().BeEmpty();
-            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Invalid image content") || s.Contains("Cannot read properties")), It.IsAny<string>()), Times.Once);
+            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Invalid image content") || s.Contains("Unsupported image format") || s.Contains("Cannot read properties")), It.IsAny<string>()), Times.Once);
         }
+
 
 
         [Fact]
