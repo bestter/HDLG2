@@ -199,12 +199,12 @@ namespace HDLG_winforms
             catch (UnauthorizedAccessException ex)
             {
                 logger.Warning(ex, "Access denied reading properties for file: {Path}", info.Path);
-                AddPropertyToListView("Error", "Access Denied: " + ex.Message);
+                AddPropertyToListView("Error", "Access Denied");
             }
             catch (SecurityException ex)
             {
                 logger.Warning(ex, "Security exception reading properties for file: {Path}", info.Path);
-                AddPropertyToListView("Error", "Access Denied: " + ex.Message);
+                AddPropertyToListView("Error", "Access Denied");
             }
 #pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
 			catch (Exception ex)
