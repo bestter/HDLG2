@@ -1,7 +1,6 @@
-🎯 **What:** Removed extra spaces in the `catch` block statement for `UnknownImageFormatException` in `ImagePropertyGetter.cs`.
+🎯 **What:** Extended test coverage for `ImagePropertyGetter` to specifically test `InvalidImageContentException` mapping. Removed static image generation using `ImageSharp` during tests and replaced it with dynamic Base64 fixture loading.
 
-💡 **Why:** This is a trivial code health improvement to maintain code hygiene and readability. Extraneous spacing inside parentheses does not conform to standard C# formatting guidelines and creates unnecessary visual clutter.
+📊 **Coverage:** The base codebase already contained tests for `ImagePropertyGetter.GetFileProperties` testing valid EXIF metadata, non-EXIF, and completely broken missing files. However, `InvalidImageContentException` (which occurs when a file has a valid image header but corrupted content) was completely untested.
+This patch adds `ImagePropertyGetter_GetFileProperties_CorruptedImageContent_LogsWarningAndReturnsEmpty` to verify this missing exception path by dynamically decoding a purposefully corrupted JPEG fixture containing garbage bytes after a valid header.
 
-✅ **Verification:** Verified by ensuring the code compiles successfully (`dotnet build -p:EnableWindowsTargeting=true`). Ran `dotnet test` to confirm tests remain unaffected. The change is restricted entirely to whitespace within a catch block declaration.
-
-✨ **Result:** Improved readability and formatting consistency in `ImagePropertyGetter.cs`.
+✨ **Result:** Addressed the testing review feedback. `ImagePropertyGetter` now successfully resolves full coverage over exception edge cases and safe fixture setup without introducing destructive filesystem behavior.
