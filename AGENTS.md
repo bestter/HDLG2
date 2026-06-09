@@ -3,7 +3,7 @@
 Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
 **Version** : 1.4.0  
-**Dernière mise à jour** : 8 juin 2026 — Synchronisation des données factuelles (ajout de FilePropertyGetterStatisticTests.cs et HdlgFileTests.cs à la liste des fichiers de test, documentation des tests, et restauration de l'optimisation allocation-free EmptyProperties).  
+**Dernière mise à jour** : 8 juin 2026 — Correction des tests unitaires (surcharges de sécurité sans démarrage de processus dans OpenWithDefaultProgram, assertions de date en UTC pour indépendance de la timezone dans WordPropertyGetter, et désactivation de la suppression de fichiers partagés pour la parallélisation stable).  
 **Propriétaire** : Martin Labelle (@bestter)
 
 ---

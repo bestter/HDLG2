@@ -57,3 +57,8 @@
 **Vulnerability:** Found `Process.Start` calls opening external URLs via `UseShellExecute = true` without explicitly setting the `WorkingDirectory`.
 **Learning:** If an application launches an external process without specifying a safe working directory, and the current working directory happens to point to an untrusted location, it may be vulnerable to DLL search order hijacking when the target process launches.
 **Prevention:** To prevent DLL hijacking vulnerabilities when launching files via `Process.Start` with `UseShellExecute = true`, always explicitly set `WorkingDirectory` to a safe, trusted location (like `Environment.GetFolderPath(Environment.SpecialFolder.System)`).
+
+## 2024-06-08 - Prevent Information Disclosure on File Access Errors
+**Vulnerability:** Unhandled generic exceptions around `File` and `Directory` methods allowed sensitive file path information to potentially be logged or displayed when system access errors occurred.
+**Learning:** Catching specific access errors like `UnauthorizedAccessException` and `SecurityException` allows the application to gracefully degrade or report simple "Access Denied" errors, improving user experience and avoiding leaking paths.
+**Prevention:** Always catch and handle `UnauthorizedAccessException` and `SecurityException` explicitly when working with system IO operations before falling back to catching generic `Exception`.
