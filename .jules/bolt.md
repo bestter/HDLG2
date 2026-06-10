@@ -65,3 +65,7 @@
 ## 2024-05-25 - Use for loops for arrays in hot loops
 **Learning:** While iterating over an array with `foreach` is generally fast, it still incurs minor overhead for the iterator state machine and enumerator struct allocation. In a hot path (like `FilePropertyBrowser.GetFileProperty` which executes for every single file in a recursive directory scan), explicitly changing an array `foreach` to a `for (int i = 0; i < array.Length; i++)` loop eliminates this overhead completely for a measurable reduction in instruction count.
 **Action:** To strictly avoid `IEnumerator` struct allocation and iterator state machine overhead in C# hot paths, explicitly use standard `for` loops with index-based access instead of `foreach` loops when iterating over primitive arrays.
+
+## 2024-06-10 - Avoid enumerator boxing on IReadOnlyList<T> in recursive tree iterations
+**Learning:** Iterating over an `IReadOnlyList<T>` using `foreach` forces the compiler to use `IEnumerator<T>` via the interface implementation rather than a direct duck-typed struct enumerator (like `List<T>.Enumerator`), causing a heap allocation per iteration loop. In deep recursive trees (like directory structure serialization), this creates O(N) garbage allocations (where N is number of directories).
+**Action:** Always prefer `for (int i = 0; i < collection.Count; i++)` when iterating over collections typed as `IReadOnlyList<T>` or `IList<T>` in hot loops to guarantee zero enumerator allocations.
