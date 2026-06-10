@@ -139,7 +139,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			catch (Exception ex)
 #pragma warning restore CA1031
 			{
-				toolStripStatusLabelException.Text = "An error occurred";
+				toolStripStatusLabelException.Text = ex.Message;
 				Logger.Fatal( ex, "Error in {MethodName}", nameof( BtnStart_Click ) );
 			}
 			finally
@@ -323,7 +323,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			catch (Exception ex)
 #pragma warning restore CA1031
 			{
-				toolStripStatusLabelException.Text = "An error occurred";
+				toolStripStatusLabelException.Text = ex.Message;
 				Logger.Fatal( ex, "Error in {MethodName}", nameof( BtnStartHtml_Click ) );
 			}
 			finally
@@ -408,9 +408,9 @@ toolStripStatusLabelTotalTime.Visible = false;
 #pragma warning restore CA1031
 			{
 				UseWaitCursor = false;
-				toolStripStatusLabelException.Text = "An error occurred";
+				toolStripStatusLabelException.Text = ex.Message;
 				Logger.Fatal( ex, "Error opening UI Explorer" );
-				MessageBox.Show( this, "An error occurred", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+				MessageBox.Show( this, "Error: Access Denied", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 		}
 
