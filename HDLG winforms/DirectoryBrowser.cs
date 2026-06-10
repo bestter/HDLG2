@@ -122,8 +122,9 @@ namespace HDLG_winforms
 			if (directory.Directories.Count > 0)
 			{
 				await writer.WriteStartElementAsync( null, "Directories", null ).ConfigureAwait( false );
-				foreach (HdlgDirectory d in directory.Directories)
+				for (int i = 0; i < directory.Directories.Count; i++)
 				{
+					HdlgDirectory d = directory.Directories[i];
 					await WriteXmlDirectoryAsync( writer, d ).ConfigureAwait( false );
 				}
 				await writer.WriteEndElementAsync( ).ConfigureAwait( false );
@@ -132,8 +133,9 @@ namespace HDLG_winforms
 			if (directory.Files.Count > 0)
 			{
 				await writer.WriteStartElementAsync( null, "Files", null ).ConfigureAwait( false );
-				foreach (HdlgFile file in directory.Files)
+				for (int i = 0; i < directory.Files.Count; i++)
 				{
+					HdlgFile file = directory.Files[i];
 					await WriteXmlFileAsync( writer, file ).ConfigureAwait( false );
 				}
 				await writer.WriteEndElementAsync( ).ConfigureAwait( false );
@@ -390,8 +392,9 @@ namespace HDLG_winforms
 			if (directory.Directories.Count > 0)
 			{
 				var inDepth = depth + 2;
-				foreach (HdlgDirectory d in directory.Directories)
+				for (int i = 0; i < directory.Directories.Count; i++)
 				{
+					HdlgDirectory d = directory.Directories[i];
 					await WriteDirectoriesListContainAsync( writer, d, inDepth ).ConfigureAwait( false );
 				}
 
@@ -425,8 +428,9 @@ namespace HDLG_winforms
 			{
 				await writer.WriteLineAsync( spacer + "\t<div class=\"directories\">" ).ConfigureAwait( false );
 				var inDepth = depth + 1;
-				foreach (HdlgDirectory d in directory.Directories)
+				for (int i = 0; i < directory.Directories.Count; i++)
 				{
+					HdlgDirectory d = directory.Directories[i];
 					await WritHtmlDirectoryAsync( writer, d, inDepth ).ConfigureAwait( false );
 				}
 				await writer.WriteLineAsync( spacer + "\t</div>" ).ConfigureAwait( false );
@@ -435,8 +439,9 @@ namespace HDLG_winforms
 			if (directory.Files.Count > 0)
 			{
 				await writer.WriteLineAsync( spacer + "\t<div class=\"files\">" ).ConfigureAwait( false );
-				foreach (HdlgFile file in directory.Files)
+				for (int i = 0; i < directory.Files.Count; i++)
 				{
+					HdlgFile file = directory.Files[i];
 					await WriteHtmlFileAsync( writer, file, spacer + "\t" ).ConfigureAwait( false );
 				}
 				await writer.WriteLineAsync( spacer + "\t</div>" ).ConfigureAwait( false );
