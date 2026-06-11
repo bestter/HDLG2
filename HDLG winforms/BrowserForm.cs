@@ -211,7 +211,7 @@ namespace HDLG_winforms
 #pragma warning restore CA1031
 			{
 				logger.Error(ex, "Error reading properties for file: {Path}", info.Path);
-                AddPropertyToListView("Error", ex.Message);
+                AddPropertyToListView("Error", "An unexpected error occurred.");
             }
             finally
             {

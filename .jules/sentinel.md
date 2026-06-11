@@ -62,3 +62,8 @@
 **Vulnerability:** Unhandled generic exceptions around `File` and `Directory` methods allowed sensitive file path information to potentially be logged or displayed when system access errors occurred.
 **Learning:** Catching specific access errors like `UnauthorizedAccessException` and `SecurityException` allows the application to gracefully degrade or report simple "Access Denied" errors, improving user experience and avoiding leaking paths.
 **Prevention:** Always catch and handle `UnauthorizedAccessException` and `SecurityException` explicitly when working with system IO operations before falling back to catching generic `Exception`.
+
+## 2026-06-08 - UI Information Disclosure
+**Vulnerability:** The application was vulnerable to Information Disclosure because a generic `catch (Exception ex)` block in `BrowserForm.cs` wrote `ex.Message` directly to the UI (a `ListView`).
+**Learning:** When file operations fail (e.g., due to system restrictions, concurrent access, or missing paths), `ex.Message` can leak sensitive system architecture details, internal paths, or stack traces to end-users.
+**Prevention:** Catch specific exceptions like `UnauthorizedAccessException` and `SecurityException` separately, and provide generic, safe error messages (like 'An unexpected error occurred.') in generic `catch (Exception ex)` handlers.
