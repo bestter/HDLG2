@@ -140,8 +140,9 @@ namespace HDLG_winforms
             TotalDirectories = directories.Count;
             TotalFiles = files.Count;
 
-            foreach (HdlgDirectory d in directories)
+            for (int i = 0; i < directories.Count; i++)
             {
+                HdlgDirectory d = directories[i];
                 d.Browse(propertyBrowser);
                 TotalDirectories += d.TotalDirectories;
                 TotalFiles += d.TotalFiles;
