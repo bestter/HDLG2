@@ -186,7 +186,7 @@ namespace HDLG_winforms
                 AddPropertyToListView("Last Write Time", fileInfo.LastWriteTime.ToString("g", CultureInfo.CurrentCulture));
 
                 var props = propertyBrowser.GetFileProperty(info.Path);
-                if (props != null)
+                if (props != null && props.Count > 0)
                 {
                     foreach (var kvp in props)
                     {
