@@ -67,3 +67,8 @@
 **Vulnerability:** The application was vulnerable to Information Disclosure because a generic `catch (Exception ex)` block in `BrowserForm.cs` wrote `ex.Message` directly to the UI (a `ListView`).
 **Learning:** When file operations fail (e.g., due to system restrictions, concurrent access, or missing paths), `ex.Message` can leak sensitive system architecture details, internal paths, or stack traces to end-users.
 **Prevention:** Catch specific exceptions like `UnauthorizedAccessException` and `SecurityException` separately, and provide generic, safe error messages (like 'An unexpected error occurred.') in generic `catch (Exception ex)` handlers.
+
+## 2026-06-08 - UI Information Disclosure via MessageBox in Global Error Handler
+**Vulnerability:** The application was vulnerable to Information Disclosure because the global exception handler (`AfficherMessageErreur` in `Program.cs`) appended the raw exception message (`ex.Message`) to a `MessageBox` displayed to the user when unhandled thread or background exceptions occurred.
+**Learning:** `ex.Message` for unhandled exceptions often contains sensitive system details, internal paths, connection strings, or technical states that should never be presented to an end-user, as this violates CWE-209.
+**Prevention:** In global error handlers, always log the full exception securely but provide only a generic, safe error message to the user UI (e.g., "Please check the application logs for more details.").

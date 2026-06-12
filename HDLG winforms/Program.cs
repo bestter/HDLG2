@@ -106,7 +106,7 @@ namespace HDLG_winforms
 		static void AfficherMessageErreur (string messageDeBase, Exception ex)
 		{
 			log.Fatal( ex, "Global unhandled exception intercepted." );
-			string messageComplet = $"{messageDeBase}\n\nTechnical detail : {ex.Message}";
+			string messageComplet = $"{messageDeBase}\n\nPlease check the application logs for more details.";
 			MessageBox.Show( messageComplet, "Application error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 		}
 	}
