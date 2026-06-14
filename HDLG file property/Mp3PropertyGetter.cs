@@ -63,7 +63,8 @@ namespace HdlgFileProperty
 				}
 				else
 				{
-					Logger?.Warning("File {Path} might be corrupted because {CorruptionReasons}", path, string.Join(",", f.CorruptionReasons));
+					// Performance optimization: Avoid eager string.Join allocation, let Serilog format the collection
+					Logger?.Warning("File {Path} might be corrupted because {CorruptionReasons}", path, f.CorruptionReasons);
 				}
 			}
 			catch (IOException ioe)

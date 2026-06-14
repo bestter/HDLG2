@@ -69,3 +69,6 @@
 ## 2024-06-10 - Avoid enumerator boxing on IReadOnlyList<T> in recursive tree iterations
 **Learning:** Iterating over an `IReadOnlyList<T>` using `foreach` forces the compiler to use `IEnumerator<T>` via the interface implementation rather than a direct duck-typed struct enumerator (like `List<T>.Enumerator`), causing a heap allocation per iteration loop. In deep recursive trees (like directory structure serialization), this creates O(N) garbage allocations (where N is number of directories).
 **Action:** Always prefer `for (int i = 0; i < collection.Count; i++)` when iterating over collections typed as `IReadOnlyList<T>` or `IList<T>` in hot loops to guarantee zero enumerator allocations.
+## 2026-06-14 - Defer String Allocations to Serilog Native Formatting
+**Learning:** Eagerly formatting collections with `string.Join` inside Serilog logging statements forces string allocations even when the log level is disabled, causing unnecessary garbage collection overhead in hot paths.
+**Action:** Always pass collections directly to structured logging methods (e.g., `Logger?.Warning("... {Items}", items)`) instead of manually joining them. Serilog handles `IEnumerable` serialization natively and safely.
