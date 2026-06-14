@@ -50,12 +50,12 @@ namespace HdlgFileProperty
 			}
 			catch (UnknownImageFormatException e)
 			{
-				//The stream does not have a valid image format.
+				// The stream does not have a valid image format.
 				Logger?.Warning(e, "Unsupported image format for file: {FilePath}", path);
 			}
 			catch (InvalidImageContentException e)
 			{
-				//The image content is corrupted or invalid.
+				// The image content is corrupted or invalid.
 				Logger?.Warning(e, "Invalid image content for file: {FilePath}", path);
 			}
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
