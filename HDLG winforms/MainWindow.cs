@@ -13,6 +13,7 @@ using Serilog.Core;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
 
 namespace HDLG_winforms
@@ -135,12 +136,16 @@ toolStripStatusLabelTotalTime.Visible = false;
 				toolStripStatusLabelException.Text = "Access Denied";
 				Logger.Warning( ex, "Security exception in {MethodName}", nameof( BtnStart_Click ) );
 			}
-#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
+			catch (IOException ex)
+			{
+				toolStripStatusLabelException.Text = "An IO error occurred";
+				Logger.Error( ex, "IO Error in {MethodName}", nameof( BtnStart_Click ) );
+			}
 			catch (Exception ex)
-#pragma warning restore CA1031
 			{
 				toolStripStatusLabelException.Text = "An error occurred";
-				Logger.Fatal( ex, "Error in {MethodName}", nameof( BtnStart_Click ) );
+				Logger.Error( ex, "Error in {MethodName}", nameof( BtnStart_Click ) );
+				throw;
 			}
 			finally
 			{
@@ -321,12 +326,16 @@ toolStripStatusLabelTotalTime.Visible = false;
 				toolStripStatusLabelException.Text = "Access Denied";
 				Logger.Warning( ex, "Security exception in {MethodName}", nameof( BtnStartHtml_Click ) );
 			}
-#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
+			catch (IOException ex)
+			{
+				toolStripStatusLabelException.Text = "An IO error occurred";
+				Logger.Error( ex, "IO Error in {MethodName}", nameof( BtnStartHtml_Click ) );
+			}
 			catch (Exception ex)
-#pragma warning restore CA1031
 			{
 				toolStripStatusLabelException.Text = "An error occurred";
-				Logger.Fatal( ex, "Error in {MethodName}", nameof( BtnStartHtml_Click ) );
+				Logger.Error( ex, "Error in {MethodName}", nameof( BtnStartHtml_Click ) );
+				throw;
 			}
 			finally
 			{
@@ -405,14 +414,19 @@ toolStripStatusLabelTotalTime.Visible = false;
 				Logger.Warning( ex, "Security exception opening UI Explorer" );
 				MessageBox.Show( this, "Error: Access Denied", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
-#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
+			catch (IOException ex)
+			{
+				UseWaitCursor = false;
+				toolStripStatusLabelException.Text = "An IO error occurred";
+				Logger.Error( ex, "IO Error opening UI Explorer" );
+				MessageBox.Show( this, "An IO error occurred", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+			}
 			catch (Exception ex)
-#pragma warning restore CA1031
 			{
 				UseWaitCursor = false;
 				toolStripStatusLabelException.Text = "An error occurred";
-				Logger.Fatal( ex, "Error opening UI Explorer" );
-				MessageBox.Show( this, "An error occurred", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+				Logger.Error( ex, "Error opening UI Explorer" );
+				throw;
 			}
 		}
 
