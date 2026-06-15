@@ -15,231 +15,210 @@ using System.Security;
 
 namespace HDLG_winforms
 {
-    public partial class BrowserForm : Form
-    {
-        private readonly string rootDirectory;
-        private readonly FilePropertyBrowser propertyBrowser;
-        private readonly ILogger logger;
+	public partial class BrowserForm : Form
+	{
+		private readonly string rootDirectory;
+		private readonly FilePropertyBrowser propertyBrowser;
+		private readonly ILogger logger;
 
-        public BrowserForm(string rootDirectory, FilePropertyBrowser propertyBrowser, ILogger logger)
-        {
-            InitializeComponent();
-            this.rootDirectory = rootDirectory;
-            this.propertyBrowser = propertyBrowser;
-            this.logger = logger;
-        }
+		public BrowserForm (string rootDirectory, FilePropertyBrowser propertyBrowser, ILogger logger)
+		{
+			InitializeComponent( );
+			this.rootDirectory = rootDirectory;
+			this.propertyBrowser = propertyBrowser;
+			this.logger = logger;
+		}
 
-        private void BrowserForm_Load(object sender, EventArgs e)
-        {
-            try
-            {
-                var rootNode = new TreeNode(rootDirectory);
-                rootNode.Tag = new NodeInfo { IsDirectory = true, Path = rootDirectory };
-                rootNode.Nodes.Add(new TreeNode("Loading..."));
-                treeView1.Nodes.Add(rootNode);
-                rootNode.Expand();
-            }
-#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
-			catch (Exception ex)
-#pragma warning restore CA1031
+		private void BrowserForm_Load (object sender, EventArgs e)
+		{
+			var rootNode = new TreeNode( rootDirectory );
+			rootNode.Tag = new NodeInfo { IsDirectory = true, Path = rootDirectory };
+			rootNode.Nodes.Add( new TreeNode( "Loading..." ) );
+			treeView1.Nodes.Add( rootNode );
+			rootNode.Expand( );
+
+		}
+
+		private class NodeInfo
+		{
+			public bool IsDirectory { get; set; }
+			public string Path { get; set; } = string.Empty;
+		}
+
+		/// <summary>
+		/// Validates that a resolved path stays within the root directory to prevent path traversal attacks
+		/// </summary>
+		/// <param name="path">The path to validate</param>
+		/// <returns>True if the path is within the root directory</returns>
+		private bool IsPathWithinRoot (string path)
+		{
+			string resolvedPath = Path.GetFullPath( path );
+			string resolvedRoot = Path.GetFullPath( rootDirectory );
+
+			// Ensure root ends with separator for prefix comparison
+			if (!resolvedRoot.EndsWith( Path.DirectorySeparatorChar ))
 			{
-				logger.Error(ex, "Error loading root directory in BrowserForm");
-                MessageBox.Show(this, "An error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+				resolvedRoot += Path.DirectorySeparatorChar;
+			}
 
-        private class NodeInfo
-        {
-            public bool IsDirectory { get; set; }
-            public string Path { get; set; } = string.Empty;
-        }
+			return resolvedPath.StartsWith( resolvedRoot, StringComparison.OrdinalIgnoreCase )
+				|| string.Equals( resolvedPath, Path.GetFullPath( rootDirectory ), StringComparison.OrdinalIgnoreCase );
+		}
 
-        /// <summary>
-        /// Validates that a resolved path stays within the root directory to prevent path traversal attacks
-        /// </summary>
-        /// <param name="path">The path to validate</param>
-        /// <returns>True if the path is within the root directory</returns>
-        private bool IsPathWithinRoot(string path)
-        {
-            string resolvedPath = Path.GetFullPath(path);
-            string resolvedRoot = Path.GetFullPath(rootDirectory);
+		private void TreeView1_BeforeExpand (object sender, TreeViewCancelEventArgs e)
+		{
+			if (e.Node == null || e.Node.Tag is not NodeInfo info || !info.IsDirectory)
+				return;
 
-            // Ensure root ends with separator for prefix comparison
-            if (!resolvedRoot.EndsWith(Path.DirectorySeparatorChar))
-            {
-                resolvedRoot += Path.DirectorySeparatorChar;
-            }
+			if (e.Node.Nodes.Count == 1 && e.Node.Nodes [0].Text == "Loading...")
+			{
+				e.Node.Nodes.Clear( );
+				Cursor = Cursors.WaitCursor;
 
-            return resolvedPath.StartsWith(resolvedRoot, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(resolvedPath, Path.GetFullPath(rootDirectory), StringComparison.OrdinalIgnoreCase);
-        }
-
-        private void TreeView1_BeforeExpand(object sender, TreeViewCancelEventArgs e)
-        {
-            if (e.Node == null || e.Node.Tag is not NodeInfo info || !info.IsDirectory)
-                return;
-
-            if (e.Node.Nodes.Count == 1 && e.Node.Nodes[0].Text == "Loading...")
-            {
-                e.Node.Nodes.Clear();
-                Cursor = Cursors.WaitCursor;
-
-                try
-                {
-                    if (!IsPathWithinRoot(info.Path))
-                    {
-                        logger.Warning("Path traversal blocked: {Path} is outside root directory {RootDirectory}", info.Path, rootDirectory);
-                        e.Node.Nodes.Add(new TreeNode("Access Denied"));
-                        return;
-                    }
-
-                    var dirInfo = new DirectoryInfo(info.Path);
-
-                    var dirNodes = new List<TreeNode>();
-                    var fileNodes = new List<TreeNode>();
-
-                    foreach (var fsInfo in dirInfo.EnumerateFileSystemInfos())
-                    {
-                        if (fsInfo is DirectoryInfo dir)
-                        {
-                            if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;
-                            var node = new TreeNode(dir.Name);
-                            node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
-                            node.Nodes.Add(new TreeNode("Loading..."));
-                            dirNodes.Add(node);
-                        }
-                        else if (fsInfo is FileInfo file)
-                        {
-                            var node = new TreeNode(file.Name);
-                            node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
-                            fileNodes.Add(node);
-                        }
-                    }
-
-                    if (dirNodes.Count > 0) e.Node.Nodes.AddRange(dirNodes.ToArray());
-                    if (fileNodes.Count > 0) e.Node.Nodes.AddRange(fileNodes.ToArray());
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    logger.Warning(ex, "Access denied to directory: {Path}", info.Path);
-                    e.Node.Nodes.Add(new TreeNode("Access Denied"));
-                }
-                catch (SecurityException ex)
-                {
-                    logger.Warning(ex, "Security exception accessing directory: {Path}", info.Path);
-                    e.Node.Nodes.Add(new TreeNode("Access Denied"));
-                }
-#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
-				catch (Exception ex)
-#pragma warning restore CA1031
+				try
 				{
-					logger.Error(ex, "Error loading directory: {Path}", info.Path);
-                    e.Node.Nodes.Add(new TreeNode("Error"));
-                }
-                finally
-                {
-                    Cursor = Cursors.Default;
-                }
-            }
-        }
+					if (!IsPathWithinRoot( info.Path ))
+					{
+						logger.Warning( "Path traversal blocked: {Path} is outside root directory {RootDirectory}", info.Path, rootDirectory );
+						e.Node.Nodes.Add( new TreeNode( "Access Denied" ) );
+						return;
+					}
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Localization", "CA1303:Do not pass literals as localized parameters")]
-        private void TreeView1_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-            listViewProperties.Items.Clear();
-            btnOpenFile.Enabled = false;
+					var dirInfo = new DirectoryInfo( info.Path );
 
-            if (e.Node == null || e.Node.Tag is not NodeInfo info)
-            {
-                lblSelectedFileName.Text = "Select a file to view properties";
-                return;
-            }
+					var dirNodes = new List<TreeNode>( );
+					var fileNodes = new List<TreeNode>( );
 
-            if (info.IsDirectory)
-            {
-                var dirInfo = new DirectoryInfo(info.Path);
-                lblSelectedFileName.Text = dirInfo.Name;
-                return;
-            }
+					foreach (var fsInfo in dirInfo.EnumerateFileSystemInfos( ))
+					{
+						if (fsInfo is DirectoryInfo dir)
+						{
+							if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;
+							var node = new TreeNode( dir.Name );
+							node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
+							node.Nodes.Add( new TreeNode( "Loading..." ) );
+							dirNodes.Add( node );
+						}
+						else if (fsInfo is FileInfo file)
+						{
+							var node = new TreeNode( file.Name );
+							node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
+							fileNodes.Add( node );
+						}
+					}
 
-            Cursor = Cursors.WaitCursor;
-            try
-            {
-                var fileInfo = new FileInfo(info.Path);
+					if (dirNodes.Count > 0) e.Node.Nodes.AddRange( dirNodes.ToArray( ) );
+					if (fileNodes.Count > 0) e.Node.Nodes.AddRange( fileNodes.ToArray( ) );
+				}
+				catch (UnauthorizedAccessException ex)
+				{
+					logger.Warning( ex, "Access denied to directory: {Path}", info.Path );
+					e.Node.Nodes.Add( new TreeNode( "Access Denied" ) );
+				}
+				catch (SecurityException ex)
+				{
+					logger.Warning( ex, "Security exception accessing directory: {Path}", info.Path );
+					e.Node.Nodes.Add( new TreeNode( "Access Denied" ) );
+				}
 
-                if (!IsPathWithinRoot(info.Path))
-                {
-                    logger.Warning("Path traversal blocked: {Path} is outside root directory {RootDirectory}", info.Path, rootDirectory);
-                    AddPropertyToListView("Error", "Access denied: path is outside the root directory.");
-                    btnOpenFile.Enabled = false;
-                    return;
-                }
+				finally
+				{
+					Cursor = Cursors.Default;
+				}
+			}
+		}
 
-                lblSelectedFileName.Text = fileInfo.Name;
+		[System.Diagnostics.CodeAnalysis.SuppressMessage( "Localization", "CA1303:Do not pass literals as localized parameters" )]
+		private void TreeView1_AfterSelect (object sender, TreeViewEventArgs e)
+		{
+			listViewProperties.Items.Clear( );
+			btnOpenFile.Enabled = false;
 
-                AddPropertyToListView("Name", fileInfo.Name);
-                AddPropertyToListView("Path", fileInfo.FullName);
-                AddPropertyToListView("Extension", fileInfo.Extension);
-                AddPropertyToListView("Size (bytes)", fileInfo.Length.ToString(CultureInfo.CurrentCulture));
-                AddPropertyToListView("Creation Time", fileInfo.CreationTime.ToString("g", CultureInfo.CurrentCulture));
-                AddPropertyToListView("Last Access Time", fileInfo.LastAccessTime.ToString("g", CultureInfo.CurrentCulture));
-                AddPropertyToListView("Last Write Time", fileInfo.LastWriteTime.ToString("g", CultureInfo.CurrentCulture));
-
-                var props = propertyBrowser.GetFileProperty(info.Path);
-                if (props != null && props.Count > 0)
-                {
-                    foreach (var kvp in props)
-                    {
-                        AddPropertyToListView(kvp.Key, kvp.Value?.ToString() ?? "");
-                    }
-                }
-
-                btnOpenFile.Enabled = true;
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                logger.Warning(ex, "Access denied reading properties for file: {Path}", info.Path);
-                AddPropertyToListView("Error", "Access Denied");
-            }
-            catch (SecurityException ex)
-            {
-                logger.Warning(ex, "Security exception reading properties for file: {Path}", info.Path);
-                AddPropertyToListView("Error", "Access Denied");
-            }
-#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
-			catch (Exception ex)
-#pragma warning restore CA1031
+			if (e.Node == null || e.Node.Tag is not NodeInfo info)
 			{
-				logger.Error(ex, "Error reading properties for file: {Path}", info.Path);
-                AddPropertyToListView("Error", "An unexpected error occurred.");
-            }
-            finally
-            {
-                Cursor = Cursors.Default;
-            }
-        }
+				lblSelectedFileName.Text = "Select a file to view properties";
+				return;
+			}
 
-        private void AddPropertyToListView(string name, string value)
-        {
-            var item = new ListViewItem(name);
-            item.SubItems.Add(value);
-            listViewProperties.Items.Add(item);
-        }
+			if (info.IsDirectory)
+			{
+				var dirInfo = new DirectoryInfo( info.Path );
+				lblSelectedFileName.Text = dirInfo.Name;
+				return;
+			}
 
-        private void BtnOpenFile_Click(object sender, EventArgs e)
-        {
-            if (treeView1.SelectedNode?.Tag is NodeInfo info && !info.IsDirectory)
-            {
-                if (IsPathWithinRoot(info.Path))
-                {
-                    MainWindow.OpenWithDefaultProgram(info.Path);
-                }
-                else
-                {
-                    logger.Warning("Path traversal blocked on execution: {Path} is outside root directory {RootDirectory}", info.Path, rootDirectory);
-                    MessageBox.Show(this, "Access denied: path is outside the root directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-        }
-    }
+			Cursor = Cursors.WaitCursor;
+			try
+			{
+				var fileInfo = new FileInfo( info.Path );
+
+				if (!IsPathWithinRoot( info.Path ))
+				{
+					logger.Warning( "Path traversal blocked: {Path} is outside root directory {RootDirectory}", info.Path, rootDirectory );
+					AddPropertyToListView( "Error", "Access denied: path is outside the root directory." );
+					btnOpenFile.Enabled = false;
+					return;
+				}
+
+				lblSelectedFileName.Text = fileInfo.Name;
+
+				AddPropertyToListView( "Name", fileInfo.Name );
+				AddPropertyToListView( "Path", fileInfo.FullName );
+				AddPropertyToListView( "Extension", fileInfo.Extension );
+				AddPropertyToListView( "Size (bytes)", fileInfo.Length.ToString( CultureInfo.CurrentCulture ) );
+				AddPropertyToListView( "Creation Time", fileInfo.CreationTime.ToString( "g", CultureInfo.CurrentCulture ) );
+				AddPropertyToListView( "Last Access Time", fileInfo.LastAccessTime.ToString( "g", CultureInfo.CurrentCulture ) );
+				AddPropertyToListView( "Last Write Time", fileInfo.LastWriteTime.ToString( "g", CultureInfo.CurrentCulture ) );
+
+				var props = propertyBrowser.GetFileProperty( info.Path );
+				if (props != null && props.Count > 0)
+				{
+					foreach (var kvp in props)
+					{
+						AddPropertyToListView( kvp.Key, kvp.Value?.ToString( ) ?? "" );
+					}
+				}
+
+				btnOpenFile.Enabled = true;
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				logger.Warning( ex, "Access denied reading properties for file: {Path}", info.Path );
+				AddPropertyToListView( "Error", "Access Denied" );
+			}
+			catch (SecurityException ex)
+			{
+				logger.Warning( ex, "Security exception reading properties for file: {Path}", info.Path );
+				AddPropertyToListView( "Error", "Access Denied" );
+			}
+
+			finally
+			{
+				Cursor = Cursors.Default;
+			}
+		}
+
+		private void AddPropertyToListView (string name, string value)
+		{
+			var item = new ListViewItem( name );
+			item.SubItems.Add( value );
+			listViewProperties.Items.Add( item );
+		}
+
+		private void BtnOpenFile_Click (object sender, EventArgs e)
+		{
+			if (treeView1.SelectedNode?.Tag is NodeInfo info && !info.IsDirectory)
+			{
+				if (IsPathWithinRoot( info.Path ))
+				{
+					MainWindow.OpenWithDefaultProgram( info.Path );
+				}
+				else
+				{
+					logger.Warning( "Path traversal blocked on execution: {Path} is outside root directory {RootDirectory}", info.Path, rootDirectory );
+					MessageBox.Show( this, "Access denied: path is outside the root directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+				}
+			}
+		}
+	}
 }
