@@ -168,16 +168,12 @@ toolStripStatusLabelTotalTime.Visible = false;
 			{
 				Logger.Information( "{SelectedDirectory}", selecteDirectory );
 				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
-#if DEBUG
 				Stopwatch stopwatch = Stopwatch.StartNew( );
-#endif
 
 				Logger.Debug( "Ready to start {MethodName}", nameof( directory.Browse ) );
 				directory.Browse( propertyBrowser );
 				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.Browse ), directory.Name );
-#if DEBUG
 				TimeSpan browseTime = stopwatch.Elapsed;
-#endif
 				propertyBrowser.LogGetterStatistics( );
 
 				DirectoryBrowser db = new( Logger );
@@ -186,15 +182,11 @@ toolStripStatusLabelTotalTime.Visible = false;
 				await db.SaveAsXMLAsync( saveFilePath, directory ).ConfigureAwait( false );
 
 				Logger.Debug( "{MethodName} done", nameof( DirectoryBrowser.SaveAsXMLAsync ) );
-#if DEBUG
 				stopwatch.Stop( );
 
 				TimeSpan saveTime = stopwatch.Elapsed - browseTime;
 
 				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
-#else
-				var result = new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
-#endif
 
 				Logger.Information( "Done at {EndTime:T}", DateTime.Now );
 				return result;
@@ -202,7 +194,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			else
 			{
 				Logger.Information( "No {SelectedDirectoryParamName}", nameof( selecteDirectory ) );
-				return new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
+				return PerformanceCount.Empty;
 			}
 		}
 
@@ -396,7 +388,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			else
 			{
 				Logger.Information( "No {SelectedDirectoryParamName}", nameof( selecteDirectory ) );
-				return new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
+				return PerformanceCount.Empty;
 			}
 		}
 
