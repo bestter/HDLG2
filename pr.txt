@@ -1,11 +1,5 @@
-⚡ Bolt: Offload file property reading to background thread
+🧪 Add missing test for GetFileProperty when no getters match
 
-💡 **What:** Modified `BrowserForm.TreeView1_AfterSelect` to use `async void` and wrapped `propertyBrowser.GetFileProperty(info.Path)` in `await Task.Run(...)`.
-
-🎯 **Why:** Extracting file properties (like MP3 tags or image dimensions) synchronously blocks the main UI thread. For larger files, slow disks, or network drives, this causes the application to freeze and become temporarily unresponsive. Offloading the call to a background thread keeps the UI smooth and responsive, resuming seamlessly to populate the ListView once complete.
-
-📊 **Measured Improvement:**
-Measured via mock synchronous simulation vs task offload (since direct WinForms UI-freezing is difficult to test headlessly):
-- **Baseline (Synchronous):** Blocks the UI thread entirely for the duration of the IO/CPU task (e.g., 500ms block).
-- **Improvement (Asynchronous):** Wait time is identical, but the UI thread spends `~0ms` blocked, remaining fully free to process other events and redraw the screen.
-- **Result:** Drastic improvement to application responsiveness during active directory exploration.
+🎯 What: Added test to ensure FilePropertyBrowser.GetFileProperty correctly handles the case where no property getters support the given file path.
+📊 Coverage: Added the `GetFileProperty_NoGettersSupportPath_ReturnsNull` test which verifies `GetFileProperty` returns `null` when all mocked getters return false for `IsSupportedFile`.
+✨ Result: Improved coverage for `FilePropertyBrowser.cs` by handling unsupported file type scenarios correctly without crashing or leaking memory.
