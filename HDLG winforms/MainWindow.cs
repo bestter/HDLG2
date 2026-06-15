@@ -135,12 +135,11 @@ toolStripStatusLabelTotalTime.Visible = false;
 				toolStripStatusLabelException.Text = "Access Denied";
 				Logger.Warning( ex, "Security exception in {MethodName}", nameof( BtnStart_Click ) );
 			}
-#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
 			catch (Exception ex)
-#pragma warning restore CA1031
 			{
 				toolStripStatusLabelException.Text = "An error occurred";
 				Logger.Fatal( ex, "Error in {MethodName}", nameof( BtnStart_Click ) );
+				throw;
 			}
 			finally
 			{
@@ -321,12 +320,11 @@ toolStripStatusLabelTotalTime.Visible = false;
 				toolStripStatusLabelException.Text = "Access Denied";
 				Logger.Warning( ex, "Security exception in {MethodName}", nameof( BtnStartHtml_Click ) );
 			}
-#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
 			catch (Exception ex)
-#pragma warning restore CA1031
 			{
 				toolStripStatusLabelException.Text = "An error occurred";
 				Logger.Fatal( ex, "Error in {MethodName}", nameof( BtnStartHtml_Click ) );
+				throw;
 			}
 			finally
 			{
@@ -405,14 +403,13 @@ toolStripStatusLabelTotalTime.Visible = false;
 				Logger.Warning( ex, "Security exception opening UI Explorer" );
 				MessageBox.Show( this, "Error: Access Denied", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
-#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
 			catch (Exception ex)
-#pragma warning restore CA1031
 			{
 				UseWaitCursor = false;
 				toolStripStatusLabelException.Text = "An error occurred";
 				Logger.Fatal( ex, "Error opening UI Explorer" );
 				MessageBox.Show( this, "An error occurred", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+				throw;
 			}
 		}
 
