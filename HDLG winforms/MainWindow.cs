@@ -249,13 +249,15 @@ toolStripStatusLabelTotalTime.Visible = false;
 				throw new FileNotFoundException( "The specified file was not found.", path );
 			}
 
-			string extension = System.IO.Path.GetExtension( path.TrimEnd(' ', '.') );
+			string fullPath = System.IO.Path.GetFullPath( path );
+
+			string extension = System.IO.Path.GetExtension( fullPath.TrimEnd(' ', '.') );
 			if (DangerousExtensions.Contains( extension ))
 			{
 				throw new InvalidOperationException( $"Opening files with extension '{extension}' is not allowed for security reasons." );
 			}
 
-			processStarter( path );
+			processStarter( fullPath );
 		}
 
 		/// <summary>
