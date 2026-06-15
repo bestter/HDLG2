@@ -119,8 +119,16 @@ namespace HDLG_winforms
 						}
 					}
 
-                    if (dirNodes.Count > 0) e.Node.Nodes.AddRange(dirNodes.ToArray());
-                    if (fileNodes.Count > 0) e.Node.Nodes.AddRange(fileNodes.ToArray());
+                    e.Node.TreeView?.BeginUpdate();
+                    for (int i = 0; i < dirNodes.Count; i++)
+                    {
+                        e.Node.Nodes.Add(dirNodes[i]);
+                    }
+                    for (int i = 0; i < fileNodes.Count; i++)
+                    {
+                        e.Node.Nodes.Add(fileNodes[i]);
+                    }
+                    e.Node.TreeView?.EndUpdate();
                 }
                 catch (UnauthorizedAccessException ex)
                 {

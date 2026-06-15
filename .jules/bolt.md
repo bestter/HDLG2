@@ -76,3 +76,6 @@
 ## 2024-06-15 - Prevent UI Thread Blocking for Metadata Extraction
 **Learning:** Extracting file properties (especially for complex types or from slow storage) inside an event handler can significantly block the UI thread, causing WinForms applications to freeze and become unresponsive to user input.
 **Action:** When performing potentially slow I/O or CPU-bound operations in a UI event handler, always wrap the heavy operation in `await Task.Run(...)` to offload it to a background thread. Since it's a WinForms application, use `.ConfigureAwait(true)` (which is the default, but good to be explicit for CA2007) to ensure the continuation (UI updates) resumes on the main UI thread.
+## 2024-06-15 - Eliminate ToArray() allocation in TreeView expansion
+**Learning:** `TreeNodeCollection.AddRange(TreeNode[])` forces unnecessary `ToArray()` allocations when data is collected in `List<TreeNode>`.
+**Action:** Use a simple `for` loop to directly add items from `IList` to avoid allocations, wrapping the loop in `TreeView.BeginUpdate()` / `EndUpdate()` to maintain bulk insertion performance.
