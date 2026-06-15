@@ -39,12 +39,15 @@ namespace HDLG_winforms
                 treeView1.Nodes.Add(rootNode);
                 rootNode.Expand();
             }
-#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
+			catch (IOException ex)
+			{
+				logger.Error(ex, "IO Error loading root directory in BrowserForm");
+                MessageBox.Show(this, "An IO error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 			catch (Exception ex)
-#pragma warning restore CA1031
 			{
 				logger.Error(ex, "Error loading root directory in BrowserForm");
-                MessageBox.Show(this, "An error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				throw;
             }
         }
 
@@ -129,12 +132,15 @@ namespace HDLG_winforms
                     logger.Warning(ex, "Security exception accessing directory: {Path}", info.Path);
                     e.Node.Nodes.Add(new TreeNode("Access Denied"));
                 }
-#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
+				catch (IOException ex)
+				{
+					logger.Error(ex, "IO Error loading directory: {Path}", info.Path);
+                    e.Node.Nodes.Add(new TreeNode("IO Error"));
+                }
 				catch (Exception ex)
-#pragma warning restore CA1031
 				{
 					logger.Error(ex, "Error loading directory: {Path}", info.Path);
-                    e.Node.Nodes.Add(new TreeNode("Error"));
+					throw;
                 }
                 finally
                 {
@@ -144,7 +150,7 @@ namespace HDLG_winforms
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Localization", "CA1303:Do not pass literals as localized parameters")]
-        private void TreeView1_AfterSelect(object sender, TreeViewEventArgs e)
+        private async void TreeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
             listViewProperties.Items.Clear();
             btnOpenFile.Enabled = false;
@@ -185,7 +191,7 @@ namespace HDLG_winforms
                 AddPropertyToListView("Last Access Time", fileInfo.LastAccessTime.ToString("g", CultureInfo.CurrentCulture));
                 AddPropertyToListView("Last Write Time", fileInfo.LastWriteTime.ToString("g", CultureInfo.CurrentCulture));
 
-                var props = propertyBrowser.GetFileProperty(info.Path);
+                var props = await Task.Run(() => propertyBrowser.GetFileProperty(info.Path)).ConfigureAwait(true);
                 if (props != null && props.Count > 0)
                 {
                     foreach (var kvp in props)
@@ -206,12 +212,15 @@ namespace HDLG_winforms
                 logger.Warning(ex, "Security exception reading properties for file: {Path}", info.Path);
                 AddPropertyToListView("Error", "Access Denied");
             }
-#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
+			catch (IOException ex)
+			{
+				logger.Error(ex, "IO Error reading properties for file: {Path}", info.Path);
+                AddPropertyToListView("Error", "An IO error occurred.");
+            }
 			catch (Exception ex)
-#pragma warning restore CA1031
 			{
 				logger.Error(ex, "Error reading properties for file: {Path}", info.Path);
-                AddPropertyToListView("Error", "An unexpected error occurred.");
+				throw;
             }
             finally
             {

@@ -72,3 +72,7 @@
 ## 2026-06-14 - Defer String Allocations to Serilog Native Formatting
 **Learning:** Eagerly formatting collections with `string.Join` inside Serilog logging statements forces string allocations even when the log level is disabled, causing unnecessary garbage collection overhead in hot paths.
 **Action:** Always pass collections directly to structured logging methods (e.g., `Logger?.Warning("... {Items}", items)`) instead of manually joining them. Serilog handles `IEnumerable` serialization natively and safely.
+
+## 2024-06-15 - Prevent UI Thread Blocking for Metadata Extraction
+**Learning:** Extracting file properties (especially for complex types or from slow storage) inside an event handler can significantly block the UI thread, causing WinForms applications to freeze and become unresponsive to user input.
+**Action:** When performing potentially slow I/O or CPU-bound operations in a UI event handler, always wrap the heavy operation in `await Task.Run(...)` to offload it to a background thread. Since it's a WinForms application, use `.ConfigureAwait(true)` (which is the default, but good to be explicit for CA2007) to ensure the continuation (UI updates) resumes on the main UI thread.
