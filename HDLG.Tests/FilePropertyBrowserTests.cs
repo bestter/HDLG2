@@ -108,6 +108,24 @@ namespace HDLG.Tests
         }
 
         [Fact]
+        public void GetFileProperty_NoGettersSupportPath_ReturnsNull()
+        {
+            // Arrange
+            string path = "test.unknown";
+
+            propertyGetterMock1.Setup(g => g.IsSupportedFile(path)).Returns(false);
+            propertyGetterMock2.Setup(g => g.IsSupportedFile(path)).Returns(false);
+
+            var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object, propertyGetterMock2.Object);
+
+            // Act
+            var result = browser.GetFileProperty(path);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Fact]
         public void LogGetterStatistics_NoFilesProcessed_DoesNotLogAverages()
         {
             // Arrange
