@@ -152,6 +152,7 @@ namespace HDLG_winforms
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Localization", "CA1303:Do not pass literals as localized parameters")]
         private async void TreeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
+            Cursor = Cursors.Default;
             listViewProperties.Items.Clear();
             btnOpenFile.Enabled = false;
 
@@ -192,6 +193,12 @@ namespace HDLG_winforms
                 AddPropertyToListView("Last Write Time", fileInfo.LastWriteTime.ToString("g", CultureInfo.CurrentCulture));
 
                 var props = await Task.Run(() => propertyBrowser.GetFileProperty(info.Path)).ConfigureAwait(true);
+
+                if (treeView1.SelectedNode != e.Node)
+                {
+                    return;
+                }
+
                 if (props != null && props.Count > 0)
                 {
                     foreach (var kvp in props)
@@ -204,27 +211,42 @@ namespace HDLG_winforms
             }
             catch (UnauthorizedAccessException ex)
             {
-                logger.Warning(ex, "Access denied reading properties for file: {Path}", info.Path);
-                AddPropertyToListView("Error", "Access Denied");
+                if (treeView1.SelectedNode == e.Node)
+                {
+                    logger.Warning(ex, "Access denied reading properties for file: {Path}", info.Path);
+                    AddPropertyToListView("Error", "Access Denied");
+                }
             }
             catch (SecurityException ex)
             {
-                logger.Warning(ex, "Security exception reading properties for file: {Path}", info.Path);
-                AddPropertyToListView("Error", "Access Denied");
+                if (treeView1.SelectedNode == e.Node)
+                {
+                    logger.Warning(ex, "Security exception reading properties for file: {Path}", info.Path);
+                    AddPropertyToListView("Error", "Access Denied");
+                }
             }
 			catch (IOException ex)
 			{
-				logger.Error(ex, "IO Error reading properties for file: {Path}", info.Path);
-                AddPropertyToListView("Error", "An IO error occurred.");
+                if (treeView1.SelectedNode == e.Node)
+                {
+				    logger.Error(ex, "IO Error reading properties for file: {Path}", info.Path);
+                    AddPropertyToListView("Error", "An IO error occurred.");
+                }
             }
 			catch (Exception ex)
 			{
-				logger.Error(ex, "Error reading properties for file: {Path}", info.Path);
-				throw;
+                if (treeView1.SelectedNode == e.Node)
+                {
+				    logger.Error(ex, "Error reading properties for file: {Path}", info.Path);
+				    throw;
+                }
             }
             finally
             {
-                Cursor = Cursors.Default;
+                if (treeView1.SelectedNode == e.Node)
+                {
+                    Cursor = Cursors.Default;
+                }
             }
         }
 

@@ -18,6 +18,7 @@ using System.Reflection;
 
 namespace HDLG_winforms
 {
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Localization", "CA1303:Do not pass literals as localized parameters")]
 	public partial class MainWindow : Form
 	{
 		#region PropertyGetter
