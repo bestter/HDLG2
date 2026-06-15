@@ -107,6 +107,51 @@ namespace HDLG.Tests
             result.Count.Should().Be(2);
         }
 
+
+        [Fact]
+        public void GetFileProperty_PathSupportedByMultipleGettersWithKeyCollision_PreservesFirstGetterValue()
+        {
+            // Arrange
+            string path = "test.document";
+            var properties1 = new Dictionary<string, IConvertible> { { "Title", "First Title" } };
+            var properties2 = new Dictionary<string, IConvertible> { { "Title", "Second Title" }, { "Author", "John Doe" } };
+
+            propertyGetterMock1.Setup(g => g.IsSupportedFile(path)).Returns(true);
+            propertyGetterMock1.Setup(g => g.GetFileProperties(path)).Returns(properties1);
+
+            propertyGetterMock2.Setup(g => g.IsSupportedFile(path)).Returns(true);
+            propertyGetterMock2.Setup(g => g.GetFileProperties(path)).Returns(properties2);
+
+            var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object, propertyGetterMock2.Object);
+
+            // Act
+            var result = browser.GetFileProperty(path);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().ContainKey("Title").WhoseValue.Should().Be("First Title");
+            result.Should().ContainKey("Author").WhoseValue.Should().Be("John Doe");
+            result.Count.Should().Be(2);
+        }
+
+        [Fact]
+        public void GetFileProperty_NoGettersSupportPath_ReturnsNull()
+        {
+            // Arrange
+            string path = "test.unknown";
+
+            propertyGetterMock1.Setup(g => g.IsSupportedFile(path)).Returns(false);
+            propertyGetterMock2.Setup(g => g.IsSupportedFile(path)).Returns(false);
+
+            var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object, propertyGetterMock2.Object);
+
+            // Act
+            var result = browser.GetFileProperty(path);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
         [Fact]
         public void LogGetterStatistics_NoFilesProcessed_DoesNotLogAverages()
         {

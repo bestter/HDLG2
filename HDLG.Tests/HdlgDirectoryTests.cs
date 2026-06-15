@@ -128,5 +128,61 @@ namespace HDLG.Tests
             dir1.Equals(dir2).Should().BeTrue();
             (dir1 == dir2).Should().BeTrue();
         }
+
+        [Fact]
+        public void Browse_UnauthorizedAccessException_LogsWarning()
+        {
+            // Arrange
+            var restrictedDirPath = Path.Combine(baseDirectoryPath, "RestrictedDir");
+            System.IO.Directory.CreateDirectory(restrictedDirPath);
+
+            try
+            {
+                if (OperatingSystem.IsWindows())
+                {
+                    var di = new DirectoryInfo(restrictedDirPath);
+                    var ds = di.GetAccessControl();
+                    ds.AddAccessRule(new System.Security.AccessControl.FileSystemAccessRule(
+                        Environment.UserName,
+                        System.Security.AccessControl.FileSystemRights.ReadData,
+                        System.Security.AccessControl.AccessControlType.Deny));
+                    di.SetAccessControl(ds);
+                }
+                else
+                {
+                    System.IO.File.SetUnixFileMode(restrictedDirPath, System.IO.UnixFileMode.None);
+                }
+
+                var hdlgDirectory = new HdlgDirectory(restrictedDirPath, true, true, loggerMock.Object);
+
+                // Act
+                hdlgDirectory.Browse(propertyBrowser);
+
+                // Assert
+                loggerMock.Verify(
+                    l => l.Warning(
+                        It.IsAny<UnauthorizedAccessException>(),
+                        "Access denied to directory: {Path}",
+                        restrictedDirPath),
+                    Times.Once);
+            }
+            finally
+            {
+                if (OperatingSystem.IsWindows())
+                {
+                    var di = new DirectoryInfo(restrictedDirPath);
+                    var ds = di.GetAccessControl();
+                    ds.RemoveAccessRule(new System.Security.AccessControl.FileSystemAccessRule(
+                        Environment.UserName,
+                        System.Security.AccessControl.FileSystemRights.ReadData,
+                        System.Security.AccessControl.AccessControlType.Deny));
+                    di.SetAccessControl(ds);
+                }
+                else
+                {
+                    System.IO.File.SetUnixFileMode(restrictedDirPath, System.IO.UnixFileMode.UserRead | System.IO.UnixFileMode.UserWrite | System.IO.UnixFileMode.UserExecute);
+                }
+            }
+        }
     }
 }

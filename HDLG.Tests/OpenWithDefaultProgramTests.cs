@@ -130,5 +130,16 @@ namespace HDLG.Tests
                 // as they come from the OS, not from our security check
             }
         }
+
+        [Fact]
+        public void OpenWithDefaultProgram_UnknownExtension_ThrowsInvalidOperationException()
+        {
+            var unknownFile = System.IO.Path.Combine(tempDir, "unknown.xyz123");
+            System.IO.File.WriteAllText(unknownFile, "unknown content");
+
+            var act = () => MainWindow.OpenWithDefaultProgram(unknownFile, _ => {});
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage("*not allowed for security reasons*");
+        }
     }
 }
