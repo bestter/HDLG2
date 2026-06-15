@@ -1,7 +1,0 @@
-⚡ Bolt: Eliminate ToArray() allocation in TreeView expansion
-
-💡 **What:** Replaced `AddRange(List.ToArray())` with direct loop iterations wrapped in `TreeView.BeginUpdate()` and `TreeView.EndUpdate()`.
-
-🎯 **Why:** When expanding a large directory in `BrowserForm`, the application calls `.ToArray()` on two `List<TreeNode>` instances just to pass them into `TreeNodeCollection.AddRange()`. This creates unnecessary O(N) array allocations that go straight to garbage collection. Iterating the native Lists directly combined with `BeginUpdate` achieves the same bulk-insertion UI efficiency while entirely avoiding the intermediate array allocations.
-
-📊 **Measured Improvement:** Simulated allocation benchmarks verified that using `.ToArray()` for 25,000 nodes allocates ~1 MB of memory for the array alone, whereas a direct loop allocates near zero memory. Execution time is approximately the same (or slightly faster without array copying).
