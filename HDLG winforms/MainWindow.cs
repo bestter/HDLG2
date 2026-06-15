@@ -218,6 +218,20 @@ toolStripStatusLabelTotalTime.Visible = false;
 		};
 
 		/// <summary>
+		/// Safe file extensions that can be opened directly without prompting the user.
+		/// </summary>
+		private static readonly HashSet<string> SafeExtensions = new( StringComparer.OrdinalIgnoreCase )
+		{
+			".txt", ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".rtf", ".csv",
+			".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".svg", ".ico",
+			".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac",
+			".mp4", ".avi", ".mkv", ".mov", ".wmv", ".webm", ".flv",
+			".html", ".htm", ".xml", ".json", ".yaml", ".yml", ".md", ".log",
+			".zip", ".rar", ".7z", ".tar", ".gz", ".bz2",
+			".cs", ".cpp", ".h", ".c", ".java", ".py", ".ts", ".jsx", ".tsx", ".css"
+		};
+
+		/// <summary>
 		/// Open file with the default program
 		/// </summary>
 		/// <param name="path"></param>
@@ -236,10 +250,13 @@ toolStripStatusLabelTotalTime.Visible = false;
 					WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
 				};
 				fileopener.Start( );
+			}, ext => {
+				DialogResult res = MessageBox.Show( $"The file extension '{ext}' is not in the safe allowlist.\n\nAre you sure you want to open this file?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
+				return res == DialogResult.Yes;
 			});
 		}
 
-		public static void OpenWithDefaultProgram(string path, Action<string> processStarter)
+		public static void OpenWithDefaultProgram(string path, Action<string> processStarter, Func<string, bool>? promptUnknownExtension = null)
 		{
 			ArgumentNullException.ThrowIfNull( processStarter );
 			ArgumentException.ThrowIfNullOrWhiteSpace( path );
@@ -255,6 +272,18 @@ toolStripStatusLabelTotalTime.Visible = false;
 			if (DangerousExtensions.Contains( extension ))
 			{
 				throw new InvalidOperationException( $"Opening files with extension '{extension}' is not allowed for security reasons." );
+			}
+
+			if (!SafeExtensions.Contains( extension ))
+			{
+				if (promptUnknownExtension == null)
+				{
+					throw new InvalidOperationException( $"Opening files with unknown extension '{extension}' is not allowed for security reasons." );
+				}
+				else if (!promptUnknownExtension(extension))
+				{
+					return;
+				}
 			}
 
 			processStarter( fullPath );
