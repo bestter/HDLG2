@@ -116,14 +116,14 @@ toolStripStatusLabelTotalTime.Visible = false;
 						progressBar1.Style = ProgressBarStyle.Marquee;
 
 						// Exécuter le travail dans un thread de fond sans bloquer l'UI
-						var perf = await Task.Run(() => PerformDirectoryBrowseXmlAsync(selectedDirectory, saveContentFileDialog.FileName)).ConfigureAwait(true);
+						var perf = await Task.Run( () => PerformDirectoryBrowseXmlAsync( selectedDirectory, saveContentFileDialog.FileName ) ).ConfigureAwait( true );
 
 						progressBar1.Style = ProgressBarStyle.Blocks;
 						progressBar1.Value = 100;
 
 						// Mettre à jour l'UI après le traitement
-						UpdateUIWithPerformance(perf);
-						OpenWithDefaultProgram(saveContentFileDialog.FileName);
+						UpdateUIWithPerformance( perf );
+						OpenWithDefaultProgram( saveContentFileDialog.FileName );
 					}
 				}
 			}
@@ -157,7 +157,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private void UpdateUIWithPerformance(PerformanceCount perf)
+		private void UpdateUIWithPerformance (PerformanceCount perf)
 		{
 			if (perf.TotalTime != TimeSpan.MinValue)
 			{
@@ -167,7 +167,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private async Task<PerformanceCount> PerformDirectoryBrowseXmlAsync(string selecteDirectory, string saveFilePath)
+		private async Task<PerformanceCount> PerformDirectoryBrowseXmlAsync (string selecteDirectory, string saveFilePath)
 		{
 			Logger.Debug( "{MethodName} started at {StartTime:T}", nameof( PerformDirectoryBrowseXmlAsync ), DateTime.Now );
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
@@ -237,9 +237,9 @@ toolStripStatusLabelTotalTime.Visible = false;
 		/// <exception cref="ArgumentException">Thrown when path is null or whitespace</exception>
 		/// <exception cref="FileNotFoundException">Thrown when the file does not exist</exception>
 		/// <exception cref="InvalidOperationException">Thrown when the file has a dangerous extension</exception>
-		public static void OpenWithDefaultProgram(string path)
+		public static void OpenWithDefaultProgram (string path)
 		{
-			OpenWithDefaultProgram(path, p =>
+			OpenWithDefaultProgram( path, p =>
 			{
 				using Process fileopener = new( );
 				fileopener.StartInfo = new ProcessStartInfo( p )
@@ -251,10 +251,10 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}, ext => {
 				DialogResult res = MessageBox.Show( $"The file extension '{ext}' is not in the safe allowlist.\n\nAre you sure you want to open this file?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
 				return res == DialogResult.Yes;
-			});
+			} );
 		}
 
-		public static void OpenWithDefaultProgram(string path, Action<string> processStarter, Func<string, bool>? promptUnknownExtension = null)
+		public static void OpenWithDefaultProgram (string path, Action<string> processStarter, Func<string, bool>? promptUnknownExtension = null)
 		{
 			ArgumentNullException.ThrowIfNull( processStarter );
 			ArgumentException.ThrowIfNullOrWhiteSpace( path );
@@ -266,7 +266,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 
 			string fullPath = System.IO.Path.GetFullPath( path );
 
-			string extension = System.IO.Path.GetExtension( fullPath.TrimEnd(' ', '.') );
+			string extension = System.IO.Path.GetExtension( fullPath.TrimEnd( ' ', '.' ) );
 			if (DangerousExtensions.Contains( extension ))
 			{
 				throw new InvalidOperationException( $"Opening files with extension '{extension}' is not allowed for security reasons." );
@@ -328,13 +328,13 @@ toolStripStatusLabelTotalTime.Visible = false;
 
 						progressBar1.Style = ProgressBarStyle.Marquee;
 
-						var perf = await Task.Run(() => PerformDirectoryBrowseHtmlAsync(selectedDirectory, saveFileDialogHtml.FileName)).ConfigureAwait(true);
+						var perf = await Task.Run( () => PerformDirectoryBrowseHtmlAsync( selectedDirectory, saveFileDialogHtml.FileName ) ).ConfigureAwait( true );
 
 						progressBar1.Style = ProgressBarStyle.Blocks;
 						progressBar1.Value = 100;
 
-						UpdateUIWithPerformance(perf);
-						OpenWithDefaultProgram(saveFileDialogHtml.FileName);
+						UpdateUIWithPerformance( perf );
+						OpenWithDefaultProgram( saveFileDialogHtml.FileName );
 					}
 				}
 			}
@@ -368,7 +368,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private async Task<PerformanceCount> PerformDirectoryBrowseHtmlAsync(string selecteDirectory, string saveFilePath)
+		private async Task<PerformanceCount> PerformDirectoryBrowseHtmlAsync (string selecteDirectory, string saveFilePath)
 		{
 			Debug.Write( $"{nameof( PerformDirectoryBrowseHtmlAsync )} started at {DateTime.Now:T}" );
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
@@ -424,31 +424,31 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 			catch (UnauthorizedAccessException ex)
 			{
-				UseWaitCursor = false;
 				toolStripStatusLabelException.Text = "Access Denied";
 				Logger.Warning( ex, "Access denied opening UI Explorer" );
 				MessageBox.Show( this, "Error: Access Denied", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 			catch (System.Security.SecurityException ex)
 			{
-				UseWaitCursor = false;
 				toolStripStatusLabelException.Text = "Access Denied";
 				Logger.Warning( ex, "Security exception opening UI Explorer" );
 				MessageBox.Show( this, "Error: Access Denied", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 			catch (IOException ex)
 			{
-				UseWaitCursor = false;
 				toolStripStatusLabelException.Text = "An IO error occurred";
 				Logger.Error( ex, "IO Error opening UI Explorer" );
 				MessageBox.Show( this, "An IO error occurred", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 			catch (Exception ex)
 			{
-				UseWaitCursor = false;
 				toolStripStatusLabelException.Text = "An error occurred";
 				Logger.Error( ex, "Error opening UI Explorer" );
 				throw;
+			}
+			finally
+			{
+				UseWaitCursor = false;
 			}
 		}
 

@@ -24,16 +24,16 @@ namespace HDLG_winforms
 		public IReadOnlyDictionary<string, IConvertible> Properties { get; }
 
 
-        public HdlgFile(string path, IReadOnlyDictionary<string, IConvertible>? properties)
-            : this(new FileInfo(path ?? throw new ArgumentNullException(nameof(path))), properties)
-        {
-        }
+		public HdlgFile (string path, IReadOnlyDictionary<string, IConvertible>? properties)
+			: this( new FileInfo( path ?? throw new ArgumentNullException( nameof( path ) ) ), properties )
+		{
+		}
 
-        public HdlgFile(FileInfo info, IReadOnlyDictionary<string, IConvertible>? properties)
-        {
-            ArgumentNullException.ThrowIfNull(info);
+		public HdlgFile (FileInfo info, IReadOnlyDictionary<string, IConvertible>? properties)
+		{
+			ArgumentNullException.ThrowIfNull( info );
 
-            Path = info.FullName;
+			Path = info.FullName;
 
 			if (info.Exists)
 			{
@@ -90,7 +90,7 @@ namespace HDLG_winforms
 				return CompareTo( file );
 			}
 
-			throw new ArgumentException( "L'objet doit être de type HdlgFile", nameof(obj) );
+			throw new ArgumentException( "L'objet doit être de type HdlgFile", nameof( obj ) );
 		}
 
 		public int CompareTo (HdlgFile? other)
