@@ -1,3 +1,5 @@
-🎯 **What:** Handled explicit security and unauthorized access exceptions in the `BrowserForm` tree view and property loader.
-⚠️ **Risk:** Generic exceptions on I/O failure could mask underlying security constraints, or display full system exception messages (like paths) that disclose internal details to the user unnecessarily.
-🛡️ **Solution:** Added specific `catch (UnauthorizedAccessException)` and `catch (SecurityException)` blocks prior to the generic exception catch blocks. This allows specific handling (like logging warnings rather than errors and displaying a clean 'Access Denied' message) and gracefully recovering from restricted file access events.
+🎯 **What:** The `OpenWithDefaultProgram` method automatically opens files using the system's default handler without giving the user a chance to review the action, relying purely on a blocklist of dangerous extensions.
+
+⚠️ **Risk:** By delegating execution to `ShellExecute` without user confirmation, the application may inadvertently open files that bypass the blocklist or exploit zero-day shell execution vulnerabilities. If a user unknowingly clicks a link or opens a file from an untrusted source, the application would automatically execute it.
+
+🛡️ **Solution:** Added a `MessageBox` prompt before the `Process.Start` call. This gives the user a clear security warning about opening files from untrusted sources and requires their explicit consent ("Yes") before proceeding to open the file with the default program.

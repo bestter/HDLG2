@@ -229,13 +229,18 @@ toolStripStatusLabelTotalTime.Visible = false;
 		{
 			OpenWithDefaultProgram(path, p =>
 			{
-				using Process fileopener = new( );
-				fileopener.StartInfo = new ProcessStartInfo( p )
+				DialogResult result = MessageBox.Show( $"You are about to open the following file:\n\n{p}\n\nOpening files with their default application can be dangerous if the file is from an untrusted source. Do you want to proceed?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2 );
+
+				if (result == DialogResult.Yes)
 				{
-					UseShellExecute = true,
-					WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
-				};
-				fileopener.Start( );
+					using Process fileopener = new( );
+					fileopener.StartInfo = new ProcessStartInfo( p )
+					{
+						UseShellExecute = true,
+						WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
+					};
+					fileopener.Start( );
+				}
 			});
 		}
 
