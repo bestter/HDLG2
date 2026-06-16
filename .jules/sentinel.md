@@ -81,3 +81,7 @@
 **Vulnerability:** Process Injection vulnerability existed because execution relied solely on a dangerous extension blocklist.
 **Learning:** Blocklists are insufficient for preventing malicious file execution because unknown or newly introduced executable file formats can easily bypass them.
 **Prevention:** When mitigating process injection via file execution in UI applications (e.g., using `Process.Start`), avoid relying solely on a dangerous extension blocklist. Instead, use a strict allowlist of known safe extensions, explicitly reject known dangerous extensions, and prompt the user for confirmation (e.g., via `MessageBox`) before opening any unknown file types.
+## 2024-06-15 - Prompt User Before Opening Files with Default Application
+**Vulnerability:** UI application automatically launches user-provided or externally referenced files using `Process.Start` with `UseShellExecute = true` without user confirmation, potentially exposing the user to executing malicious payloads disguised as safe file types.
+**Learning:** Depending exclusively on a blocklist of dangerous extensions is insufficient because novel execution vectors or renamed extensions may bypass the filter.
+**Prevention:** Always present a strong warning and prompt the user for explicit confirmation (e.g., using `MessageBox.Show`) before opening untrusted files via the default shell handler.
