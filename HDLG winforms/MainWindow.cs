@@ -259,12 +259,12 @@ toolStripStatusLabelTotalTime.Visible = false;
 			ArgumentNullException.ThrowIfNull( processStarter );
 			ArgumentException.ThrowIfNullOrWhiteSpace( path );
 
-			if (!System.IO.File.Exists( path ))
-			{
-				throw new FileNotFoundException( "The specified file was not found.", path );
-			}
-
 			string fullPath = System.IO.Path.GetFullPath( path );
+
+			if (!System.IO.File.Exists( fullPath ))
+			{
+				throw new FileNotFoundException( "The specified file was not found.", fullPath );
+			}
 
 			string extension = System.IO.Path.GetExtension( fullPath.TrimEnd( ' ', '.' ) );
 			if (DangerousExtensions.Contains( extension ))
