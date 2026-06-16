@@ -1,9 +1,6 @@
-🧪 [testing improvement] Add coverage for InvalidImageContentException in ImagePropertyGetter
+🧪 Add missing test for GetFileProperty when no getters match
 
-🎯 **What:** The `ImagePropertyGetter.GetFileProperties` method was mostly tested, but missing test coverage for corrupted image files that trigger `InvalidImageContentException`.
-
-📊 **Coverage:**
-- Added `ImagePropertyGetter_GetFileProperties_CorruptedImage_LogsWarningAndReturnsEmpty` to verify the handling of corrupted images.
-- Updated `ImageSetup.cs` to generate `test_corrupted.jpg` which is a valid JPEG truncated halfway through.
-
-✨ **Result:** Test coverage for `ImagePropertyGetter` is complete, ensuring that corrupted images are caught correctly via `InvalidImageContentException` instead of bubbling up generic exceptions or crashing.
+🎯 What: Added test to ensure FilePropertyBrowser.GetFileProperty correctly handles the case where no property getters support the given file path.
+📊 Coverage: Added the `GetFileProperty_NoGettersSupportPath_ReturnsNull` test which verifies `GetFileProperty` returns `null` when all mocked getters return false for `IsSupportedFile`.
+✨ Result: Improved coverage for `FilePropertyBrowser.cs` by handling unsupported file type scenarios correctly without crashing or leaking memory.
+⚡ Bolt: Eliminate ToArray() allocation in TreeView expansion
