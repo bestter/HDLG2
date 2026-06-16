@@ -192,13 +192,21 @@ namespace HDLG_winforms
 
 				lblSelectedFileName.Text = fileInfo.Name;
 
-				AddPropertyToListView( "Name", fileInfo.Name );
-				AddPropertyToListView( "Path", fileInfo.FullName );
-				AddPropertyToListView( "Extension", fileInfo.Extension );
-				AddPropertyToListView( "Size (bytes)", fileInfo.Length.ToString( CultureInfo.CurrentCulture ) );
-				AddPropertyToListView( "Creation Time", fileInfo.CreationTime.ToString( "g", CultureInfo.CurrentCulture ) );
-				AddPropertyToListView( "Last Access Time", fileInfo.LastAccessTime.ToString( "g", CultureInfo.CurrentCulture ) );
-				AddPropertyToListView( "Last Write Time", fileInfo.LastWriteTime.ToString( "g", CultureInfo.CurrentCulture ) );
+				listViewProperties.BeginUpdate();
+				try
+				{
+					AddPropertyToListView( "Name", fileInfo.Name );
+					AddPropertyToListView( "Path", fileInfo.FullName );
+					AddPropertyToListView( "Extension", fileInfo.Extension );
+					AddPropertyToListView( "Size (bytes)", fileInfo.Length.ToString( CultureInfo.CurrentCulture ) );
+					AddPropertyToListView( "Creation Time", fileInfo.CreationTime.ToString( "g", CultureInfo.CurrentCulture ) );
+					AddPropertyToListView( "Last Access Time", fileInfo.LastAccessTime.ToString( "g", CultureInfo.CurrentCulture ) );
+					AddPropertyToListView( "Last Write Time", fileInfo.LastWriteTime.ToString( "g", CultureInfo.CurrentCulture ) );
+				}
+				finally
+				{
+					listViewProperties.EndUpdate();
+				}
 
                 var props = await Task.Run(() => propertyBrowser.GetFileProperty(info.Path)).ConfigureAwait(true);
 
@@ -209,9 +217,17 @@ namespace HDLG_winforms
 
                 if (props != null && props.Count > 0)
                 {
-                    foreach (var kvp in props)
+                    listViewProperties.BeginUpdate();
+                    try
                     {
-                        AddPropertyToListView(kvp.Key, kvp.Value?.ToString() ?? "");
+                        foreach (var kvp in props)
+                        {
+                            AddPropertyToListView(kvp.Key, kvp.Value?.ToString() ?? "");
+                        }
+                    }
+                    finally
+                    {
+                        listViewProperties.EndUpdate();
                     }
                 }
 

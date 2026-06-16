@@ -79,3 +79,6 @@
 ## 2024-06-15 - Eliminate ToArray() allocation in TreeView expansion
 **Learning:** `TreeNodeCollection.AddRange(TreeNode[])` forces unnecessary `ToArray()` allocations when data is collected in `List<TreeNode>`.
 **Action:** Use a simple `for` loop to directly add items from `IList` to avoid allocations, wrapping the loop in `TreeView.BeginUpdate()` / `EndUpdate()` to maintain bulk insertion performance.
+## 2024-06-25 - Avoid layout thrashing in ListView population
+**Learning:** Adding multiple items sequentially to a UI `ListView` without calling `BeginUpdate()`/`EndUpdate()` causes the control to recalculate its layout and repaint after every single insertion. When displaying many file properties, this causes significant UI lag and layout thrashing.
+**Action:** When adding multiple items to a WinForms `ListView`, always wrap the insertion loop in `listView.BeginUpdate()` and `listView.EndUpdate()` to suspend layout logic and drastically improve rendering performance.
