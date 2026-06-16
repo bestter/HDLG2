@@ -26,43 +26,43 @@ namespace HDLG_winforms
 
 		}
 
+		private static void OpenUrlSafe(string url)
+		{
+			if (Uri.TryCreate(url, UriKind.Absolute, out Uri? uriResult) &&
+				(uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
+			{
+				ProcessStartInfo psInfo = new()
+				{
+					FileName = uriResult.AbsoluteUri,
+					UseShellExecute = true,
+					WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.System)
+				};
+				Process.Start(psInfo);
+			}
+			else
+			{
+				throw new InvalidOperationException($"Opening URLs with scheme other than http/https is not allowed for security reasons. URL: {url}");
+			}
+		}
+
 		private void labelIconCredit_LinkClicked (object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			// Source - https://stackoverflow.com/a
 			// Posted by Daniel
 			// Retrieved 2026-01-23, License - CC BY-SA 4.0
 
-			ProcessStartInfo psInfo = new( )
-			{
-				FileName = "https://www.flaticon.com/free-icons/root-directory",
-				UseShellExecute = true,
-				WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
-			};
-			Process.Start( psInfo );
-
+			OpenUrlSafe("https://www.flaticon.com/free-icons/root-directory");
 		}
 
 		private void labelGPL_LinkClicked (object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			ProcessStartInfo psInfo = new( )
-			{
-				FileName = "https://www.gnu.org/licenses/gpl-3.0.en.html",
-				UseShellExecute = true,
-				WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
-			};
-			Process.Start( psInfo );
+			OpenUrlSafe("https://www.gnu.org/licenses/gpl-3.0.en.html");
 		}
 
 
 		private void pictureBox1_Click (object sender, EventArgs e)
 		{
-			ProcessStartInfo psInfo = new( )
-			{
-				FileName = "https://www.gnu.org/licenses/gpl-3.0.en.html",
-				UseShellExecute = true,
-				WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
-			};
-			Process.Start( psInfo );
+			OpenUrlSafe("https://www.gnu.org/licenses/gpl-3.0.en.html");
 		}
 	}
 }
