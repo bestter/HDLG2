@@ -85,3 +85,7 @@
 **Vulnerability:** UI application automatically launches user-provided or externally referenced files using `Process.Start` with `UseShellExecute = true` without user confirmation, potentially exposing the user to executing malicious payloads disguised as safe file types.
 **Learning:** Depending exclusively on a blocklist of dangerous extensions is insufficient because novel execution vectors or renamed extensions may bypass the filter.
 **Prevention:** Always present a strong warning and prompt the user for explicit confirmation (e.g., using `MessageBox.Show`) before opening untrusted files via the default shell handler.
+## 2026-06-15 - [URL Validation before Process Execution]
+**Vulnerability:** Execution of URLs via Process.Start could be susceptible to local path/protocol execution if the URL string is altered.
+**Learning:** Even hardcoded URLs passed to Process.Start with UseShellExecute = true should be explicitly validated to ensure they only contain safe web schemes (http/https) to establish a defense-in-depth boundary against unintended execution types.
+**Prevention:** Always validate URL strings with Uri.TryCreate and explicitly check the scheme (Uri.UriSchemeHttp or Uri.UriSchemeHttps) before calling Process.Start.
