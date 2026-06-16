@@ -10,12 +10,14 @@ You should have received a copy of the GNU General Public License along with HTM
 
 namespace HDLG_winforms
 {
-    internal struct PerformanceCount
-    {
-        public TimeSpan BrowseTime;
-        public TimeSpan SaveTime;
-        public TimeSpan TotalTime;
-    }
+	internal struct PerformanceCount
+	{
+		public TimeSpan BrowseTime;
+		public TimeSpan SaveTime;
+		public TimeSpan TotalTime;
+
+		public static readonly PerformanceCount Empty = new() { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
+	}
 
 
 }

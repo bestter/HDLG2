@@ -138,6 +138,18 @@ namespace HDLG.Tests
             await Assert.ThrowsAsync<ArgumentNullException>(() => directoryBrowser.SaveAsHTMLAsync(tempHtmlFilePath, null!));
         }
 
+
+        [Fact]
+        public async Task SaveAsHTMLAsync_FileLocked_ThrowsIOException()
+        {
+            // Arrange
+            // Lock the file by opening it with exclusive access
+            using var fileStream = new FileStream(tempHtmlFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<IOException>(() => directoryBrowser.SaveAsHTMLAsync(tempHtmlFilePath, testDirectory));
+        }
+
         [Fact]
         public async Task SaveAsHTMLAsync_ValidInputs_GeneratesHtmlFile()
         {
