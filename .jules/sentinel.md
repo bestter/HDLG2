@@ -89,3 +89,7 @@
 **Vulnerability:** Execution of URLs via Process.Start could be susceptible to local path/protocol execution if the URL string is altered.
 **Learning:** Even hardcoded URLs passed to Process.Start with UseShellExecute = true should be explicitly validated to ensure they only contain safe web schemes (http/https) to establish a defense-in-depth boundary against unintended execution types.
 **Prevention:** Always validate URL strings with Uri.TryCreate and explicitly check the scheme (Uri.UriSchemeHttp or Uri.UriSchemeHttps) before calling Process.Start.
+## 2026-06-25 - [Prompt User for External URLs]
+**Vulnerability:** Execution of URLs via Process.Start could navigate the user to external websites without explicit confirmation.
+**Learning:** Even hardcoded or validated URLs passed to Process.Start with UseShellExecute = true should prompt the user for confirmation to prevent unexpected external navigation.
+**Prevention:** Always present a confirmation dialog (e.g., using `MessageBox.Show`) before opening external links via the default shell handler.
