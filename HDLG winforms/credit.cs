@@ -31,6 +31,9 @@ namespace HDLG_winforms
 			if (Uri.TryCreate(url, UriKind.Absolute, out Uri? uriResult) &&
 				(uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
 			{
+				DialogResult res = MessageBox.Show($"You are about to open an external website:\n\n{url}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+				if (res != DialogResult.Yes) return;
+
 				ProcessStartInfo psInfo = new()
 				{
 					FileName = uriResult.AbsoluteUri,
