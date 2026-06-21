@@ -93,3 +93,8 @@
 **Vulnerability:** Execution of URLs via Process.Start could navigate the user to external websites without explicit confirmation.
 **Learning:** Even hardcoded or validated URLs passed to Process.Start with UseShellExecute = true should prompt the user for confirmation to prevent unexpected external navigation.
 **Prevention:** Always present a confirmation dialog (e.g., using `MessageBox.Show`) before opening external links via the default shell handler.
+
+## 2026-06-25 - [Prevent MIME Sniffing in HTML Exports]
+**Vulnerability:** Generated HTML files did not include the X-Content-Type-Options header.
+**Learning:** Browsers may attempt to MIME-sniff content if the content-type is missing or incorrectly declared by a web server. This can lead to content confusion and potential Cross-Site Scripting (XSS) if malicious content is interpreted as executable scripts.
+**Prevention:** Always add `<meta http-equiv="X-Content-Type-Options" content="nosniff">` to generated HTML exports to enforce the declared content type and reduce the risk of drive-by downloads or XSS.
