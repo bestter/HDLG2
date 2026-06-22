@@ -68,16 +68,9 @@ namespace HdlgFileProperty
                             if (mergedProperties == null)
                             {
                                 mergedProperties = new Dictionary<string, IConvertible>(firstProperties.Count + currentProperties.Count);
-                                foreach (var prop in firstProperties)
-                                {
-                                    mergedProperties.TryAdd(prop.Key, prop.Value);
-                                }
+                                AddProperties(mergedProperties, firstProperties);
                             }
-
-                            foreach (var prop in currentProperties)
-                            {
-                                mergedProperties.TryAdd(prop.Key, prop.Value);
-                            }
+                            AddProperties(mergedProperties, currentProperties);
                         }
                     }
                     propertyGetters.StopTimer();
@@ -85,6 +78,24 @@ namespace HdlgFileProperty
             }
 
             return mergedProperties ?? firstProperties;
+        }
+
+        private static void AddProperties(Dictionary<string, IConvertible> target, IReadOnlyDictionary<string, IConvertible> source)
+        {
+            if (source is Dictionary<string, IConvertible> sourceDict)
+            {
+                foreach (var prop in sourceDict)
+                {
+                    target.TryAdd(prop.Key, prop.Value);
+                }
+            }
+            else
+            {
+                foreach (var prop in source)
+                {
+                    target.TryAdd(prop.Key, prop.Value);
+                }
+            }
         }
 
         public void LogGetterStatistics()
