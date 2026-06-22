@@ -30,6 +30,11 @@ namespace HDLG_winforms
 		/// </summary>
 		private string? CssContent;
 
+		/// <summary>
+		/// Cache for HTML encoded property keys to avoid redundant allocations and parsing.
+		/// </summary>
+		private readonly Dictionary<string, string> _encodedPropertyKeys = new();
+
 		public DirectoryBrowser (ILogger log)
 		{
 			this.log = log ?? throw new ArgumentNullException( nameof( log ) );
@@ -495,8 +500,13 @@ namespace HDLG_winforms
 				{
 					if (!string.IsNullOrWhiteSpace( property.Key ) && property.Value != null)
 					{
+						if (!_encodedPropertyKeys.TryGetValue(property.Key, out string? encodedKey))
+						{
+							encodedKey = WebUtility.HtmlEncode(property.Key);
+							_encodedPropertyKeys[property.Key] = encodedKey;
+						}
 						await writer.WriteLineAsync( spacer + "\t\t<li class=\"extentedProperty\">" ).ConfigureAwait( false );
-						await writer.WriteLineAsync( $"{spacer}\t\t\t<span>{WebUtility.HtmlEncode( property.Key )}</span>" ).ConfigureAwait( false );
+						await writer.WriteLineAsync( $"{spacer}\t\t\t<span>{encodedKey}</span>" ).ConfigureAwait( false );
 
 						if (property.Value is DateTime dtValue)
 						{
