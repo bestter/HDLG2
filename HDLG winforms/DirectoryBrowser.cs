@@ -313,7 +313,8 @@ namespace HDLG_winforms
 
 			using FileStream fileStream = new( fileInfo.FullName, FileMode.Create, FileAccess.Write, FileShare.None );
 			using StreamWriter sw = new( fileStream, encoding, 4096, false );
-			var title = $"HTML Directory list generator  {version} {directory.Path} {DateTimeOffset.Now.ToString( "F", CultureInfo.CurrentCulture )}";
+			string currentDateTimeFormatted = DateTime.Now.ToString( "F", CultureInfo.CurrentCulture );
+			var title = $"HTML Directory list generator  {version} {directory.Path} {currentDateTimeFormatted}";
 			var encodedTitle = WebUtility.HtmlEncode( title );
 			await sw.WriteLineAsync( "<!DOCTYPE html>" ).ConfigureAwait( false );
 
@@ -354,7 +355,7 @@ namespace HDLG_winforms
 
 			await sw.WriteLineAsync( "<div class=\"dateTime headerContent\">" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "<span class=\"headerContentTitle\">DateTime</span>" ).ConfigureAwait( false );
-			await sw.WriteLineAsync( $"<span class=\"headerContentData\">{DateTime.Now.ToString( "F", CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
+			await sw.WriteLineAsync( $"<span class=\"headerContentData\">{currentDateTimeFormatted}</span>" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "</div>" ).ConfigureAwait( false );
 
 			await sw.WriteLineAsync( "<div class=\"directoriesCount headerContent\">" ).ConfigureAwait( false );
