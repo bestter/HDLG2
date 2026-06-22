@@ -74,8 +74,8 @@ namespace HDLG_winforms
 				await writer.WriteElementStringAsync( null, "Directory", null, SanitizeXmlString( directory.Path ) ).ConfigureAwait( false );
 				await writer.WriteElementStringAsync( null, "DateTime", null, DateTime.Now.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
 
-				await writer.WriteElementStringAsync( null, "DirectoriesCount", null, DirectoriesCount( directory ).ToString( CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
-				await writer.WriteElementStringAsync( null, "FilesCount", null, FilesCount( directory ).ToString( CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
+				await writer.WriteElementStringAsync( null, "DirectoriesCount", null, directory.TotalDirectories.ToString( CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
+				await writer.WriteElementStringAsync( null, "FilesCount", null, directory.TotalFiles.ToString( CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
 
 				await WriteXmlDirectoryAsync( writer, directory ).ConfigureAwait( false );
 
@@ -84,26 +84,6 @@ namespace HDLG_winforms
 				await writer.WriteEndDocumentAsync( ).ConfigureAwait( false );
 			}
 			await sw.FlushAsync( ).ConfigureAwait( false );
-		}
-
-		/// <summary>
-		/// Count the total numbers of directories into <paramref name="directory"/> and is children
-		/// </summary>
-		/// <param name="directory"></param>
-		/// <returns></returns>
-		private static long DirectoriesCount (HdlgDirectory directory)
-		{
-			return directory.TotalDirectories;
-		}
-
-		/// <summary>
-		/// Count the total numbers of files into <paramref name="directory"/> and is children
-		/// </summary>
-		/// <param name="directory"></param>
-		/// <returns></returns>
-		private static long FilesCount (HdlgDirectory directory)
-		{
-			return directory.TotalFiles;
 		}
 
 		/// <summary>
@@ -346,12 +326,12 @@ namespace HDLG_winforms
 
 			await sw.WriteLineAsync( "<div class=\"directoriesCount headerContent\">" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "<span class=\"headerContentTitle\">DirectoriesCount</span>" ).ConfigureAwait( false );
-			await sw.WriteLineAsync( $"<span class=\"headerContentData\">{DirectoriesCount( directory ).ToString( CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
+			await sw.WriteLineAsync( $"<span class=\"headerContentData\">{directory.TotalDirectories.ToString( CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "</div>" ).ConfigureAwait( false );
 
 			await sw.WriteLineAsync( "<div class=\"filesCount headerContent\">" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "<span class=\"headerContentTitle\">FilesCount</span>" ).ConfigureAwait( false );
-			await sw.WriteLineAsync( $"<span class=\"headerContentData\">{FilesCount( directory ).ToString( CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
+			await sw.WriteLineAsync( $"<span class=\"headerContentData\">{directory.TotalFiles.ToString( CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "</div>" ).ConfigureAwait( false );
 
 			await sw.WriteLineAsync( "<div class=\"directories\">" ).ConfigureAwait( false );
