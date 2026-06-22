@@ -251,10 +251,13 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}, ext => {
 				DialogResult res = MessageBox.Show( $"The file extension '{ext}' is not in the safe allowlist.\n\nAre you sure you want to open this file?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
 				return res == DialogResult.Yes;
+			}, fullPath => {
+				DialogResult res = MessageBox.Show( $"You are about to open the following file:\n\n{fullPath}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
+				return res == DialogResult.Yes;
 			} );
 		}
 
-		public static void OpenWithDefaultProgram (string path, Action<string> processStarter, Func<string, bool>? promptUnknownExtension = null)
+		public static void OpenWithDefaultProgram (string path, Action<string> processStarter, Func<string, bool>? promptUnknownExtension = null, Func<string, bool>? promptUser = null)
 		{
 			ArgumentNullException.ThrowIfNull( processStarter );
 			ArgumentException.ThrowIfNullOrWhiteSpace( path );
@@ -282,6 +285,11 @@ toolStripStatusLabelTotalTime.Visible = false;
 				{
 					return;
 				}
+			}
+
+			if (promptUser != null && !promptUser(fullPath))
+			{
+				return;
 			}
 
 			processStarter( fullPath );
