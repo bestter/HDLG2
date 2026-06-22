@@ -86,3 +86,7 @@
 ## 2026-06-25 - Avoid redundant HtmlEncode allocations
 **Learning:** Calling `WebUtility.HtmlEncode()` multiple times on the same string (e.g. `file.Name`) within a single output generation block, or wrapping inherently safe types like numbers (`file.Size.ToString()`) and ISO DateTimes in `HtmlEncode()`, causes massive, entirely redundant string allocation and garbage generation in hot loops.
 **Action:** When formatting text for web outputs, only call `HtmlEncode` once per variable and cache it if used multiple times in the template. Never apply `HtmlEncode` to purely numeric values or standard safe date formats.
+
+## 2026-06-25 - Caching HtmlEncode results in DirectoryBrowser output
+**Learning:** The `HtmlEncode` method was still being called unnecessarily or on inherently safe types. Specifically, caching `WebUtility.HtmlEncode(directory.Path)` inside `WritHtmlDirectoryAsync` reduces garbage collection overhead in hot recursive trees.
+**Action:** Review uses of `HtmlEncode` and ensure results are cached if used multiple times in the block.
