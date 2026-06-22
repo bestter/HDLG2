@@ -82,3 +82,7 @@
 ## 2024-06-25 - Avoid layout thrashing in ListView population
 **Learning:** Adding multiple items sequentially to a UI `ListView` without calling `BeginUpdate()`/`EndUpdate()` causes the control to recalculate its layout and repaint after every single insertion. When displaying many file properties, this causes significant UI lag and layout thrashing.
 **Action:** When adding multiple items to a WinForms `ListView`, always wrap the insertion loop in `listView.BeginUpdate()` and `listView.EndUpdate()` to suspend layout logic and drastically improve rendering performance.
+
+## 2026-06-25 - Avoid redundant HtmlEncode allocations
+**Learning:** Calling `WebUtility.HtmlEncode()` multiple times on the same string (e.g. `file.Name`) within a single output generation block, or wrapping inherently safe types like numbers (`file.Size.ToString()`) and ISO DateTimes in `HtmlEncode()`, causes massive, entirely redundant string allocation and garbage generation in hot loops.
+**Action:** When formatting text for web outputs, only call `HtmlEncode` once per variable and cache it if used multiple times in the template. Never apply `HtmlEncode` to purely numeric values or standard safe date formats.

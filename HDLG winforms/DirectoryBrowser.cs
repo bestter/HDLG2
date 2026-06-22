@@ -412,7 +412,8 @@ namespace HDLG_winforms
 		{
 			log.Debug( "In {Method} {Type} {Directory}", nameof( WritHtmlDirectoryAsync ), nameof( HdlgDirectory ), directory );
 			string spacer = new string( ' ', depth );
-			string id = WebUtility.HtmlEncode( directory.Path );
+			string encodedPath = WebUtility.HtmlEncode( directory.Path );
+			string id = encodedPath;
 			string name = WebUtility.HtmlEncode( directory.Name );
 			string created = directory.CreationTime.ToString( "F", CultureInfo.CurrentCulture );
 
@@ -420,7 +421,7 @@ namespace HDLG_winforms
 			await writer.WriteLineAsync( spacer + $"<details class=\"directory\" id=\"{id}\" open>" ).ConfigureAwait( false );
 			await writer.WriteLineAsync( $"{spacer}\t<summary>" ).ConfigureAwait( false );
 			await writer.WriteLineAsync( $"{spacer}\t\t<span class=\"name\" title=\"{name}\">{name}</span>" ).ConfigureAwait( false );
-			await writer.WriteLineAsync( $"{spacer}\t\t<span class=\"path\">{WebUtility.HtmlEncode( directory.Path )}</span>" ).ConfigureAwait( false );
+			await writer.WriteLineAsync( $"{spacer}\t\t<span class=\"path\">{encodedPath}</span>" ).ConfigureAwait( false );
 			await writer.WriteLineAsync( $"{spacer}\t\t<span class=\"creationTime\">{created}</span>" ).ConfigureAwait( false );
 			await writer.WriteLineAsync( $"{spacer}\t\t<a href=\"#directoryList\" aria-label=\"Back to contents\">⬆️</a>" ).ConfigureAwait( false );
 			await writer.WriteLineAsync( $"{spacer}\t</summary>" ).ConfigureAwait( false );
@@ -470,11 +471,13 @@ namespace HDLG_winforms
 			// 2026 clean file card using div + flex-friendly structure (styled via modern CSS)
 			await writer.WriteLineAsync( spacer + "<div class=\"file\">" ).ConfigureAwait( false );
 
-			await writer.WriteLineAsync( $"{spacer}\t<a href=\"file:///{WebUtility.HtmlEncode( file.Path )}\" download=\"{WebUtility.HtmlEncode( file.Name )}\" referrerpolicy=\"strict-origin\">{WebUtility.HtmlEncode( file.Name )}</a>" ).ConfigureAwait( false );
+			string encodedName = WebUtility.HtmlEncode( file.Name );
+			string encodedPath = WebUtility.HtmlEncode( file.Path );
+			await writer.WriteLineAsync( $"{spacer}\t<a href=\"file:///{encodedPath}\" download=\"{encodedName}\" referrerpolicy=\"strict-origin\">{encodedName}</a>" ).ConfigureAwait( false );
 
 			await writer.WriteLineAsync( $"{spacer}\t<div class=\"file-meta\">" ).ConfigureAwait( false );
-			await writer.WriteLineAsync( $"{spacer}\t\t<span class=\"size\">{WebUtility.HtmlEncode( file.Size.ToString( CultureInfo.CurrentCulture ) )} kb</span>" ).ConfigureAwait( false );
-			await writer.WriteLineAsync( $"{spacer}\t\t<span class=\"creationTime\">{WebUtility.HtmlEncode( file.CreationTime.ToString( "F", CultureInfo.CurrentCulture ) )}</span>" ).ConfigureAwait( false );
+			await writer.WriteLineAsync( $"{spacer}\t\t<span class=\"size\">{file.Size.ToString( CultureInfo.CurrentCulture )} kb</span>" ).ConfigureAwait( false );
+			await writer.WriteLineAsync( $"{spacer}\t\t<span class=\"creationTime\">{file.CreationTime.ToString( "F", CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
 			await writer.WriteLineAsync( $"{spacer}\t</div>" ).ConfigureAwait( false );
 
 			if (file.Properties != null && file.Properties.Count > 0)
@@ -490,7 +493,7 @@ namespace HDLG_winforms
 
 						if (property.Value is DateTime dtValue)
 						{
-							await writer.WriteLineAsync( $"{spacer}\t\t\t<span>{WebUtility.HtmlEncode( dtValue.ToString( "F", CultureInfo.CurrentCulture ) )}</span>" ).ConfigureAwait( false );
+							await writer.WriteLineAsync( $"{spacer}\t\t\t<span>{dtValue.ToString( "F", CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
 						}
 						else
 						{
