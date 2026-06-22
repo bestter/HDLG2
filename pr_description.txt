@@ -1,6 +1,4 @@
-**What:** Replaced `AddRange(List.ToArray())` with direct loop iterations wrapped in `TreeView.BeginUpdate()` and `TreeView.EndUpdate()`.
-
-**Why:** When expanding a large directory in `BrowserForm`, the application calls `.ToArray()` on two `List<TreeNode>` instances just to pass them into `TreeNodeCollection.AddRange()`. This creates unnecessary O(N) array allocations that go straight to garbage collection. Iterating the native Lists directly combined with `BeginUpdate` achieves the same bulk-insertion UI efficiency while entirely avoiding the intermediate array allocations.
-
-**Impact:** Reduced memory usage during directory expansion.
-**Measurement:** Simulated allocation benchmarks verified that using `.ToArray()` for 25,000 nodes allocates ~1 MB of memory for the array alone, whereas a direct loop allocates near zero memory. Execution time is approximately the same (or slightly faster without array copying).
+💡 What: Caches the result of `WebUtility.HtmlEncode(directory.Path)` in `DirectoryBrowser.cs` inside the HTML export methods.
+🎯 Why: Reduces redundant string allocations when the same path string is printed multiple times in hot directory loops.
+📊 Impact: Decreases garbage collection overhead during HTML output generation.
+🔬 Measurement: Verify tests run properly (they fail on Linux due to WindowsDesktop.App missing, but build succeeds) and verify `HtmlEncode` is not executed multiple times for the same value.

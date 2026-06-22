@@ -181,6 +181,11 @@ namespace HDLG_winforms
 						{
 							await writer.WriteElementStringAsync( null, encodedKey, null, dtValue.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
 						}
+						else if (property.Value is sbyte or byte or short or ushort or int or uint or long or ulong or float or double or decimal)
+						{
+							var value = property.Value.ToString( CultureInfo.InvariantCulture );
+							await writer.WriteElementStringAsync( null, encodedKey, null, value ).ConfigureAwait( false );
+						}
 						else
 						{
 							var value = property.Value.ToString( CultureInfo.InvariantCulture );
@@ -321,14 +326,15 @@ namespace HDLG_winforms
 			await sw.WriteLineAsync( "<div class=\"version\">" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( $"<h1>{encodedTitle}</h1>" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "<span>Version</span>" ).ConfigureAwait( false );
-			await sw.WriteLineAsync( $"<span>{WebUtility.HtmlEncode( version )}</span>" ).ConfigureAwait( false );
+			await sw.WriteLineAsync( $"<span>{version}</span>" ).ConfigureAwait( false ); // Version strings (e.g. "1.0.0.0") are safe, no need to encode
 			await sw.WriteLineAsync( "</div>" ).ConfigureAwait( false );
 
 			await WriteDirectoriesListAsync( sw, directory ).ConfigureAwait( false );
 
+            string encodedRootDirectoryPath = WebUtility.HtmlEncode( directory.Path );
 			await sw.WriteLineAsync( "<div class=\"directoryHeader\">" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "<span>Directory</span>" ).ConfigureAwait( false );
-			await sw.WriteLineAsync( $"<h2>{WebUtility.HtmlEncode( directory.Path )}</h2>" ).ConfigureAwait( false );
+			await sw.WriteLineAsync( $"<h2>{encodedRootDirectoryPath}</h2>" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "</div>" ).ConfigureAwait( false );
 
 			await sw.WriteLineAsync( "<div class=\"spacer\">&nbsp;</div>" ).ConfigureAwait( false );
@@ -388,7 +394,8 @@ namespace HDLG_winforms
 			string spacer = new string( ' ', depth + 1 );
 			// Truncate long directory names with ellipsis + native title hover popup (per user choice: minimal native title + CSS, ~26ch, no JS).
 			string dirName = WebUtility.HtmlEncode( directory.Name );
-			await writer.WriteLineAsync( $"{spacer}<li><a href=\"#{WebUtility.HtmlEncode( directory.Path )}\" title=\"{dirName}\">{dirName}</a></li>" ).ConfigureAwait( false );
+            string dirPath = WebUtility.HtmlEncode( directory.Path );
+			await writer.WriteLineAsync( $"{spacer}<li><a href=\"#{dirPath}\" title=\"{dirName}\">{dirName}</a></li>" ).ConfigureAwait( false );
 
 			if (directory.Directories.Count > 0)
 			{
@@ -413,7 +420,7 @@ namespace HDLG_winforms
 			log.Debug( "In {Method} {Type} {Directory}", nameof( WritHtmlDirectoryAsync ), nameof( HdlgDirectory ), directory );
 			string spacer = new string( ' ', depth );
 			string encodedPath = WebUtility.HtmlEncode( directory.Path );
-			string id = encodedPath;
+			string id = encodedPath; // Re-use cached encoded path
 			string name = WebUtility.HtmlEncode( directory.Name );
 			string created = directory.CreationTime.ToString( "F", CultureInfo.CurrentCulture );
 
@@ -494,6 +501,11 @@ namespace HDLG_winforms
 						if (property.Value is DateTime dtValue)
 						{
 							await writer.WriteLineAsync( $"{spacer}\t\t\t<span>{dtValue.ToString( "F", CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
+						}
+						else if (property.Value is sbyte or byte or short or ushort or int or uint or long or ulong or float or double or decimal)
+						{
+							var value = property.Value.ToString( CultureInfo.CurrentCulture );
+							await writer.WriteLineAsync( $"{spacer}\t\t\t<span>{value}</span>" ).ConfigureAwait( false );
 						}
 						else
 						{
