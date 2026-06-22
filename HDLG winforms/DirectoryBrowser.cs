@@ -306,6 +306,7 @@ namespace HDLG_winforms
 			await sw.WriteLineAsync( "<meta name=\"robots\" content=\"noindex, nofollow\">" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "<meta name=\"rating\" content=\"general\">" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none';\">" ).ConfigureAwait( false );
+			await sw.WriteLineAsync( "<meta http-equiv=\"X-Content-Type-Options\" content=\"nosniff\">" ).ConfigureAwait( false );
 			await sw.WriteAsync( $"<title>{encodedTitle}</title>" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( GetGoogleFontHeader( ) ).ConfigureAwait( false );
 			await sw.WriteLineAsync( await GetCssAsync( ).ConfigureAwait( false ) ).ConfigureAwait( false );
