@@ -141,5 +141,29 @@ namespace HDLG.Tests
             act.Should().Throw<InvalidOperationException>()
                 .WithMessage("*not allowed for security reasons*");
         }
+
+        [Fact]
+        public void OpenWithDefaultProgram_UserDeclinesPrompt_DoesNotExecute()
+        {
+            var unknownFile = System.IO.Path.Combine(tempDir, "unknown.txt");
+            System.IO.File.WriteAllText(unknownFile, "unknown content");
+
+            bool executed = false;
+            MainWindow.OpenWithDefaultProgram(unknownFile, _ => { executed = true; }, null, _ => false);
+
+            executed.Should().BeFalse();
+        }
+
+        [Fact]
+        public void OpenWithDefaultProgram_UserAcceptsPrompt_Executes()
+        {
+            var unknownFile = System.IO.Path.Combine(tempDir, "unknown.txt");
+            System.IO.File.WriteAllText(unknownFile, "unknown content");
+
+            bool executed = false;
+            MainWindow.OpenWithDefaultProgram(unknownFile, _ => { executed = true; }, null, _ => true);
+
+            executed.Should().BeTrue();
+        }
     }
 }

@@ -1,4 +1,4 @@
-💡 What: Caches the result of `WebUtility.HtmlEncode(directory.Path)` in `DirectoryBrowser.cs` inside the HTML export methods.
-🎯 Why: Reduces redundant string allocations when the same path string is printed multiple times in hot directory loops.
-📊 Impact: Decreases garbage collection overhead during HTML output generation.
-🔬 Measurement: Verify tests run properly (they fail on Linux due to WindowsDesktop.App missing, but build succeeds) and verify `HtmlEncode` is not executed multiple times for the same value.
+💡 **Vulnerability:** The application executed files (via `Process.Start` with `UseShellExecute = true`) that passed the `SafeExtensions` allowlist without explicit user confirmation.
+🎯 **Impact:** Malicious files disguised as safe formats (e.g., malformed PDF or Word documents containing macros) could be automatically executed by the system's default shell handler simply by being clicked in the application UI. This violates defense-in-depth principles.
+🔧 **Fix:** Added a new requirement to `MainWindow.OpenWithDefaultProgram` that prompts the user (via `MessageBox` indicating the full file path) and requires affirmative consent before executing *any* file, even if it has a safe extension.
+✅ **Verification:** Added two unit tests (`OpenWithDefaultProgram_UserDeclinesPrompt_DoesNotExecute` and `OpenWithDefaultProgram_UserAcceptsPrompt_Executes`) to ensure the execution action is correctly bypassed if the user declines the prompt.
