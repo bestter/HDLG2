@@ -48,6 +48,11 @@ namespace HDLG_winforms
 		/// </summary>
 		private readonly Dictionary<string, string> _encodedPropertyKeys = new();
 
+		/// <summary>
+		/// Cache for XML encoded property keys to avoid redundant allocations and parsing.
+		/// </summary>
+		private readonly Dictionary<string, string> _xmlEncodedPropertyKeys = new();
+
 		public DirectoryBrowser (ILogger log)
 		{
 			this.log = log ?? throw new ArgumentNullException( nameof( log ) );
@@ -174,7 +179,12 @@ namespace HDLG_winforms
 				{
 					if (!string.IsNullOrWhiteSpace( property.Key ) && property.Value != null)
 					{
-						string encodedKey = XmlConvert.EncodeLocalName( property.Key ) ?? "UnknownProperty";
+						if (!_xmlEncodedPropertyKeys.TryGetValue( property.Key, out string? encodedKey ))
+						{
+							encodedKey = XmlConvert.EncodeLocalName( property.Key ) ?? "UnknownProperty";
+							_xmlEncodedPropertyKeys[property.Key] = encodedKey;
+						}
+
 						if (property.Value is DateTime dtValue)
 						{
 							await writer.WriteElementStringAsync( null, encodedKey, null, dtValue.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
