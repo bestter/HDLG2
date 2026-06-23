@@ -287,7 +287,13 @@ toolStripStatusLabelTotalTime.Visible = false;
 				}
 			}
 
-			if (promptUser != null && !promptUser(fullPath))
+			Func<string, bool> actualPromptUser = promptUser ?? (fPath =>
+			{
+				DialogResult res = MessageBox.Show( $"You are about to open the following file:\n\n{fPath}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
+				return res == DialogResult.Yes;
+			});
+
+			if (!actualPromptUser(fullPath))
 			{
 				return;
 			}

@@ -25,21 +25,21 @@ namespace HDLG.Tests
         [Fact]
         public void OpenWithDefaultProgram_NullPath_ThrowsArgumentException()
         {
-            var act = () => MainWindow.OpenWithDefaultProgram(null!, _ => { });
+            var act = () => MainWindow.OpenWithDefaultProgram(null!, _ => { }, null, _ => true);
             act.Should().Throw<ArgumentException>();
         }
 
         [Fact]
         public void OpenWithDefaultProgram_EmptyPath_ThrowsArgumentException()
         {
-            var act = () => MainWindow.OpenWithDefaultProgram("", _ => { });
+            var act = () => MainWindow.OpenWithDefaultProgram("", _ => { }, null, _ => true);
             act.Should().Throw<ArgumentException>();
         }
 
         [Fact]
         public void OpenWithDefaultProgram_WhitespacePath_ThrowsArgumentException()
         {
-            var act = () => MainWindow.OpenWithDefaultProgram("   ", _ => { });
+            var act = () => MainWindow.OpenWithDefaultProgram("   ", _ => { }, null, _ => true);
             act.Should().Throw<ArgumentException>();
         }
 
@@ -47,7 +47,7 @@ namespace HDLG.Tests
         public void OpenWithDefaultProgram_NonExistentFile_ThrowsFileNotFoundException()
         {
             var nonExistentPath = System.IO.Path.Combine(tempDir, "nonexistent.txt");
-            var act = () => MainWindow.OpenWithDefaultProgram(nonExistentPath, _ => { });
+            var act = () => MainWindow.OpenWithDefaultProgram(nonExistentPath, _ => { }, null, _ => true);
             act.Should().Throw<FileNotFoundException>();
         }
 
@@ -92,7 +92,7 @@ namespace HDLG.Tests
             var dangerousFile = System.IO.Path.Combine(tempDir, $"malicious{extension}");
             System.IO.File.WriteAllText(dangerousFile, "dangerous content");
 
-            var act = () => MainWindow.OpenWithDefaultProgram(dangerousFile, _ => { });
+            var act = () => MainWindow.OpenWithDefaultProgram(dangerousFile, _ => { }, null, _ => true);
             act.Should().Throw<InvalidOperationException>()
                 .WithMessage("*not allowed for security reasons*");
         }
@@ -117,7 +117,7 @@ namespace HDLG.Tests
 
             try
             {
-                MainWindow.OpenWithDefaultProgram(safeFile, _ => { });
+                MainWindow.OpenWithDefaultProgram(safeFile, _ => { }, null, _ => true);
             }
             catch (InvalidOperationException)
             {
@@ -137,7 +137,7 @@ namespace HDLG.Tests
             var unknownFile = System.IO.Path.Combine(tempDir, "unknown.xyz123");
             System.IO.File.WriteAllText(unknownFile, "unknown content");
 
-            var act = () => MainWindow.OpenWithDefaultProgram(unknownFile, _ => {});
+            var act = () => MainWindow.OpenWithDefaultProgram(unknownFile, _ => {}, null, _ => true);
             act.Should().Throw<InvalidOperationException>()
                 .WithMessage("*not allowed for security reasons*");
         }
