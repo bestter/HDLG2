@@ -90,3 +90,6 @@
 ## 2026-06-25 - Caching HtmlEncode results in DirectoryBrowser output
 **Learning:** The `HtmlEncode` method was still being called unnecessarily or on inherently safe types. Specifically, caching `WebUtility.HtmlEncode(directory.Path)` inside `WritHtmlDirectoryAsync` reduces garbage collection overhead in hot recursive trees.
 **Action:** Review uses of `HtmlEncode` and ensure results are cached if used multiple times in the block.
+## 2026-06-25 - Cache XmlConvert.EncodeLocalName results
+**Learning:** `XmlConvert.EncodeLocalName` can be relatively slow and allocates memory. In a directory browser application generating XML exports, files consistently share the same metadata property keys. Repeatedly calling this method in the hot loop for every property of every file incurs unnecessary CPU cycles and memory allocations.
+**Action:** Cache the XML-safe local name encoding in a dictionary (e.g., `_xmlEncodedPropertyKeys`) to prevent redundant string allocations and parsing operations, matching the performance pattern used for HTML outputs.
