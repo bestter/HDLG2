@@ -93,3 +93,10 @@
 ## 2026-06-25 - Cache XmlConvert.EncodeLocalName results
 **Learning:** `XmlConvert.EncodeLocalName` can be relatively slow and allocates memory. In a directory browser application generating XML exports, files consistently share the same metadata property keys. Repeatedly calling this method in the hot loop for every property of every file incurs unnecessary CPU cycles and memory allocations.
 **Action:** Cache the XML-safe local name encoding in a dictionary (e.g., `_xmlEncodedPropertyKeys`) to prevent redundant string allocations and parsing operations, matching the performance pattern used for HTML outputs.
+## 2026-06-25 - Avoid Unhelpful Micro-Optimizations Involving Async/Await
+**Learning:** In C#, extracting the body of a hot loop into an `async Task` method (e.g. to avoid duplicating the loop body for a dictionary cast unboxing) introduces massive state machine overhead that completely negates any micro-optimization benefits and actively degrades performance.
+**Action:** Never sacrifice code readability or introduce async state machines in hot paths for trivial micro-optimizations (like avoiding a single enumerator allocation).
+
+## 2026-06-25 - Cache Invariant Paths in UI Components
+**Learning:** Evaluating `Path.GetFullPath(rootDirectory)` inside hot UI events (like `TreeView.BeforeExpand`) causes redundant I/O checks and string allocations. Because `rootDirectory` is invariant after construction, its resolved path can be calculated once.
+**Action:** When a UI component is bound to a specific root directory, resolve and cache its full path (with and without the trailing separator) in the constructor to optimize hot-path traversal checks.

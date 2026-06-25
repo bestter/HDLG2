@@ -18,6 +18,8 @@ namespace HDLG_winforms
 	public partial class BrowserForm : Form
 	{
 		private readonly string rootDirectory;
+		private readonly string _resolvedRootDirectory;
+		private readonly string _resolvedRootDirectoryWithSeparator;
 		private readonly FilePropertyBrowser propertyBrowser;
 		private readonly ILogger logger;
 
@@ -27,6 +29,13 @@ namespace HDLG_winforms
 			this.rootDirectory = rootDirectory;
 			this.propertyBrowser = propertyBrowser;
 			this.logger = logger;
+
+			// Performance optimization: Cache resolved root directory strings to prevent redundant allocations and
+			// I/O operations in hot paths like IsPathWithinRoot when expanding tree nodes.
+			_resolvedRootDirectory = Path.GetFullPath(rootDirectory);
+			_resolvedRootDirectoryWithSeparator = _resolvedRootDirectory.EndsWith(Path.DirectorySeparatorChar)
+				? _resolvedRootDirectory
+				: _resolvedRootDirectory + Path.DirectorySeparatorChar;
 		}
 
         private void BrowserForm_Load(object sender, EventArgs e)
@@ -65,16 +74,9 @@ namespace HDLG_winforms
 		private bool IsPathWithinRoot (string path)
 		{
 			string resolvedPath = Path.GetFullPath( path );
-			string resolvedRoot = Path.GetFullPath( rootDirectory );
 
-			// Ensure root ends with separator for prefix comparison
-			if (!resolvedRoot.EndsWith( Path.DirectorySeparatorChar ))
-			{
-				resolvedRoot += Path.DirectorySeparatorChar;
-			}
-
-			return resolvedPath.StartsWith( resolvedRoot, StringComparison.OrdinalIgnoreCase )
-				|| string.Equals( resolvedPath, Path.GetFullPath( rootDirectory ), StringComparison.OrdinalIgnoreCase );
+			return resolvedPath.StartsWith( _resolvedRootDirectoryWithSeparator, StringComparison.OrdinalIgnoreCase )
+				|| string.Equals( resolvedPath, _resolvedRootDirectory, StringComparison.OrdinalIgnoreCase );
 		}
 
 		private void TreeView1_BeforeExpand (object sender, TreeViewCancelEventArgs e)
