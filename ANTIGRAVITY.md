@@ -20,3 +20,4 @@
 * Utilise **FluentAssertions** pour les assertions et **Moq** pour le mocking d'interfaces.
 * Nettoie toujours les fichiers et répertoires temporaires via `IDisposable`.
 * Tout nouveau code doit être accompagné de tests unitaires. Ne crée pas de tests si la tâche ne concerne que de la documentation ou de la configuration.
+* Les tests UI WinForms (`WinFormsUiTests`) s'exécutent sur thread **STA** et vérifient la structure des contrôles Krypton sans interaction graphique utilisateur.

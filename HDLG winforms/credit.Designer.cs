@@ -2,15 +2,8 @@ namespace HDLG_winforms
 {
 	partial class Credit
 	{
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
 		private System.ComponentModel.IContainer components = null;
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing && (components != null))
@@ -22,84 +15,36 @@ namespace HDLG_winforms
 
 		#region Windows Form Designer generated code
 
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
 		private void InitializeComponent()
 		{
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Credit));
-			lblTitle = new Label();
-			labelCopyright = new Label();
-			labelIconCredit = new LinkLabel();
-			labelGPL = new LinkLabel();
-			pictureBox1 = new PictureBox();
+			headerGroupAbout = new Krypton.Toolkit.KryptonHeaderGroup();
 			tableLayoutPanel1 = new TableLayoutPanel();
-			((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+			lblTitle = new Krypton.Toolkit.KryptonLabel();
+			labelCopyright = new Krypton.Toolkit.KryptonWrapLabel();
+			labelGPL = new Krypton.Toolkit.KryptonLinkLabel();
+			pictureBox1 = new PictureBox();
+			labelIconCredit = new Krypton.Toolkit.KryptonLinkLabel();
+			((System.ComponentModel.ISupportInitialize)headerGroupAbout).BeginInit();
+			headerGroupAbout.Panel.SuspendLayout();
+			headerGroupAbout.SuspendLayout();
 			tableLayoutPanel1.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
 			SuspendLayout();
-			// 
-			// lblTitle
-			// 
-			lblTitle.Anchor = AnchorStyles.None;
-			lblTitle.AutoSize = true;
-			lblTitle.Font = new Font("Segoe UI", 15.75F, FontStyle.Bold, GraphicsUnit.Point);
-			lblTitle.Location = new Point(23, 10);
-			lblTitle.Name = "lblTitle";
-			lblTitle.Size = new Size(313, 30);
-			lblTitle.TabIndex = 0;
-			lblTitle.Text = "HTML Directory List Generator";
-			// 
-			// labelCopyright
-			// 
-			labelCopyright.Anchor = AnchorStyles.None;
-			labelCopyright.AutoSize = true;
-			labelCopyright.Location = new Point(92, 55);
-			labelCopyright.Name = "labelCopyright";
-			labelCopyright.Size = new Size(176, 17);
-			labelCopyright.TabIndex = 1;
-			labelCopyright.Text = "© Martin Labelle 2023-2026";
-			// 
-			// labelIconCredit
-			// 
-			labelIconCredit.Anchor = AnchorStyles.None;
-			labelIconCredit.AutoSize = true;
-			labelIconCredit.Location = new Point(123, 219);
-			labelIconCredit.Name = "labelIconCredit";
-			labelIconCredit.Size = new Size(114, 17);
-			labelIconCredit.TabIndex = 2;
-			labelIconCredit.TabStop = true;
-			labelIconCredit.Text = "Icon by FlatIcons";
-			labelIconCredit.LinkClicked += labelIconCredit_LinkClicked;
-			// 
-			// labelGPL
-			// 
-			labelGPL.Anchor = AnchorStyles.None;
-			labelGPL.AutoSize = true;
-			labelGPL.Location = new Point(81, 95);
-			labelGPL.Name = "labelGPL";
-			labelGPL.Size = new Size(198, 17);
-			labelGPL.TabIndex = 3;
-			labelGPL.TabStop = true;
-			labelGPL.Text = "Distribué sous licence GPL V3";
-			labelGPL.LinkClicked += labelGPL_LinkClicked;
-			// 
-			// pictureBox1
-			// 
-			pictureBox1.Anchor = AnchorStyles.None;
-			pictureBox1.Cursor = Cursors.Hand;
-			pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
-			pictureBox1.InitialImage = (Image)resources.GetObject("pictureBox1.InitialImage");
-			pictureBox1.Location = new Point(104, 131);
-			pictureBox1.Name = "pictureBox1";
-			pictureBox1.Size = new Size(151, 68);
-			pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
-			pictureBox1.TabIndex = 4;
-			pictureBox1.TabStop = false;
-			pictureBox1.Click += pictureBox1_Click;
-			// 
+			//
+			// headerGroupAbout
+			//
+			headerGroupAbout.Dock = DockStyle.Fill;
+			headerGroupAbout.Location = new Point(0, 0);
+			headerGroupAbout.Name = "headerGroupAbout";
+			headerGroupAbout.Size = new Size(440, 320);
+			headerGroupAbout.TabIndex = 0;
+			headerGroupAbout.ValuesPrimary.Heading = "About";
+			headerGroupAbout.ValuesPrimary.Description = "HTML Directory List Generator";
+			headerGroupAbout.Panel.Controls.Add(tableLayoutPanel1);
+			//
 			// tableLayoutPanel1
-			// 
+			//
 			tableLayoutPanel1.ColumnCount = 1;
 			tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
 			tableLayoutPanel1.Controls.Add(lblTitle, 0, 0);
@@ -110,22 +55,76 @@ namespace HDLG_winforms
 			tableLayoutPanel1.Dock = DockStyle.Fill;
 			tableLayoutPanel1.Location = new Point(0, 0);
 			tableLayoutPanel1.Name = "tableLayoutPanel1";
-			tableLayoutPanel1.Padding = new Padding(10);
+			tableLayoutPanel1.Padding = new Padding(16);
 			tableLayoutPanel1.RowCount = 5;
-			tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
-			tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
-			tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
-			tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 90F));
-			tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-			tableLayoutPanel1.Size = new Size(360, 260);
-			tableLayoutPanel1.TabIndex = 5;
-			// 
+			tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
+			tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+			tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+			tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 96F));
+			tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+			tableLayoutPanel1.Size = new Size(438, 250);
+			tableLayoutPanel1.TabIndex = 0;
+			//
+			// lblTitle
+			//
+			lblTitle.Anchor = AnchorStyles.None;
+			lblTitle.LabelStyle = Krypton.Toolkit.LabelStyle.TitlePanel;
+			lblTitle.Location = new Point(62, 20);
+			lblTitle.Name = "lblTitle";
+			lblTitle.Size = new Size(314, 34);
+			lblTitle.TabIndex = 0;
+			lblTitle.Values.Text = "HTML Directory List Generator";
+			//
+			// labelCopyright
+			//
+			labelCopyright.Anchor = AnchorStyles.None;
+			labelCopyright.LabelStyle = Krypton.Toolkit.LabelStyle.NormalControl;
+			labelCopyright.Location = new Point(108, 64);
+			labelCopyright.Name = "labelCopyright";
+			labelCopyright.Size = new Size(222, 24);
+			labelCopyright.TabIndex = 1;
+			labelCopyright.Text = "Copyright Martin Labelle 2023-2026";
+			//
+			// labelGPL
+			//
+			labelGPL.Anchor = AnchorStyles.None;
+			labelGPL.Location = new Point(96, 96);
+			labelGPL.Name = "labelGPL";
+			labelGPL.Size = new Size(246, 24);
+			labelGPL.TabIndex = 2;
+			labelGPL.Values.Text = "Distributed under the GPLv3 license";
+			labelGPL.LinkClicked += labelGPL_LinkClicked;
+			//
+			// pictureBox1
+			//
+			pictureBox1.Anchor = AnchorStyles.None;
+			pictureBox1.Cursor = Cursors.Hand;
+			pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
+			pictureBox1.InitialImage = (Image)resources.GetObject("pictureBox1.InitialImage");
+			pictureBox1.Location = new Point(124, 128);
+			pictureBox1.Name = "pictureBox1";
+			pictureBox1.Size = new Size(190, 80);
+			pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+			pictureBox1.TabIndex = 3;
+			pictureBox1.TabStop = false;
+			pictureBox1.Click += pictureBox1_Click;
+			//
+			// labelIconCredit
+			//
+			labelIconCredit.Anchor = AnchorStyles.None;
+			labelIconCredit.Location = new Point(128, 220);
+			labelIconCredit.Name = "labelIconCredit";
+			labelIconCredit.Size = new Size(182, 24);
+			labelIconCredit.TabIndex = 4;
+			labelIconCredit.Values.Text = "Icon by Flaticon";
+			labelIconCredit.LinkClicked += labelIconCredit_LinkClicked;
+			//
 			// Credit
-			// 
+			//
 			AutoScaleDimensions = new SizeF(7F, 17F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(360, 260);
-			Controls.Add(tableLayoutPanel1);
+			ClientSize = new Size(440, 320);
+			Controls.Add(headerGroupAbout);
 			Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
 			FormBorderStyle = FormBorderStyle.FixedDialog;
 			Icon = (Icon)resources.GetObject("$this.Icon");
@@ -133,21 +132,25 @@ namespace HDLG_winforms
 			MinimizeBox = false;
 			Name = "Credit";
 			StartPosition = FormStartPosition.CenterParent;
-			Text = "Crédits";
+			Text = "About";
 			Load += Credit_Load;
-			((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+			headerGroupAbout.Panel.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)headerGroupAbout).EndInit();
+			headerGroupAbout.ResumeLayout(false);
 			tableLayoutPanel1.ResumeLayout(false);
 			tableLayoutPanel1.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
 			ResumeLayout(false);
 		}
 
 		#endregion
 
-		private Label lblTitle;
-		private Label labelCopyright;
-		private LinkLabel labelIconCredit;
-		private LinkLabel labelGPL;
-		private PictureBox pictureBox1;
+		private Krypton.Toolkit.KryptonHeaderGroup headerGroupAbout;
 		private TableLayoutPanel tableLayoutPanel1;
+		private Krypton.Toolkit.KryptonLabel lblTitle;
+		private Krypton.Toolkit.KryptonWrapLabel labelCopyright;
+		private Krypton.Toolkit.KryptonLinkLabel labelGPL;
+		private PictureBox pictureBox1;
+		private Krypton.Toolkit.KryptonLinkLabel labelIconCredit;
 	}
 }

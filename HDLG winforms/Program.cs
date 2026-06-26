@@ -57,6 +57,7 @@ namespace HDLG_winforms
 			// To customize application configuration such as set high DPI settings or default font,
 			// see https://aka.ms/applicationconfiguration.
 			ApplicationConfiguration.Initialize( );
+			AppUiBootstrap.Configure( );
 
 			// 1. Forcer l'application à utiliser notre gestionnaire pour le thread UI
 			// Il est important de définir ceci AVANT l'initialisation du Host ou des formulaires
