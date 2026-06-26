@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using FluentAssertions;
 using HdlgFileProperty;
 using Moq;
@@ -164,6 +165,97 @@ namespace HDLG.Tests
             // Assert
             // It should only log the total files line, which is 0
             loggerMock.Verify(l => l.Information("Total number of files {TotalNumberOfFiles}", 0L), Times.Once);
+        }
+
+        [Fact]
+        public void GetFileProperty_FileExceedsMaxSize_SkipsExtractionAndLogsWarning()
+        {
+            // Arrange
+            var tempFile = Path.GetTempFileName();
+            try
+            {
+                using (var stream = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    stream.SetLength(200);
+                }
+
+                propertyGetterMock1.Setup(g => g.IsSupportedFile(tempFile)).Returns(true);
+
+                var browser = new FilePropertyBrowser(
+                    loggerMock.Object,
+                    maxFileSizeBytes: 100,
+                    propertyExtractionTimeout: TimeSpan.FromSeconds(30),
+                    propertyGetterMock1.Object);
+
+                // Act
+                var result = browser.GetFileProperty(tempFile);
+
+                // Assert
+                result.Should().BeNull();
+                propertyGetterMock1.Verify(g => g.GetFileProperties(It.IsAny<string>()), Times.Never);
+                loggerMock.Verify(
+                    l => l.Warning(
+                        It.Is<string>(s => s.Contains("exceeds maximum allowed size")),
+                        100L,
+                        200L,
+                        tempFile),
+                    Times.Once);
+            }
+            finally
+            {
+                if (File.Exists(tempFile))
+                {
+                    File.Delete(tempFile);
+                }
+            }
+        }
+
+        [Fact]
+        public void GetFileProperty_ExtractionExceedsTimeout_ReturnsEmptyAndLogsWarning()
+        {
+            // Arrange
+            var tempFile = Path.GetTempFileName();
+            var timeout = TimeSpan.FromMilliseconds(200);
+
+            try
+            {
+                File.WriteAllText(tempFile, "slow extraction test");
+
+                propertyGetterMock1.Setup(g => g.IsSupportedFile(tempFile)).Returns(true);
+                propertyGetterMock1.Setup(g => g.GetFileProperties(tempFile))
+                    .Returns(() =>
+                    {
+                        Thread.Sleep(2000);
+                        return new Dictionary<string, IConvertible> { { "Width", 1920 } };
+                    });
+
+                var browser = new FilePropertyBrowser(
+                    loggerMock.Object,
+                    maxFileSizeBytes: FilePropertyLimits.MaxFileSizeBytes,
+                    propertyExtractionTimeout: timeout,
+                    propertyGetterMock1.Object);
+
+                // Act
+                var result = browser.GetFileProperty(tempFile);
+
+                // Assert
+                result.Should().BeNull();
+                propertyGetterMock1.Verify(g => g.GetFileProperties(tempFile), Times.Once);
+                loggerMock.Verify(
+                    l => l.Warning(
+                        It.Is<string>(s => s.Contains("timed out")),
+                        timeout.TotalSeconds,
+                        propertyGetterMock1.Object.GetType(),
+                        tempFile),
+                    Times.Once);
+            }
+            finally
+            {
+                if (File.Exists(tempFile))
+                {
+                    File.Delete(tempFile);
+                }
+            }
         }
 
         [Fact]

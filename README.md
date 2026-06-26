@@ -2,6 +2,7 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![.NET Version](https://img.shields.io/badge/.NET-10.0-blue)
+![Version](https://img.shields.io/badge/Version-1.3.2-blue)
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey)
 
 **HTML Directory List Generator (HDLG2)** is a lightweight, high-performance desktop application built with C# and Windows Forms on .NET 10. It allows users to recursively scan any system directory and export the contents into beautifully structured **HTML** or highly queryable **XML** files, including detailed extraction of extended metadata for media and documents.
@@ -22,6 +23,7 @@
   - **PDF**: Document title (using *PdfPig*).
   - **MP3**: Title, duration, album, year, performers, album artists, composers, and copyright (using *TagLibSharp*).
 - ⚡ **Performance Instrumentation**: Measures, records, and displays execution metrics (scantime, compilation, and save-time).
+- 🛡️ **DoS Hardening (Property Extraction)**: Configurable safeguards in `FilePropertyLimits` — rejects files exceeding 100 MB, enforces a 30-second timeout per property getter in `FilePropertyBrowser`, and caps image dimensions at 32 768 px via `ImagePropertyGetter` (with `DecoderOptions.MaxFrames = 1`).
 - 🪵 **Structured Logging**: Rolling diagnostic logs written daily to `%LOCALAPPDATA%\HDLG\logs`.
 
 ---
@@ -35,6 +37,7 @@ The solution consists of three primary layers:
    - Built on `Microsoft.Extensions.Hosting` utilizing full Dependency Injection (DI) and robust background threading (`Task.Run`) to keep the UI perfectly responsive.
 2. **`HdlgFileProperty` (Extraction Engine)**:
    - Houses the core extraction strategy (`IFilePropertyGetter`), delegating specialized tasks to respective metadata engines based on MIME/file formats.
+   - `FilePropertyBrowser` orchestrates getters with file-size checks and per-getter timeouts; `FilePropertyLimits` centralizes the configurable thresholds.
 3. **`HDLG.Tests` (Unit Tests)**:
    - xUnit v3-based test suite (`xunit.v3` + runner) with FluentAssertions and Moq, covering export engines, metadata extraction orchestration, directory model logic, property getter contracts, and security helpers (e.g. OpenWithDefaultProgram).
 
@@ -70,11 +73,13 @@ dotnet test HDLG.sln
 
 The `HDLG.Tests` project covers:
 - **DirectoryBrowserTests** — XML and HTML export validation (parameter guards, output structure).
-- **FilePropertyBrowserTests** — Property extraction orchestration (getter delegation, multi-getter combination, statistics logging).
+- **FilePropertyBrowserTests** — Property extraction orchestration (getter delegation, multi-getter combination, oversized-file rejection, timeout behavior, statistics logging).
 - **FilePropertyGetterStatisticTests** — Execution statistics validation for getters (elapsed time, file count).
 - **HdlgDirectoryTests** — Directory model construction, recursive browse behavior, and equality semantics.
 - **HdlgFileTests** — File model validation (construction, properties, size/extension computation).
-- **PropertyGetterTests** — File-type support detection for all property getter implementations (Image, MP3, PDF, Word, Excel).
+- **PropertyGetterTests** — Image, MP3, and PDF getter contracts (support detection, property extraction, oversized-image rejection).
+- **WordPropertyGetterTests** — Word document property extraction and error handling.
+- **ExcelPropertyGetterTests** — Excel workbook property extraction and error handling.
 - **OpenWithDefaultProgramTests** — Security validation for `MainWindow.OpenWithDefaultProgram` (dangerous extension blocklist to prevent process injection).
 
 ---
@@ -83,8 +88,9 @@ The `HDLG.Tests` project covers:
 
 For troubleshooting, the application records real-time rolling diagnostic logs to the local AppData directory:
 ```
-%LOCALAPPDATA%\HDLG\logs\log-[yyyyMMdd].txt
+%LOCALAPPDATA%\HDLG\logs\log.txt
 ```
+Daily rolling produces dated files (e.g. `log20260626.txt`) alongside the active `log.txt`.
 
 ---
 

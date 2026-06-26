@@ -1,5 +1,6 @@
 using DocumentFormat.OpenXml.Packaging;
 using System;
+using System.IO;
 using FluentAssertions;
 using HdlgFileProperty;
 using Moq;
@@ -74,6 +75,42 @@ namespace HDLG.Tests
             result.Should().Be(expected);
         }
 
+
+        [Fact]
+        public void ImagePropertyGetter_GetFileProperties_OversizedFile_ReturnsEmptyAndLogsWarning()
+        {
+            // Arrange
+            var getter = new ImagePropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+            var tempFile = Path.GetTempFileName() + ".jpg";
+            try
+            {
+                using (var stream = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    stream.SetLength(FilePropertyLimits.MaxFileSizeBytes + 1);
+                }
+
+                // Act
+                var properties = getter.GetFileProperties(tempFile);
+
+                // Assert
+                properties.Should().BeEmpty();
+                loggerMock.Verify(
+                    l => l.Warning(
+                        It.Is<string>(s => s.Contains("exceeds maximum allowed size")),
+                        FilePropertyLimits.MaxFileSizeBytes,
+                        FilePropertyLimits.MaxFileSizeBytes + 1,
+                        tempFile),
+                    Times.Once);
+            }
+            finally
+            {
+                if (File.Exists(tempFile))
+                {
+                    File.Delete(tempFile);
+                }
+            }
+        }
 
         [Fact]
         public void ImagePropertyGetter_GetFileProperties_ValidFileWithExif_ReturnsPropertiesAndCameraModel()

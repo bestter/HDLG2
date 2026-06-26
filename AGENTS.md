@@ -2,8 +2,8 @@
 
 Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
-**Version** : 1.3.1.0  
-**Dernière mise à jour** : 8 juin 2026 — Correction des tests unitaires (surcharges de sécurité sans démarrage de processus dans OpenWithDefaultProgram, assertions de date en UTC pour indépendance de la timezone dans WordPropertyGetter, et désactivation de la suppression de fichiers partagés pour la parallélisation stable).  
+**Version** : 1.3.2.0  
+**Dernière mise à jour** : 26 juin 2026 — Garde-fous anti-DoS pour l'extraction de propriétés (`FilePropertyLimits`, rejet des fichiers trop volumineux, timeout de 30 s dans `FilePropertyBrowser`, limites de dimensions image via `DecoderOptions`/`MaxImageDimension`), bump de version 1.3.2.
 **Propriétaire** : Martin Labelle (@bestter)
 
 ---
@@ -84,8 +84,9 @@ La solution `HDLG.sln` contient **trois projets** :
 | Fichier | Rôle |
 |---|---|
 | **`IFilePropertyGetter.cs`** | Interface définissant le contrat pour les extracteurs de propriétés : `IsSupportedFile()` et `GetFileProperties()`. |
-| **`FilePropertyBrowser.cs`** | Orchestrateur qui délègue l'extraction des propriétés au bon `IFilePropertyGetter` en fonction du type de fichier. Collecte aussi des statistiques de performance par getter. |
-| **`ImagePropertyGetter.cs`** | Extraction de propriétés d'images (via `SixLabors.ImageSharp` uniquement). |
+| **`FilePropertyLimits.cs`** | Constantes configurables de protection anti-DoS : `MaxFileSizeBytes` (100 Mo), `MaxImageDimension` (32 768 px), `PropertyExtractionTimeout` (30 s). |
+| **`FilePropertyBrowser.cs`** | Orchestrateur qui délègue l'extraction des propriétés au bon `IFilePropertyGetter` en fonction du type de fichier. Vérifie la taille du fichier (`FileInfo.Length`), applique un timeout par getter (`Task.Run` + `CancellationTokenSource`), collecte les statistiques de performance par getter. |
+| **`ImagePropertyGetter.cs`** | Extraction de propriétés d'images (via `SixLabors.ImageSharp` uniquement). Rejette les fichiers trop volumineux, utilise `DecoderOptions { MaxFrames = 1 }` pour `Identify`, et refuse les dimensions dépassant `MaxImageDimension`. |
 | **`WordPropertyGetter.cs`** | Extraction de propriétés de documents Word (via `DocumentFormat.OpenXml`). |
 | **`ExcelPropertyGetter.cs`** | Extraction de propriétés de fichiers Excel (via `DocumentFormat.OpenXml`). |
 | **`PdfPropertyGetter.cs`** | Extraction de propriétés de fichiers PDF (via `PdfPig`). |
@@ -97,9 +98,11 @@ La solution `HDLG.sln` contient **trois projets** :
 | Fichier | Rôle |
 |---|---|
 | **`DirectoryBrowserTests.cs`** | Tests de `DirectoryBrowser` : validation des paramètres (null/empty), génération XML (structure, balises attendues) et génération HTML (DOCTYPE, structure, contenu). Utilise des fichiers temporaires nettoyés via `IDisposable`. |
-| **`FilePropertyBrowserTests.cs`** | Tests de `FilePropertyBrowser` : validation du constructeur (null logger, null getters), délégation correcte aux `IFilePropertyGetter` via mocks Moq, combinaison de propriétés de multiples getters, et vérification des statistiques de logging. |
+| **`FilePropertyBrowserTests.cs`** | Tests de `FilePropertyBrowser` : validation du constructeur (null logger, null getters), délégation correcte aux `IFilePropertyGetter` via mocks Moq, combinaison de propriétés de multiples getters, rejet des fichiers trop volumineux, comportement timeout, et vérification des statistiques de logging. |
 | **`HdlgDirectoryTests.cs`** | Tests de `HdlgDirectory` : construction avec propriétés valides, validation des paramètres null, parcours avec/sans sous-répertoires, et vérification de l'égalité par chemin. Utilise des répertoires temporaires sur le système de fichiers. |
-| **`PropertyGetterTests.cs`** | Tests des implémentations `IFilePropertyGetter` : `ImagePropertyGetter`, `Mp3PropertyGetter`, `PdfPropertyGetter`, `WordPropertyGetter`, `ExcelPropertyGetter`. Vérifie `AddLogger()`, la validation null, et `IsSupportedFile()` via `[Theory]`/`[InlineData]`. |
+| **`PropertyGetterTests.cs`** | Tests des implémentations `IFilePropertyGetter` : `ImagePropertyGetter`, `Mp3PropertyGetter`, `PdfPropertyGetter`. Vérifie `AddLogger()`, la validation null, `IsSupportedFile()` via `[Theory]`/`[InlineData]`, et le rejet des images trop volumineuses. |
+| **`WordPropertyGetterTests.cs`** | Tests dédiés de `WordPropertyGetter` : extraction des propriétés, gestion des fichiers invalides/manquants, et journalisation Serilog. |
+| **`ExcelPropertyGetterTests.cs`** | Tests dédiés de `ExcelPropertyGetter` : extraction des propriétés, gestion des fichiers invalides/manquants, et journalisation Serilog. |
 | **`FilePropertyGetterStatisticTests.cs`** | Tests de `FilePropertyGetterStatistic` : validation des statistiques d'exécution d'un getter (temps écoulé, nombre de fichiers traités). |
 | **`HdlgFileTests.cs`** | Tests de `HdlgFile` : validation de la construction, propriétés, calculs de taille et extension. |
 | **`OpenWithDefaultProgramTests.cs`** | Tests de `MainWindow.OpenWithDefaultProgram` (sécurité : validation des extensions dangereuses pour prévenir l'injection de processus). |
@@ -132,7 +135,10 @@ La solution `HDLG.sln` contient **trois projets** :
 | -----------------------------| ---------| ----------------------------------------|
 | `coverlet.collector`        | 10.0.1  | Collecte de couverture de code         |
 | `FluentAssertions`          | 8.10.0  | Assertions lisibles et expressives     |
+| `Microsoft.AspNetCore.TestHost` | 10.0.8 | Hébergement de test ASP.NET Core (référencé par le projet de tests) |
 | `Microsoft.NET.Test.Sdk`    | 18.5.1  | Infrastructure de test .NET            |
+| `Serilog`                   | 4.3.1   | Logging dans les tests                 |
+| `TagLibSharp`               | 2.3.0   | Création de fixtures audio pour les tests |
 | `Moq`                       | 4.20.72 | Mocking d'interfaces pour tests isolés |
 | `xunit.v3`                  | 3.2.2   | Framework de tests unitaires (v3)      |
 | `xunit.runner.visualstudio` | 3.1.5   | Runner Visual Studio pour xUnit        |
@@ -164,6 +170,7 @@ Pour toute modification de l'interface utilisateur :
 6. **Métriques de performance** : Mesure et affichage des temps de parcours, sauvegarde et total.
 7. **Logging structuré** : Journalisation via Serilog dans `%LOCALAPPDATA%\HDLG\logs\log.txt` (rolling quotidien).
 8. **Gestion d'exceptions globale** : Intercepteurs pour les exceptions du thread UI et des threads d'arrière-plan.
+9. **Protection anti-DoS (extraction de propriétés)** : Limites de taille de fichier (100 Mo), timeout par getter (30 s), et plafond de dimensions image (32 768 px) pour mitiger les attaques par déni de service lors du parsing de fichiers non fiables.
 
 ---
 

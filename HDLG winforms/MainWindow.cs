@@ -209,10 +209,20 @@ toolStripStatusLabelTotalTime.Visible = false;
 		/// </summary>
 		private static readonly HashSet<string> DangerousExtensions = new( StringComparer.OrdinalIgnoreCase )
 		{
-			".exe", ".bat", ".cmd", ".ps1", ".vbs", ".js", ".wsf", ".scr", ".com", ".msi", ".pif", ".hta", ".cpl",
-			".jar", ".reg", ".lnk", ".msc", ".vbe", ".jse", ".scf", ".ws", ".wsh",
-			".iso", ".img", ".vhd", ".vhdx", ".url", ".appref-ms", ".theme", ".themepack",
-			".application", ".settingcontent-ms", ".library-ms", ".appx", ".msix", ".msixbundle", ".msp", ".chm"
+			// Executables, scripts, and shell hosts
+			".exe", ".bat", ".cmd", ".ps1", ".ps1xml", ".psc1", ".psd1", ".vbs", ".vbe", ".vb", ".js", ".jse",
+			".wsf", ".wsh", ".ws", ".wsc", ".sct", ".scr", ".com", ".msi", ".msp", ".pif", ".hta", ".cpl",
+			".jar", ".jnlp", ".reg", ".lnk", ".msc", ".scf", ".shb", ".shs",
+			// Native libraries and drivers (ShellExecute / rundll32 / registration vectors)
+			".dll", ".ocx", ".sys", ".drv",
+			// Setup, configuration, and deployment manifests
+			".inf", ".application", ".appref-ms", ".appx", ".msix", ".msixbundle", ".xbap", ".cab", ".diagcab",
+			// Shortcuts, search handlers, and web/active content launchers
+			".url", ".website", ".search-ms", ".settingcontent-ms", ".library-ms", ".mht", ".mhtml", ".chm", ".hlp",
+			// Disk images, themes, gadgets, and sandbox/workflow artifacts
+			".iso", ".img", ".vhd", ".vhdx", ".theme", ".themepack", ".gadget", ".wsb", ".workflow",
+			// Office and other code-bearing add-ins
+			".xll",
 		};
 
 		/// <summary>
@@ -239,25 +249,95 @@ toolStripStatusLabelTotalTime.Visible = false;
 		/// <exception cref="InvalidOperationException">Thrown when the file has a dangerous extension</exception>
 		public static void OpenWithDefaultProgram (string path)
 		{
-			OpenWithDefaultProgram( path, p =>
+			try
 			{
-				using Process fileopener = new( );
-				fileopener.StartInfo = new ProcessStartInfo( p )
+				OpenWithDefaultProgram( path, p =>
 				{
-					UseShellExecute = true,
-					WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
-				};
-				fileopener.Start( );
-			}, ext => {
-				DialogResult res = MessageBox.Show( $"The file extension '{ext}' is not in the safe allowlist.\n\nAre you sure you want to open this file?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
-				return res == DialogResult.Yes;
-			}, fullPath => {
-				DialogResult res = MessageBox.Show( $"You are about to open the following file:\n\n{fullPath}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
-				return res == DialogResult.Yes;
-			} );
+					using Process fileopener = new( );
+					fileopener.StartInfo = new ProcessStartInfo( p )
+					{
+						UseShellExecute = true,
+						WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
+					};
+					fileopener.Start( );
+				}, ext => {
+					DialogResult res = MessageBox.Show( $"The file extension '{ext}' is not in the safe allowlist.\n\nAre you sure you want to open this file?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
+					return res == DialogResult.Yes;
+				}, fullPath => {
+					DialogResult res = MessageBox.Show( $"You are about to open the following file:\n\n{fullPath}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
+					return res == DialogResult.Yes;
+				} );
+			}
+			catch (InvalidOperationException ex) when (ex.Message.Contains( "changed since you reviewed it", StringComparison.Ordinal ))
+			{
+				MessageBox.Show( ex.Message, "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
+			}
 		}
 
-		public static void OpenWithDefaultProgram (string path, Action<string> processStarter, Func<string, bool>? promptUnknownExtension = null, Func<string, bool>? promptUser = null)
+		/// <summary>
+		/// Snapshot of file metadata captured before user confirmation to detect TOCTOU swaps.
+		/// </summary>
+		private readonly struct FileOpenSnapshot
+		{
+			public long Length { get; init; }
+
+			public DateTime LastWriteTimeUtc { get; init; }
+		}
+
+		private static string GetNormalizedExtension (string fullPath)
+		{
+			return System.IO.Path.GetExtension( fullPath.TrimEnd( ' ', '.' ) );
+		}
+
+		private static string ResolveExtension (string fullPath, bool afterUserConfirmation, Func<string, bool, string>? resolveExtension)
+		{
+			if (resolveExtension != null)
+			{
+				return resolveExtension( fullPath, afterUserConfirmation );
+			}
+
+			return GetNormalizedExtension( fullPath );
+		}
+
+		private static FileOpenSnapshot CaptureFileSnapshot (string fullPath)
+		{
+			FileInfo fileInfo = new( fullPath );
+			return new FileOpenSnapshot
+			{
+				Length = fileInfo.Length,
+				LastWriteTimeUtc = fileInfo.LastWriteTimeUtc,
+			};
+		}
+
+		private static void EnsureExtensionAllowed (string extension, bool unknownExtensionAccepted)
+		{
+			if (DangerousExtensions.Contains( extension ))
+			{
+				throw new InvalidOperationException( $"Opening files with extension '{extension}' is not allowed for security reasons." );
+			}
+
+			if (!SafeExtensions.Contains( extension ) && !unknownExtensionAccepted)
+			{
+				throw new InvalidOperationException( $"Opening files with unknown extension '{extension}' is not allowed for security reasons." );
+			}
+		}
+
+		private static void EnsureFileSnapshotUnchanged (string fullPath, FileOpenSnapshot snapshotBeforePrompt)
+		{
+			if (!System.IO.File.Exists( fullPath ))
+			{
+				throw new FileNotFoundException( "The specified file was no longer found.", fullPath );
+			}
+
+			FileOpenSnapshot snapshotAfterPrompt = CaptureFileSnapshot( fullPath );
+			if (snapshotAfterPrompt.Length != snapshotBeforePrompt.Length
+				|| snapshotAfterPrompt.LastWriteTimeUtc != snapshotBeforePrompt.LastWriteTimeUtc)
+			{
+				throw new InvalidOperationException( "The file has changed since you reviewed it. Opening was cancelled for security reasons." );
+			}
+		}
+
+		public static void OpenWithDefaultProgram (string path, Action<string> processStarter, Func<string, bool>? promptUnknownExtension = null, Func<string, bool>? promptUser = null, Func<string, bool, string>? resolveExtension = null)
 		{
 			ArgumentNullException.ThrowIfNull( processStarter );
 			ArgumentException.ThrowIfNullOrWhiteSpace( path );
@@ -269,7 +349,9 @@ toolStripStatusLabelTotalTime.Visible = false;
 				throw new FileNotFoundException( "The specified file was not found.", fullPath );
 			}
 
-			string extension = System.IO.Path.GetExtension( fullPath.TrimEnd( ' ', '.' ) );
+			string extension = ResolveExtension( fullPath, afterUserConfirmation: false, resolveExtension );
+			bool unknownExtensionAccepted = false;
+
 			if (DangerousExtensions.Contains( extension ))
 			{
 				throw new InvalidOperationException( $"Opening files with extension '{extension}' is not allowed for security reasons." );
@@ -281,11 +363,15 @@ toolStripStatusLabelTotalTime.Visible = false;
 				{
 					throw new InvalidOperationException( $"Opening files with unknown extension '{extension}' is not allowed for security reasons." );
 				}
-				else if (!promptUnknownExtension(extension))
+				else if (!promptUnknownExtension( extension ))
 				{
 					return;
 				}
+
+				unknownExtensionAccepted = true;
 			}
+
+			FileOpenSnapshot snapshotBeforePrompt = CaptureFileSnapshot( fullPath );
 
 			Func<string, bool> actualPromptUser = promptUser ?? (fPath =>
 			{
@@ -293,10 +379,20 @@ toolStripStatusLabelTotalTime.Visible = false;
 				return res == DialogResult.Yes;
 			});
 
-			if (!actualPromptUser(fullPath))
+			if (!actualPromptUser( fullPath ))
 			{
 				return;
 			}
+
+			// Re-validate after user confirmation to mitigate TOCTOU (file swap while the dialog is open).
+			string extensionAfterConfirmation = ResolveExtension( fullPath, afterUserConfirmation: true, resolveExtension );
+			if (!string.Equals( extension, extensionAfterConfirmation, StringComparison.OrdinalIgnoreCase ))
+			{
+				unknownExtensionAccepted = false;
+			}
+
+			EnsureExtensionAllowed( extensionAfterConfirmation, unknownExtensionAccepted );
+			EnsureFileSnapshotUnchanged( fullPath, snapshotBeforePrompt );
 
 			processStarter( fullPath );
 		}
