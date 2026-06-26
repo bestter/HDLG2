@@ -222,9 +222,21 @@ namespace HDLG_winforms
                     listViewProperties.BeginUpdate();
                     try
                     {
-                        foreach (var kvp in props)
+                        // Performance optimization: Type-check and cast IReadOnlyDictionary to Dictionary to allow
+                        // the foreach loop to use the struct-based enumerator, preventing interface boxing allocations.
+                        if (props is Dictionary<string, IConvertible> propsDict)
                         {
-                            AddPropertyToListView(kvp.Key, kvp.Value?.ToString() ?? "");
+                            foreach (var kvp in propsDict)
+                            {
+                                AddPropertyToListView(kvp.Key, kvp.Value?.ToString() ?? "");
+                            }
+                        }
+                        else
+                        {
+                            foreach (var kvp in props)
+                            {
+                                AddPropertyToListView(kvp.Key, kvp.Value?.ToString() ?? "");
+                            }
                         }
                     }
                     finally
