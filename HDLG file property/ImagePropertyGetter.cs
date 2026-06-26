@@ -9,12 +9,18 @@ You should have received a copy of the GNU General Public License along with HTM
  */
 using Serilog;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
 
 namespace HdlgFileProperty
 {
     public class ImagePropertyGetter : IFilePropertyGetter
     {
+        private static readonly DecoderOptions IdentifyOptions = new()
+        {
+            MaxFrames = 1,
+        };
+
         public ILogger? Logger { get; private set; }
 
         public void AddLogger(ILogger logger)
@@ -27,9 +33,31 @@ namespace HdlgFileProperty
             Dictionary<string, IConvertible>? properties = null;
             try
             {
-                var imageInfo = SixLabors.ImageSharp.Image.Identify(path);
+                var fileLength = new FileInfo(path).Length;
+                if (fileLength > FilePropertyLimits.MaxFileSizeBytes)
+                {
+                    Logger?.Warning(
+                        "File exceeds maximum allowed size ({MaxFileSizeBytes} bytes, actual {ActualFileSizeBytes} bytes), skipping image property extraction: {FilePath}",
+                        FilePropertyLimits.MaxFileSizeBytes,
+                        fileLength,
+                        path);
+                    return IFilePropertyGetter.EmptyProperties;
+                }
+
+                var imageInfo = SixLabors.ImageSharp.Image.Identify(IdentifyOptions, path);
                 if (imageInfo != null)
                 {
+                    if (imageInfo.Width > FilePropertyLimits.MaxImageDimension || imageInfo.Height > FilePropertyLimits.MaxImageDimension)
+                    {
+                        Logger?.Warning(
+                            "Image dimensions ({Width}x{Height}) exceed maximum allowed ({MaxDimension}px), skipping image property extraction: {FilePath}",
+                            imageInfo.Width,
+                            imageInfo.Height,
+                            FilePropertyLimits.MaxImageDimension,
+                            path);
+                        return IFilePropertyGetter.EmptyProperties;
+                    }
+
                     properties = new Dictionary<string, IConvertible>();
                     properties.Add(nameof(imageInfo.Width), imageInfo.Width);
                     properties.Add(nameof(imageInfo.Height), imageInfo.Height);
