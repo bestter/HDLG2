@@ -9,3 +9,9 @@
 **Learning:** WinForms/Krypton form instantiation requires an STA thread. Use a dedicated STA thread wrapper in tests (`WinFormsUiTests.RunSta`) rather than assuming the default xUnit thread apartment state.
 
 **Action:** UI tests should validate control presence and form type (`KryptonForm`, key `Krypton*` controls) without requiring visual rendering or user input simulation.
+
+## 2026-06-26 - Branding Tests
+
+**Learning:** Logo tests (`AppBrandingTests`, `AppLogoRendererTests`) belong to the serialized `WinFormsUiTestCollection` to avoid GDI+ cross-thread conflicts with other tests.
+
+**Action:** After editing SVG sources under `HDLG winforms/Assets/`, run `scripts/GenerateAppLogoAssets.ps1` (Inkscape) before validating UI assets manually.

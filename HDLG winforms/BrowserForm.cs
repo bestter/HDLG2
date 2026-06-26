@@ -27,6 +27,7 @@ namespace HDLG_winforms
 		public BrowserForm (string rootDirectory, FilePropertyBrowser propertyBrowser, ILogger logger)
 		{
 			InitializeComponent( );
+			Icon = AppBranding.LoadApplicationIcon();
 			AppUiBootstrap.RemoveFormBranding(this);
 			this.rootDirectory = rootDirectory;
 			this.propertyBrowser = propertyBrowser;

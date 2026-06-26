@@ -94,7 +94,7 @@ namespace HDLG.Tests
 				form.Should().BeAssignableTo<KryptonForm>();
 				FindControl<KryptonLabel>(form, "lblTitle").Should().NotBeNull();
 				FindControl<KryptonLinkLabel>(form, "labelGPL").Should().NotBeNull();
-				FindControl<KryptonLinkLabel>(form, "labelIconCredit").Should().NotBeNull();
+				FindControl<PictureBox>(form, "pictureBox1").Should().NotBeNull();
 				form.Text.Should().Be("About");
 			});
 		}

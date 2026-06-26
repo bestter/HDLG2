@@ -44,6 +44,7 @@ namespace HDLG_winforms
 		public MainWindow (ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter, PdfPropertyGetter pdfPropertyGetter, Mp3PropertyGetter mp3PropertyGetter, ILogger logger)
 		{
 			InitializeComponent( );
+			Icon = AppBranding.LoadApplicationIcon();
 			AppUiBootstrap.RemoveFormBranding(this);
 			ImagePropertyGetter = imagePropertyGetter;
 			WordPropertyGetter = wordPropertyGetter;

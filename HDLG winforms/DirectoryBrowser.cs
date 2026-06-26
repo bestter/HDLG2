@@ -407,6 +407,8 @@ namespace HDLG_winforms
 
 			await sw.WriteLineAsync( "</div>" ).ConfigureAwait( false );
 
+			await sw.WriteLineAsync( AppBranding.GetHtmlFooterMarkup( version ) ).ConfigureAwait( false );
+
 			await sw.WriteLineAsync( "</body>" ).ConfigureAwait( false );
 
 			await sw.WriteAsync( "</html>" ).ConfigureAwait( false );

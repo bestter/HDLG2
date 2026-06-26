@@ -3,7 +3,7 @@
 Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
 **Version** : 1.4.0.0  
-**Dernière mise à jour** : 26 juin 2026 — Modernisation UI WinForms via **Krypton.Toolkit** (palette Microsoft 365 Blue Light, layout dashboard sur `MainWindow`, harmonisation `BrowserForm`/`Credit`, bootstrap `AppUiBootstrap`), tests UI (`AppUiBootstrapTests`, `WinFormsUiTests`), bump de version 1.4.0.
+**Dernière mise à jour** : 26 juin 2026 — Modernisation UI WinForms via **Krypton.Toolkit** (palette Microsoft 365 Blue Light, layout dashboard sur `MainWindow`, harmonisation `BrowserForm`/`Credit`, bootstrap `AppUiBootstrap`), monogramme HDLG original (`AppBranding`, assets SVG/Inkscape, pied de page HTML), retrait watermark Krypton, tests UI (`AppUiBootstrapTests`, `AppBrandingTests`, `AppLogoRendererTests`, `WinFormsUiTests`), bump de version 1.4.0.
 **Propriétaire** : Martin Labelle (@bestter)
 
 ---
@@ -66,7 +66,10 @@ La solution `HDLG.sln` contient **trois projets** :
 | Fichier | Rôle |
 |---|---|
 | **`Program.cs`** | Point d'entrée de l'application. Configure l'injection de dépendances (DI) via `Microsoft.Extensions.Hosting`, initialise Serilog, appelle `AppUiBootstrap.Configure()`, et enregistre les gestionnaires d'exceptions globales (thread UI + threads d'arrière-plan). |
-| **`AppUiBootstrap.cs`** | Initialise le thème global Krypton (`PaletteMode.Microsoft365BlueLightMode`) partagé par tous les formulaires. |
+| **`AppUiBootstrap.cs`** | Initialise le thème global Krypton (`PaletteMode.Microsoft365BlueLightMode`) partagé par tous les formulaires ; `RemoveFormBranding()` retire le watermark Krypton. |
+| **`AppBranding.cs`** | Centralise le markup SVG inline (exports HTML), le pied de page HTML, et le chargement des assets logo/icône (`Assets/hdlg-logo.png`, `Assets/hdlg-icon.ico`). |
+| **`AppLogoRenderer.cs`** | Rendu bitmap de secours du monogramme (géométrie alignée sur le SVG) si les assets empaquetés sont absents. |
+| **`Assets/`** | Sources SVG (`hdlg-logo.svg`, `hdlg-app-icon.svg`) et exports PNG/ICO générés via `scripts/GenerateAppLogoAssets.ps1` (Inkscape). |
 | **`MainWindow.cs`** | Fenêtre principale (`KryptonForm`). Permet de sélectionner un répertoire, lancer le parcours en XML ou HTML via `Task.Run`, ouvrir l'UI Explorer, afficher les temps de performance (browse, save, total). |
 | **`MainWindow.Designer.cs`** | Layout WinForms de la fenêtre principale (contrôles Krypton : `KryptonHeaderGroup`, `KryptonButton`, `KryptonProgressBar`, etc.). |
 | **`BrowserForm.cs`** | Formulaire de navigation arborescente (`KryptonTreeView`) avec chargement paresseux (lazy loading) des répertoires/fichiers. Affiche les propriétés d'un fichier sélectionné dans un `KryptonListView`. |
@@ -77,7 +80,7 @@ La solution `HDLG.sln` contient **trois projets** :
 | **`File.cs`** | Modèle de données (legacy) d'un fichier. Contient les métadonnées (nom, chemin, extension, taille, date de création, propriétés étendues). |
 | **`HdlgFile.cs`** | Modèle de données (version refactorisée) d'un fichier. Version améliorée de `File.cs`. |
 | **`PerformanceCount.cs`** | Structure pour stocker les métriques de performance (temps de parcours, sauvegarde, total). |
-| **`credit.cs`** | Formulaire « About » (`KryptonForm`) affichant la version, la licence GPLv3, et les crédits des icônes (Flaticon). |
+| **`credit.cs`** | Formulaire « About » (`KryptonForm`) affichant la version, la licence GPLv3, et le monogramme HDLG (`AppBranding.LoadLogoImage()`). |
 | **`hdlg.css`** | Feuille de style CSS embarquée dans les fichiers HTML générés (polices système uniquement pour self-containment ; version obsolète avec Google Fonts existe à la racine mais n'est pas utilisée). |
 
 ### Projet 2 : `HdlgFileProperty` (Bibliothèque d'extraction de propriétés)
@@ -107,7 +110,10 @@ La solution `HDLG.sln` contient **trois projets** :
 | **`FilePropertyGetterStatisticTests.cs`** | Tests de `FilePropertyGetterStatistic` : validation des statistiques d'exécution d'un getter (temps écoulé, nombre de fichiers traités). |
 | **`HdlgFileTests.cs`** | Tests de `HdlgFile` : validation de la construction, propriétés, calculs de taille et extension. |
 | **`OpenWithDefaultProgramTests.cs`** | Tests de `MainWindow.OpenWithDefaultProgram` (sécurité : validation des extensions dangereuses pour prévenir l'injection de processus). |
-| **`AppUiBootstrapTests.cs`** | Tests du bootstrap UI Krypton (palette globale `Microsoft365BlueLightMode`). |
+| **`AppUiBootstrapTests.cs`** | Tests du bootstrap UI Krypton (palette globale `Microsoft365BlueLightMode`, retrait watermark). |
+| **`AppBrandingTests.cs`** | Tests du markup SVG inline et du pied de page HTML généré. |
+| **`AppLogoRendererTests.cs`** | Tests de chargement des assets logo/icône empaquetés. |
+| **`WinFormsUiTestCollection.cs`** | Collection xUnit sérialisée pour éviter les conflits GDI+ entre tests WinForms. |
 | **`WinFormsUiTests.cs`** | Tests UI structurels (thread STA) : instanciation des formulaires et présence des contrôles Krypton clés (`MainWindow`, `BrowserForm`, `Credit`). |
 
 ---
@@ -165,6 +171,8 @@ Pour toute modification de l'interface utilisateur :
 
 6. **Palette visuelle** : Alignée sur `hdlg.css` (fond `#F8FAFC`, accent `#0284C8`, texte `#0F172A`).
 
+7. **Branding** : Monogramme HDLG original (Concept C, grille 2×2 sans lignes visibles). Wordmark via `hdlg-logo.svg` (About + HTML) ; icône Windows via `hdlg-app-icon.svg` (optimisée 16–48 px). Régénérer PNG/ICO avec `scripts/GenerateAppLogoAssets.ps1` (Inkscape requis). Ne pas réutiliser d'assets Flaticon.
+
 ---
 
 ## ⚙️ Fonctionnalités Clés Implémentées
@@ -179,6 +187,7 @@ Pour toute modification de l'interface utilisateur :
 8. **Gestion d'exceptions globale** : Intercepteurs pour les exceptions du thread UI et des threads d'arrière-plan.
 9. **Protection anti-DoS (extraction de propriétés)** : Limites de taille de fichier (100 Mo), timeout par getter (30 s), et plafond de dimensions image (32 768 px) pour mitiger les attaques par déni de service lors du parsing de fichiers non fiables.
 10. **Interface modernisée (v1.4)** : `MainWindow` en layout dashboard (sections Source Directory / Export), bouton About intégré, `BrowserForm` et `Credit` harmonisés via Krypton Toolkit.
+11. **Branding HDLG** : Monogramme original dans About, icône application, et pied de page des exports HTML (SVG inline self-contained).
 
 ---
 

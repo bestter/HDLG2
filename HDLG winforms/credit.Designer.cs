@@ -17,14 +17,12 @@ namespace HDLG_winforms
 
 		private void InitializeComponent()
 		{
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Credit));
 			headerGroupAbout = new Krypton.Toolkit.KryptonHeaderGroup();
 			tableLayoutPanel1 = new TableLayoutPanel();
 			lblTitle = new Krypton.Toolkit.KryptonLabel();
 			labelCopyright = new Krypton.Toolkit.KryptonWrapLabel();
 			labelGPL = new Krypton.Toolkit.KryptonLinkLabel();
 			pictureBox1 = new PictureBox();
-			labelIconCredit = new Krypton.Toolkit.KryptonLinkLabel();
 			((System.ComponentModel.ISupportInitialize)headerGroupAbout).BeginInit();
 			headerGroupAbout.Panel.SuspendLayout();
 			headerGroupAbout.SuspendLayout();
@@ -37,7 +35,7 @@ namespace HDLG_winforms
 			headerGroupAbout.Dock = DockStyle.Fill;
 			headerGroupAbout.Location = new Point(0, 0);
 			headerGroupAbout.Name = "headerGroupAbout";
-			headerGroupAbout.Size = new Size(440, 320);
+			headerGroupAbout.Size = new Size(440, 330);
 			headerGroupAbout.TabIndex = 0;
 			headerGroupAbout.ValuesPrimary.Heading = "About";
 			headerGroupAbout.ValuesPrimary.Description = "HTML Directory List Generator";
@@ -51,18 +49,16 @@ namespace HDLG_winforms
 			tableLayoutPanel1.Controls.Add(labelCopyright, 0, 1);
 			tableLayoutPanel1.Controls.Add(labelGPL, 0, 2);
 			tableLayoutPanel1.Controls.Add(pictureBox1, 0, 3);
-			tableLayoutPanel1.Controls.Add(labelIconCredit, 0, 4);
 			tableLayoutPanel1.Dock = DockStyle.Fill;
 			tableLayoutPanel1.Location = new Point(0, 0);
 			tableLayoutPanel1.Name = "tableLayoutPanel1";
 			tableLayoutPanel1.Padding = new Padding(16);
-			tableLayoutPanel1.RowCount = 5;
+			tableLayoutPanel1.RowCount = 4;
 			tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
 			tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
 			tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
-			tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 96F));
-			tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-			tableLayoutPanel1.Size = new Size(438, 250);
+			tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 150F));
+			tableLayoutPanel1.Size = new Size(438, 230);
 			tableLayoutPanel1.TabIndex = 0;
 			//
 			// lblTitle
@@ -98,36 +94,21 @@ namespace HDLG_winforms
 			// pictureBox1
 			//
 			pictureBox1.Anchor = AnchorStyles.None;
-			pictureBox1.Cursor = Cursors.Hand;
-			pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
-			pictureBox1.InitialImage = (Image)resources.GetObject("pictureBox1.InitialImage");
-			pictureBox1.Location = new Point(124, 128);
+			pictureBox1.Location = new Point(59, 118);
 			pictureBox1.Name = "pictureBox1";
-			pictureBox1.Size = new Size(190, 80);
+			pictureBox1.Size = new Size(320, 160);
 			pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
 			pictureBox1.TabIndex = 3;
 			pictureBox1.TabStop = false;
-			pictureBox1.Click += pictureBox1_Click;
-			//
-			// labelIconCredit
-			//
-			labelIconCredit.Anchor = AnchorStyles.None;
-			labelIconCredit.Location = new Point(128, 220);
-			labelIconCredit.Name = "labelIconCredit";
-			labelIconCredit.Size = new Size(182, 24);
-			labelIconCredit.TabIndex = 4;
-			labelIconCredit.Values.Text = "Icon by Flaticon";
-			labelIconCredit.LinkClicked += labelIconCredit_LinkClicked;
 			//
 			// Credit
 			//
 			AutoScaleDimensions = new SizeF(7F, 17F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(440, 320);
+			ClientSize = new Size(440, 330);
 			Controls.Add(headerGroupAbout);
 			Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
 			FormBorderStyle = FormBorderStyle.FixedDialog;
-			Icon = (Icon)resources.GetObject("$this.Icon");
 			MaximizeBox = false;
 			MinimizeBox = false;
 			Name = "Credit";
@@ -151,6 +132,5 @@ namespace HDLG_winforms
 		private Krypton.Toolkit.KryptonWrapLabel labelCopyright;
 		private Krypton.Toolkit.KryptonLinkLabel labelGPL;
 		private PictureBox pictureBox1;
-		private Krypton.Toolkit.KryptonLinkLabel labelIconCredit;
 	}
 }

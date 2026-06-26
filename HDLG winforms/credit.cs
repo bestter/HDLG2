@@ -17,6 +17,9 @@ namespace HDLG_winforms
 		public Credit ()
 		{
 			InitializeComponent( );
+			Icon = AppBranding.LoadApplicationIcon();
+			pictureBox1.BackColor = Color.FromArgb(248, 250, 252);
+			pictureBox1.Image = AppBranding.LoadLogoImage();
 			AppUiBootstrap.RemoveFormBranding(this);
 		}
 
@@ -49,24 +52,12 @@ namespace HDLG_winforms
 			}
 		}
 
-		private void labelIconCredit_LinkClicked (object sender, EventArgs e)
-		{
-			// Source - https://stackoverflow.com/a
-			// Posted by Daniel
-			// Retrieved 2026-01-23, License - CC BY-SA 4.0
-
-			OpenUrlSafe("https://www.flaticon.com/free-icons/root-directory");
-		}
-
 		private void labelGPL_LinkClicked (object sender, EventArgs e)
 		{
 			OpenUrlSafe("https://www.gnu.org/licenses/gpl-3.0.en.html");
 		}
 
 
-		private void pictureBox1_Click (object sender, EventArgs e)
-		{
-			OpenUrlSafe("https://www.gnu.org/licenses/gpl-3.0.en.html");
-		}
+
 	}
 }
