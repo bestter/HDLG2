@@ -358,6 +358,7 @@ MigrationBackup/
 *.jpg
 *.jpeg
 *.png
+!HDLG winforms/Assets/*.png
 *.gif
 *.webp
 *.mp4

@@ -8,6 +8,7 @@ HTML Directory List Generator is distributed in the hope that it will be useful,
 You should have received a copy of the GNU General Public License along with HTML Directory List Generator. If not, see <https://www.gnu.org/licenses/>. 
  */
 using HdlgFileProperty;
+using Krypton.Toolkit;
 using Serilog;
 using Serilog.Core;
 using System.ComponentModel;
@@ -19,7 +20,7 @@ using System.Reflection;
 namespace HDLG_winforms
 {
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Localization", "CA1303:Do not pass literals as localized parameters")]
-	public partial class MainWindow : Form
+	public partial class MainWindow : KryptonForm
 	{
 		#region PropertyGetter
 		public ImagePropertyGetter ImagePropertyGetter;
@@ -43,6 +44,8 @@ namespace HDLG_winforms
 		public MainWindow (ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter, PdfPropertyGetter pdfPropertyGetter, Mp3PropertyGetter mp3PropertyGetter, ILogger logger)
 		{
 			InitializeComponent( );
+			Icon = AppBranding.LoadApplicationIcon();
+			AppUiBootstrap.RemoveFormBranding(this);
 			ImagePropertyGetter = imagePropertyGetter;
 			WordPropertyGetter = wordPropertyGetter;
 			ExcelPropertyGetter = excelPropertyGetter;
@@ -64,7 +67,7 @@ namespace HDLG_winforms
 			}
 			else
 			{
-				selectedDirectoryLabel.Text = string.Empty;
+				selectedDirectoryLabel.Text = "No directory selected";
 				selectedDirectory = null;
 			}
 		}
@@ -72,9 +75,11 @@ namespace HDLG_winforms
 		private void MainWindow_Load (object sender, EventArgs e)
 		{
 			AssemblyName an = typeof( MainWindow ).Assembly.GetName( );
-			Text = $"{an.Name} {an.Version?.ToString( )}";
+			string version = an.Version?.ToString( ) ?? string.Empty;
+			Text = $"{an.Name} {version}";
+			lblAppTitle.Values.Text = $"HTML Directory List Generator {version}";
 			selectedDirectory = null;
-			selectedDirectoryLabel.Text = string.Empty;
+			selectedDirectoryLabel.Text = "No directory selected";
 			toolStripStatusLabelBrowseTime.Text = string.Empty;
 			toolStripStatusLabelSaveTime.Text = string.Empty;
 			toolStripStatusLabelTotalTime.Text = string.Empty;
@@ -562,7 +567,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private void CreditToolStripMenuItem_Click (object sender, EventArgs e)
+		private void BtnAbout_Click (object sender, EventArgs e)
 		{
 			using Credit credit = new Credit( );
 			credit.ShowDialog( this );

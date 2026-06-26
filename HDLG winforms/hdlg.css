@@ -252,6 +252,35 @@ h2 {
 	}
 }
 
+.hdlg-footer {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin-top: 2rem;
+	padding: 1rem 1.25rem;
+	border-top: 1px solid var(--border);
+	color: var(--muted);
+	font-size: 0.85rem;
+}
+
+.hdlg-footer-logo {
+	display: inline-flex;
+	flex-shrink: 0;
+	width: 96px;
+	height: 48px;
+}
+
+.hdlg-footer-logo svg {
+	width: 100%;
+	height: 100%;
+	display: block;
+}
+
+.hdlg-footer-text strong {
+	color: var(--text);
+	font-weight: 600;
+}
+
 @media print {
 	body {
 		background: white;
@@ -260,6 +289,11 @@ h2 {
 	.spacer,
 	.version .headerContent {
 		display: none;
+	}
+	.hdlg-footer {
+		border-top: none;
+		padding-left: 0;
+		padding-right: 0;
 	}
 }
 

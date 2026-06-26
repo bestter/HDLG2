@@ -171,6 +171,8 @@ namespace HDLG.Tests
             htmlContent.Should().Contain("<details class=\"directory\"");
             htmlContent.Should().Contain("<summary>");
             htmlContent.Should().Contain("class=\"hdlg\"");
+            htmlContent.Should().Contain("class=\"hdlg-footer\"");
+            htmlContent.Should().Contain("HTML Directory List Generator");
             // Note: .file markup only emitted when the HdlgDirectory instance contains files (this basic test setup does not populate via Browse)
         }
 

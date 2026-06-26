@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 160" role="img" aria-label="HDLG">
+  <title>HDLG</title>
+  <g fill="#0284C8">
+    <rect x="24" y="24" width="10" height="52" rx="2"/>
+    <rect x="58" y="24" width="10" height="52" rx="2"/>
+    <rect x="24" y="45" width="44" height="10" rx="2"/>
+    <rect x="186" y="24" width="10" height="52" rx="2"/>
+    <path d="M196 24 H220 Q252 24 252 50 Q252 76 220 76 H196 Z M206 34 H218 Q238 34 238 50 Q238 66 218 66 H206 Z" fill-rule="evenodd"/>
+    <rect x="24" y="96" width="10" height="52" rx="2"/>
+    <rect x="24" y="138" width="44" height="10" rx="2"/>
+    <path d="M186 96 H218 Q252 96 252 122 Q252 148 218 148 H186 V138 H218 Q236 138 236 122 Q236 106 218 106 H186 V96 Z M228 122 H252 V132 H228 Z"/>
+  </g>
+</svg>
