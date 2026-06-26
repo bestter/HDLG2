@@ -107,3 +107,8 @@
 **Vulnerability:** Even if a file is on the "safe allowlist" and executed via Process.Start with UseShellExecute = true, it can execute an unknown payload or a zero-day exploit disguised as a safe format (e.g. malformed PDF).
 **Learning:** The safest approach for opening any local file out of the user's explicit interaction path (i.e. programmatically opening files via links or shortcuts) is to ensure the user is explicitly aware of the exact file path about to be opened.
 **Prevention:** When mitigating process injection via file execution in UI applications (e.g., using Process.Start), avoid relying solely on a dangerous extension blocklist. Instead, use a strict allowlist of known safe extensions, explicitly reject known dangerous extensions, and prompt the user for confirmation (e.g., via MessageBox displaying the full path) before opening ANY file type, even those on the safe allowlist, to ensure explicit consent.
+
+## 2026-06-25 - [Prevent Path Leakage via Referer Header]
+**Vulnerability:** Generated HTML exports of local directories lacked a `Referrer-Policy` header. If a user clicks an external link in the report (like the "Root directory icons" credit link), or if an external resource is loaded, the browser might send the full local file path (e.g., `file:///C:/Users/name/Documents/export.html`) in the HTTP `Referer` header to the external site, causing an information disclosure.
+**Learning:** Local file pathways must be protected from leakage to external domains when generating HTML files meant to be opened locally.
+**Prevention:** Always add `<meta name="referrer" content="no-referrer">` to HTML head sections generated for local offline viewing.
