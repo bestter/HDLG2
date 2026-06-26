@@ -165,5 +165,98 @@ namespace HDLG.Tests
 
             executed.Should().BeTrue();
         }
+
+        [Fact]
+        public void OpenWithDefaultProgram_FileChangedDuringPrompt_ThrowsInvalidOperationException()
+        {
+            var safeFile = System.IO.Path.Combine(tempDir, "toctou.txt");
+            System.IO.File.WriteAllText(safeFile, "original content");
+
+            bool executed = false;
+            var act = () => MainWindow.OpenWithDefaultProgram(
+                safeFile,
+                _ => { executed = true; },
+                null,
+                _ =>
+                {
+                    System.IO.File.WriteAllText(safeFile, "tampered content");
+                    return true;
+                });
+
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage("*changed since you reviewed it*");
+            executed.Should().BeFalse();
+        }
+
+        [Fact]
+        public void OpenWithDefaultProgram_FileDeletedDuringPrompt_ThrowsFileNotFoundException()
+        {
+            var safeFile = System.IO.Path.Combine(tempDir, "deleted.txt");
+            System.IO.File.WriteAllText(safeFile, "content");
+
+            bool executed = false;
+            var act = () => MainWindow.OpenWithDefaultProgram(
+                safeFile,
+                _ => { executed = true; },
+                null,
+                _ =>
+                {
+                    System.IO.File.Delete(safeFile);
+                    return true;
+                });
+
+            act.Should().Throw<FileNotFoundException>();
+            executed.Should().BeFalse();
+        }
+
+        [Fact]
+        public void OpenWithDefaultProgram_ExtensionBecomesDangerousDuringPrompt_ThrowsInvalidOperationException()
+        {
+            var safeFile = System.IO.Path.Combine(tempDir, "swap.txt");
+            System.IO.File.WriteAllText(safeFile, "content");
+
+            bool executed = false;
+            var act = () => MainWindow.OpenWithDefaultProgram(
+                safeFile,
+                _ => { executed = true; },
+                null,
+                _ => true,
+                (_, afterUserConfirmation) => afterUserConfirmation ? ".exe" : ".txt");
+
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage("*not allowed for security reasons*");
+            executed.Should().BeFalse();
+        }
+
+        [Fact]
+        public void OpenWithDefaultProgram_AcceptedUnknownExtensionChangesDuringPrompt_ThrowsInvalidOperationException()
+        {
+            var unknownFile = System.IO.Path.Combine(tempDir, "custom.abc");
+            System.IO.File.WriteAllText(unknownFile, "content");
+
+            bool executed = false;
+            var act = () => MainWindow.OpenWithDefaultProgram(
+                unknownFile,
+                _ => { executed = true; },
+                _ => true,
+                _ => true,
+                (_, afterUserConfirmation) => afterUserConfirmation ? ".xyz123" : ".abc");
+
+            act.Should().Throw<InvalidOperationException>()
+                .WithMessage("*not allowed for security reasons*");
+            executed.Should().BeFalse();
+        }
+
+        [Fact]
+        public void OpenWithDefaultProgram_FileUnchangedAfterPrompt_Executes()
+        {
+            var safeFile = System.IO.Path.Combine(tempDir, "stable.txt");
+            System.IO.File.WriteAllText(safeFile, "stable content");
+
+            bool executed = false;
+            MainWindow.OpenWithDefaultProgram(safeFile, _ => { executed = true; }, null, _ => true);
+
+            executed.Should().BeTrue();
+        }
     }
 }
