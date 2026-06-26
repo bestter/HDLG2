@@ -209,10 +209,20 @@ toolStripStatusLabelTotalTime.Visible = false;
 		/// </summary>
 		private static readonly HashSet<string> DangerousExtensions = new( StringComparer.OrdinalIgnoreCase )
 		{
-			".exe", ".bat", ".cmd", ".ps1", ".vbs", ".js", ".wsf", ".scr", ".com", ".msi", ".pif", ".hta", ".cpl",
-			".jar", ".reg", ".lnk", ".msc", ".vbe", ".jse", ".scf", ".ws", ".wsh",
-			".iso", ".img", ".vhd", ".vhdx", ".url", ".appref-ms", ".theme", ".themepack",
-			".application", ".settingcontent-ms", ".library-ms", ".appx", ".msix", ".msixbundle", ".msp", ".chm"
+			// Executables, scripts, and shell hosts
+			".exe", ".bat", ".cmd", ".ps1", ".ps1xml", ".psc1", ".psd1", ".vbs", ".vbe", ".vb", ".js", ".jse",
+			".wsf", ".wsh", ".ws", ".wsc", ".sct", ".scr", ".com", ".msi", ".msp", ".pif", ".hta", ".cpl",
+			".jar", ".jnlp", ".reg", ".lnk", ".msc", ".scf", ".shb", ".shs",
+			// Native libraries and drivers (ShellExecute / rundll32 / registration vectors)
+			".dll", ".ocx", ".sys", ".drv",
+			// Setup, configuration, and deployment manifests
+			".inf", ".application", ".appref-ms", ".appx", ".msix", ".msixbundle", ".xbap", ".cab", ".diagcab",
+			// Shortcuts, search handlers, and web/active content launchers
+			".url", ".website", ".search-ms", ".settingcontent-ms", ".library-ms", ".mht", ".mhtml", ".chm", ".hlp",
+			// Disk images, themes, gadgets, and sandbox/workflow artifacts
+			".iso", ".img", ".vhd", ".vhdx", ".theme", ".themepack", ".gadget", ".wsb", ".workflow",
+			// Office and other code-bearing add-ins
+			".xll",
 		};
 
 		/// <summary>
