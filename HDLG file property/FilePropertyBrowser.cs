@@ -57,6 +57,12 @@ namespace HdlgFileProperty
 		public virtual IReadOnlyDictionary<string, IConvertible>? GetFileProperty(string path)
 		{
 			ArgumentException.ThrowIfNullOrWhiteSpace(path);
+			return GetFileProperty(new FileInfo(path));
+		}
+
+		public virtual IReadOnlyDictionary<string, IConvertible>? GetFileProperty(FileInfo fileInfo)
+		{
+			ArgumentNullException.ThrowIfNull(fileInfo);
 			TotalNumberOfFiles++;
 
 			IReadOnlyDictionary<string, IConvertible>? firstProperties = null;
@@ -66,9 +72,9 @@ namespace HdlgFileProperty
 			for (int i = 0; i < filePropertyGetters.Length; i++)
 			{
 				var propertyGetters = filePropertyGetters[i];
-				if (propertyGetters.FilePropertyGetter.IsSupportedFile(path))
+				if (propertyGetters.FilePropertyGetter.IsSupportedFile(fileInfo.FullName))
 				{
-					fileSizeAllowed ??= IsFileSizeWithinLimit(path);
+					fileSizeAllowed ??= IsFileSizeWithinLimit(fileInfo);
 					if (fileSizeAllowed == false)
 					{
 						continue;
@@ -78,7 +84,7 @@ namespace HdlgFileProperty
 					propertyGetters.StartTimer();
 					var currentProperties = GetFilePropertiesWithTimeout(
 						propertyGetters.FilePropertyGetter,
-						path,
+						fileInfo.FullName,
 						propertyGetters.FilePropertyGetter.GetType());
 
 					// Performance optimization: Avoid allocating a dictionary enumerator when there are no properties
@@ -107,11 +113,10 @@ namespace HdlgFileProperty
 			return mergedProperties ?? firstProperties;
 		}
 
-		private bool IsFileSizeWithinLimit(string path)
+		private bool IsFileSizeWithinLimit(FileInfo fileInfo)
 		{
 			try
 			{
-				var fileInfo = new FileInfo(path);
 				if (!fileInfo.Exists)
 				{
 					return true;
@@ -124,13 +129,13 @@ namespace HdlgFileProperty
 						"File exceeds maximum allowed size ({MaxFileSizeBytes} bytes, actual {ActualFileSizeBytes} bytes), skipping property extraction: {FilePath}",
 						maxFileSizeBytes,
 						fileLength,
-						path);
+						fileInfo.FullName);
 					return false;
 				}
 			}
 			catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
 			{
-				logger.Warning(ex, "Cannot determine file size, skipping property extraction: {FilePath}", path);
+				logger.Warning(ex, "Cannot determine file size, skipping property extraction: {FilePath}", fileInfo.FullName);
 				return false;
 			}
 

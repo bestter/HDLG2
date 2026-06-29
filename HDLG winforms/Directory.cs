@@ -71,7 +71,7 @@ namespace HDLG_winforms
 
 			foreach (var f in directoryInfo.EnumerateFiles( ))
 			{
-				var properties = propertyBrowser.GetFileProperty( f.FullName );
+				var properties = propertyBrowser.GetFileProperty( f );
 				var file = new File( f.FullName, properties ?? System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>.Empty );
 				files.Add( file );
 			}

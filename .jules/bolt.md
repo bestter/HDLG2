@@ -100,3 +100,7 @@
 ## 2026-06-25 - Cache Invariant Paths in UI Components
 **Learning:** Evaluating `Path.GetFullPath(rootDirectory)` inside hot UI events (like `TreeView.BeforeExpand`) causes redundant I/O checks and string allocations. Because `rootDirectory` is invariant after construction, its resolved path can be calculated once.
 **Action:** When a UI component is bound to a specific root directory, resolve and cache its full path (with and without the trailing separator) in the constructor to optimize hot-path traversal checks.
+
+## 2026-06-25 - Avoid FileInfo instantiation in IsFileSizeWithinLimit
+**Learning:** Instantiating `FileInfo` from a string path multiple times during file traversal to check limits adds unnecessary overhead.
+**Action:** When filtering or checking paths for properties, accept the existing `FileInfo` object yielded by the directory enumerator.

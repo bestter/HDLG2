@@ -213,7 +213,7 @@ namespace HDLG_winforms
 					listViewProperties.EndUpdate();
 				}
 
-                var props = await Task.Run(() => propertyBrowser.GetFileProperty(info.Path)).ConfigureAwait(true);
+                var props = await Task.Run(() => propertyBrowser.GetFileProperty(fileInfo)).ConfigureAwait(true);
 
                 if (treeView1.SelectedNode != e.Node)
                 {
