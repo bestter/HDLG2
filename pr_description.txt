@@ -1,3 +1,0 @@
-🎯 **What:** Adds unit test coverage for the previously untested `catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)` block inside `FilePropertyBrowser.IsFileSizeWithinLimit`.
-📊 **Coverage:** Tests that if an `IOException` is thrown during size checking (simulated by throwing from the injected `ILogger.Warning`), it is correctly caught, logged, and property extraction is skipped.
-✨ **Result:** Improved test reliability and edge-case coverage by ensuring this failure mode safely defaults to skipping the problematic file without bubbling the exception.

@@ -10,24 +10,24 @@ You should have received a copy of the GNU General Public License along with HTM
 
 namespace HdlgFileProperty
 {
-	/// <summary>
-	/// Configurable limits that protect property extraction from denial-of-service attacks.
-	/// </summary>
-	public static class FilePropertyLimits
-	{
-		/// <summary>
-		/// Maximum file size (in bytes) allowed for property extraction.
-		/// </summary>
-		public const long MaxFileSizeBytes = 100L * 1024 * 1024;
+    /// <summary>
+    /// Configurable limits that protect property extraction from denial-of-service attacks.
+    /// </summary>
+    public static class FilePropertyLimits
+    {
+        /// <summary>
+        /// Maximum file size (in bytes) allowed for property extraction.
+        /// </summary>
+        public const long MaxFileSizeBytes = 100L * 1024 * 1024;
 
-		/// <summary>
-		/// Maximum width or height (in pixels) allowed when identifying images.
-		/// </summary>
-		public const int MaxImageDimension = 32_768;
+        /// <summary>
+        /// Maximum width or height (in pixels) allowed when identifying images.
+        /// </summary>
+        public const int MaxImageDimension = 32_768;
 
-		/// <summary>
-		/// Maximum time allowed for a single property getter invocation.
-		/// </summary>
-		public static readonly TimeSpan PropertyExtractionTimeout = TimeSpan.FromSeconds(30);
-	}
+        /// <summary>
+        /// Maximum time allowed for a single property getter invocation.
+        /// </summary>
+        public static readonly TimeSpan PropertyExtractionTimeout = TimeSpan.FromSeconds(30);
+    }
 }

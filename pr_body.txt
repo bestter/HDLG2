@@ -1,6 +1,5 @@
-🎯 **What:** Extended test coverage for `ImagePropertyGetter` to specifically test `InvalidImageContentException` mapping. Removed static image generation using `ImageSharp` during tests and replaced it with dynamic Base64 fixture loading.
+🧪 Add missing tests for ImagePropertyGetter
 
-📊 **Coverage:** The base codebase already contained tests for `ImagePropertyGetter.GetFileProperties` testing valid EXIF metadata, non-EXIF, and completely broken missing files. However, `InvalidImageContentException` (which occurs when a file has a valid image header but corrupted content) was completely untested.
-This patch adds `ImagePropertyGetter_GetFileProperties_CorruptedImageContent_LogsWarningAndReturnsEmpty` to verify this missing exception path by dynamically decoding a purposefully corrupted JPEG fixture containing garbage bytes after a valid header.
-
-✨ **Result:** Addressed the testing review feedback. `ImagePropertyGetter` now successfully resolves full coverage over exception edge cases and safe fixture setup without introducing destructive filesystem behavior.
+🎯 What: Added a complete test suite for `ImagePropertyGetter`.
+📊 Coverage: Tested valid images with/without EXIF data, a valid PNG, corrupted files, nonexistent files, and unsupported formats.
+✨ Result: `ImagePropertyGetter` is now properly covered, completing the work started with `ImageSetup.cs`.
