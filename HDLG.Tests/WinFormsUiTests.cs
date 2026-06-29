@@ -94,7 +94,7 @@ namespace HDLG.Tests
 				form.Should().BeAssignableTo<KryptonForm>();
 				FindControl<KryptonLabel>(form, "lblTitle").Should().NotBeNull();
 				FindControl<KryptonLinkLabel>(form, "labelGPL").Should().NotBeNull();
-				FindControl<PictureBox>(form, "pictureBox1").Should().NotBeNull();
+				FindControl<System.Windows.Forms.PictureBox>(form, "pictureBox1").Should().NotBeNull();
 				form.Text.Should().Be("About");
 			});
 		}
@@ -122,7 +122,7 @@ namespace HDLG.Tests
 				new Mp3PropertyGetter());
 		}
 
-		private static T? FindControl<T>(Control root, string name) where T : Control
+		private static T? FindControl<T>(System.Windows.Forms.Control root, string name) where T : System.Windows.Forms.Control
 		{
 			FieldInfo? field = root.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 			if (field?.GetValue(root) is T directMatch)
@@ -130,7 +130,7 @@ namespace HDLG.Tests
 				return directMatch;
 			}
 
-			foreach (Control child in root.Controls)
+			foreach (System.Windows.Forms.Control child in root.Controls)
 			{
 				if (string.Equals(child.Name, name, StringComparison.Ordinal) && child is T match)
 				{
