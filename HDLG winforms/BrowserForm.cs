@@ -82,7 +82,7 @@ namespace HDLG_winforms
 				|| string.Equals( resolvedPath, _resolvedRootDirectory, StringComparison.OrdinalIgnoreCase );
 		}
 
-		private void TreeView1_BeforeExpand (object sender, TreeViewCancelEventArgs e)
+		private async void TreeView1_BeforeExpand (object sender, TreeViewCancelEventArgs e)
 		{
 			if (e.Node == null || e.Node.Tag is not NodeInfo info || !info.IsDirectory)
 				return;
@@ -106,23 +106,26 @@ namespace HDLG_winforms
 					var dirNodes = new List<TreeNode>( );
 					var fileNodes = new List<TreeNode>( );
 
-					foreach (var fsInfo in dirInfo.EnumerateFileSystemInfos( ))
+					await Task.Run(() =>
 					{
-						if (fsInfo is DirectoryInfo dir)
+						foreach (var fsInfo in dirInfo.EnumerateFileSystemInfos( ))
 						{
-							if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;
-							var node = new TreeNode( dir.Name );
-							node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
-							node.Nodes.Add( new TreeNode( "Loading..." ) );
-							dirNodes.Add( node );
+							if (fsInfo is DirectoryInfo dir)
+							{
+								if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;
+								var node = new TreeNode( dir.Name );
+								node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
+								node.Nodes.Add( new TreeNode( "Loading..." ) );
+								dirNodes.Add( node );
+							}
+							else if (fsInfo is FileInfo file)
+							{
+								var node = new TreeNode( file.Name );
+								node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
+								fileNodes.Add( node );
+							}
 						}
-						else if (fsInfo is FileInfo file)
-						{
-							var node = new TreeNode( file.Name );
-							node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
-							fileNodes.Add( node );
-						}
-					}
+					}).ConfigureAwait(true);
 
                     e.Node.TreeView?.BeginUpdate();
                     for (int i = 0; i < dirNodes.Count; i++)
