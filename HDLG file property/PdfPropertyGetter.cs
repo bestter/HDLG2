@@ -21,17 +21,18 @@ namespace HdlgFileProperty
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(string path)
+        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo)
         {
+            ArgumentNullException.ThrowIfNull(fileInfo);
             Dictionary<string, IConvertible>? properties = null;
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
             try
             {
-                if (!System.IO.File.Exists(path))
+                if (!System.IO.File.Exists(fileInfo.FullName))
                 {
-                    throw new FileNotFoundException("File not found", path);
+                    throw new FileNotFoundException("File not found", fileInfo.FullName);
                 }
-                using PdfDocument document = PdfDocument.Open(path);
+                using PdfDocument document = PdfDocument.Open(fileInfo.FullName);
                 string? title = document.Information.Title;
 
                 if (!string.IsNullOrWhiteSpace(title))
@@ -42,15 +43,15 @@ namespace HdlgFileProperty
             }
             catch (IOException ioe)
             {
-                Logger?.Error(ioe, "Cannot read file {Path}", path);
+                Logger?.Error(ioe, "Cannot read file {Path}", fileInfo.FullName);
             }
             catch (Exception e) when (e.GetType().Name.Contains("PdfDocumentEncryptedException", StringComparison.InvariantCultureIgnoreCase))
             {
-                Logger?.Warning(e, "File {Path} is password protected and cannot be read", path);
+                Logger?.Warning(e, "File {Path} is password protected and cannot be read", fileInfo.FullName);
             }
             catch (Exception e)
             {
-                Logger?.Warning(e, "Cannot read properties from file {Path}", path);
+                Logger?.Warning(e, "Cannot read properties from file {Path}", fileInfo.FullName);
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
 
