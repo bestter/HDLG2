@@ -259,11 +259,12 @@ toolStripStatusLabelTotalTime.Visible = false;
 				OpenWithDefaultProgram( path, p =>
 				{
 					using Process fileopener = new( );
-					fileopener.StartInfo = new ProcessStartInfo( p )
+					fileopener.StartInfo = new ProcessStartInfo("explorer.exe")
 					{
-						UseShellExecute = true,
+						UseShellExecute = false,
 						WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
 					};
+					fileopener.StartInfo.ArgumentList.Add( p );
 					fileopener.Start( );
 				}, ext => {
 					DialogResult res = MessageBox.Show( $"The file extension '{ext}' is not in the safe allowlist.\n\nAre you sure you want to open this file?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
