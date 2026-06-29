@@ -1,3 +1,5 @@
+[assembly: Xunit.CollectionBehavior(DisableTestParallelization = true)]
+
 namespace HDLG.Tests
 {
     /// <summary>
