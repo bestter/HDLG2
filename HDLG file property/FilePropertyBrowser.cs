@@ -73,42 +73,52 @@ namespace HdlgFileProperty
 			for (int i = 0; i < filePropertyGetters.Length; i++)
 			{
 				var propertyGetters = filePropertyGetters[i];
-				if (propertyGetters.FilePropertyGetter.IsSupportedFile(fileInfo.FullName))
+				if (!propertyGetters.FilePropertyGetter.IsSupportedFile(fileInfo.FullName))
 				{
-					fileSizeAllowed ??= IsFileSizeWithinLimit(fileInfo);
-					if (fileSizeAllowed == false)
-					{
-						continue;
-					}
+					continue;
+				}
 
-					propertyGetters.IncrementFile();
-					propertyGetters.StartTimer();
-					var currentProperties = GetFilePropertiesWithTimeout(
+				fileSizeAllowed ??= IsFileSizeWithinLimit(fileInfo);
+				if (fileSizeAllowed == false)
+				{
+					continue;
+				}
+
+				propertyGetters.IncrementFile();
+				propertyGetters.StartTimer();
+				IReadOnlyDictionary<string, IConvertible> currentProperties;
+				try
+				{
+					currentProperties = GetFilePropertiesWithTimeout(
 						propertyGetters.FilePropertyGetter,
 						fileInfo.FullName,
 						propertyGetters.FilePropertyGetter.GetType());
-
-					// Performance optimization: Avoid allocating a dictionary enumerator when there are no properties
-					if (currentProperties.Count > 0)
-					{
-						if (firstProperties == null)
-						{
-							// Most common case: only one getter returns properties, so we just hold a reference to it
-							firstProperties = currentProperties;
-						}
-						else
-						{
-							// Rare case: multiple getters returned properties, now we need to merge them
-							if (mergedProperties == null)
-							{
-								mergedProperties = new Dictionary<string, IConvertible>(firstProperties.Count + currentProperties.Count);
-								AddProperties(mergedProperties, firstProperties);
-							}
-							AddProperties(mergedProperties, currentProperties);
-						}
-					}
+				}
+				finally
+				{
 					propertyGetters.StopTimer();
 				}
+
+				// Performance optimization: Avoid allocating a dictionary enumerator when there are no properties
+				if (currentProperties.Count == 0)
+				{
+					continue;
+				}
+
+				if (firstProperties == null)
+				{
+					// Most common case: only one getter returns properties, so we just hold a reference to it
+					firstProperties = currentProperties;
+					continue;
+				}
+
+				// Rare case: multiple getters returned properties, now we need to merge them
+				if (mergedProperties == null)
+				{
+					mergedProperties = new Dictionary<string, IConvertible>(firstProperties.Count + currentProperties.Count);
+					AddProperties(mergedProperties, firstProperties);
+				}
+				AddProperties(mergedProperties, currentProperties);
 			}
 
 			return mergedProperties ?? firstProperties;
