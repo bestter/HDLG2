@@ -98,16 +98,18 @@ namespace HDLG_winforms
 			}
 
 			int offset = 6 + (sizes.Length * 16);
-			foreach ((int size, byte [ ] pngBytes) in sizes.Zip( pngEntries ))
+			for (int i = 0; i < sizes.Length; i++)
 			{
-				writer.Write( (byte) (size >= 256 ? 0 : (byte) size) );
-				writer.Write( (byte) (size >= 256 ? 0 : (byte) size) );
-				writer.Write( (byte) 0 );
-				writer.Write( (byte) 0 );
-				writer.Write( (ushort) 1 );
-				writer.Write( (ushort) 32 );
-				writer.Write( pngBytes.Length );
-				writer.Write( offset );
+				int size = sizes[i];
+				byte[] pngBytes = pngEntries[i];
+				writer.Write((byte)(size >= 256 ? 0 : (byte)size));
+				writer.Write((byte)(size >= 256 ? 0 : (byte)size));
+				writer.Write((byte)0);
+				writer.Write((byte)0);
+				writer.Write((ushort)1);
+				writer.Write((ushort)32);
+				writer.Write(pngBytes.Length);
+				writer.Write(offset);
 				offset += pngBytes.Length;
 			}
 

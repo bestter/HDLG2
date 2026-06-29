@@ -172,72 +172,73 @@ namespace HDLG_winforms
 			await writer.WriteElementStringAsync( null, "CreationTime", null, file.CreationTime.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
 
 
-			if (file.Properties != null)
+			if (file.Properties == null)
 			{
-				await writer.WriteStartElementAsync( null, "ExtentedProperties", null ).ConfigureAwait( false );
-
-				// Performance optimization: Type-check and cast IReadOnlyDictionary to Dictionary to allow
-				// the foreach loop to use the struct-based enumerator, preventing interface boxing allocations.
-				if (file.Properties is Dictionary<string, IConvertible> dictProperties)
-				{
-					foreach (var property in dictProperties)
-					{
-						if (!string.IsNullOrWhiteSpace( property.Key ) && property.Value != null)
-						{
-							if (!_xmlEncodedPropertyKeys.TryGetValue( property.Key, out string? encodedKey ))
-							{
-								encodedKey = XmlConvert.EncodeLocalName( property.Key ) ?? "UnknownProperty";
-								_xmlEncodedPropertyKeys [property.Key] = encodedKey;
-							}
-
-							if (property.Value is DateTime dtValue)
-							{
-								await writer.WriteElementStringAsync( null, encodedKey, null, dtValue.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
-							}
-							else if (property.Value is sbyte or byte or short or ushort or int or uint or long or ulong or float or double or decimal)
-							{
-								var value = property.Value.ToString( CultureInfo.InvariantCulture );
-								await writer.WriteElementStringAsync( null, encodedKey, null, value ).ConfigureAwait( false );
-							}
-							else
-							{
-								var value = property.Value.ToString( CultureInfo.InvariantCulture );
-								await writer.WriteElementStringAsync( null, encodedKey, null, SanitizeXmlString( value ) ).ConfigureAwait( false );
-							}
-						}
-					}
-				}
-				else
-				{
-					foreach (var property in file.Properties)
-					{
-						if (!string.IsNullOrWhiteSpace( property.Key ) && property.Value != null)
-						{
-							if (!_xmlEncodedPropertyKeys.TryGetValue( property.Key, out string? encodedKey ))
-							{
-								encodedKey = XmlConvert.EncodeLocalName( property.Key ) ?? "UnknownProperty";
-								_xmlEncodedPropertyKeys [property.Key] = encodedKey;
-							}
-
-							if (property.Value is DateTime dtValue)
-							{
-								await writer.WriteElementStringAsync( null, encodedKey, null, dtValue.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
-							}
-							else if (property.Value is sbyte or byte or short or ushort or int or uint or long or ulong or float or double or decimal)
-							{
-								var value = property.Value.ToString( CultureInfo.InvariantCulture );
-								await writer.WriteElementStringAsync( null, encodedKey, null, value ).ConfigureAwait( false );
-							}
-							else
-							{
-								var value = property.Value.ToString( CultureInfo.InvariantCulture );
-								await writer.WriteElementStringAsync( null, encodedKey, null, SanitizeXmlString( value ) ).ConfigureAwait( false );
-							}
-						}
-					}
-				}
 				await writer.WriteEndElementAsync( ).ConfigureAwait( false );
+				return;
 			}
+
+			await writer.WriteStartElementAsync( null, "ExtentedProperties", null ).ConfigureAwait( false );
+
+			// Performance optimization: Type-check and cast IReadOnlyDictionary to Dictionary to allow
+			// the foreach loop to use the struct-based enumerator, preventing interface boxing allocations.
+			if (file.Properties is Dictionary<string, IConvertible> dictProperties)
+			{
+				foreach (var property in dictProperties)
+				{
+					if (string.IsNullOrWhiteSpace( property.Key ) || property.Value == null) continue;
+
+					if (!_xmlEncodedPropertyKeys.TryGetValue( property.Key, out string? encodedKey ))
+					{
+						encodedKey = XmlConvert.EncodeLocalName( property.Key ) ?? "UnknownProperty";
+						_xmlEncodedPropertyKeys[property.Key] = encodedKey;
+					}
+
+					if (property.Value is DateTime dtValue)
+					{
+						await writer.WriteElementStringAsync( null, encodedKey, null, dtValue.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
+					}
+					else if (property.Value is sbyte or byte or short or ushort or int or uint or long or ulong or float or double or decimal)
+					{
+						var value = property.Value.ToString( CultureInfo.InvariantCulture );
+						await writer.WriteElementStringAsync( null, encodedKey, null, value ).ConfigureAwait( false );
+					}
+					else
+					{
+						var value = property.Value.ToString( CultureInfo.InvariantCulture );
+						await writer.WriteElementStringAsync( null, encodedKey, null, SanitizeXmlString( value ) ).ConfigureAwait( false );
+					}
+				}
+			}
+			else
+			{
+				foreach (var property in file.Properties)
+				{
+					if (string.IsNullOrWhiteSpace( property.Key ) || property.Value == null) continue;
+
+					if (!_xmlEncodedPropertyKeys.TryGetValue( property.Key, out string? encodedKey ))
+					{
+						encodedKey = XmlConvert.EncodeLocalName( property.Key ) ?? "UnknownProperty";
+						_xmlEncodedPropertyKeys[property.Key] = encodedKey;
+					}
+
+					if (property.Value is DateTime dtValue)
+					{
+						await writer.WriteElementStringAsync( null, encodedKey, null, dtValue.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
+					}
+					else if (property.Value is sbyte or byte or short or ushort or int or uint or long or ulong or float or double or decimal)
+					{
+						var value = property.Value.ToString( CultureInfo.InvariantCulture );
+						await writer.WriteElementStringAsync( null, encodedKey, null, value ).ConfigureAwait( false );
+					}
+					else
+					{
+						var value = property.Value.ToString( CultureInfo.InvariantCulture );
+						await writer.WriteElementStringAsync( null, encodedKey, null, SanitizeXmlString( value ) ).ConfigureAwait( false );
+					}
+				}
+			}
+			await writer.WriteEndElementAsync( ).ConfigureAwait( false );
 
 			await writer.WriteEndElementAsync( ).ConfigureAwait( false );
 		}
