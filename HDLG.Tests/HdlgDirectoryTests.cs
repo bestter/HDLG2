@@ -64,7 +64,7 @@ namespace HDLG.Tests
         }
 
         [Fact]
-        public void Browse_WithoutSubdirectories_OnlyDiscoversTopLevelFiles()
+        public async Task Browse_WithoutSubdirectories_OnlyDiscoversTopLevelFiles()
         {
             // Arrange
             System.IO.File.WriteAllText(Path.Combine(baseDirectoryPath, "file1.txt"), "test");
@@ -75,7 +75,7 @@ namespace HDLG.Tests
             var hdlgDirectory = new HdlgDirectory(baseDirectoryPath, true, false, loggerMock.Object);
 
             // Act
-            hdlgDirectory.Browse(propertyBrowser);
+            await hdlgDirectory.BrowseAsync(propertyBrowser);
 
             // Assert
             hdlgDirectory.FilesCount.Should().Be(1);
@@ -86,7 +86,7 @@ namespace HDLG.Tests
         }
 
         [Fact]
-        public void Browse_WithSubdirectories_DiscoversAllFilesAndSubdirectories()
+        public async Task Browse_WithSubdirectories_DiscoversAllFilesAndSubdirectories()
         {
             // Arrange
             System.IO.File.WriteAllText(Path.Combine(baseDirectoryPath, "file1.txt"), "test");
@@ -97,7 +97,7 @@ namespace HDLG.Tests
             var hdlgDirectory = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
 
             // Act
-            hdlgDirectory.Browse(propertyBrowser);
+            await hdlgDirectory.BrowseAsync(propertyBrowser);
 
             // Assert
             hdlgDirectory.FilesCount.Should().Be(1);
@@ -118,7 +118,7 @@ namespace HDLG.Tests
         }
 
         [Fact]
-        public void Equals_SamePath_ReturnsTrue()
+        public async Task Equals_SamePath_ReturnsTrue()
         {
             // Arrange
             var dir1 = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
@@ -130,7 +130,7 @@ namespace HDLG.Tests
         }
 
         [Fact]
-        public void Browse_UnauthorizedAccessException_LogsWarning()
+        public async Task Browse_UnauthorizedAccessException_LogsWarning()
         {
             // Arrange
             var restrictedDirPath = Path.Combine(baseDirectoryPath, "RestrictedDir");
@@ -156,7 +156,7 @@ namespace HDLG.Tests
                 var hdlgDirectory = new HdlgDirectory(restrictedDirPath, true, true, loggerMock.Object);
 
                 // Act
-                hdlgDirectory.Browse(propertyBrowser);
+                await hdlgDirectory.BrowseAsync(propertyBrowser);
 
                 // Assert
                 loggerMock.Verify(

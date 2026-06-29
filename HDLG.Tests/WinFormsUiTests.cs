@@ -4,6 +4,7 @@ using HDLG_winforms;
 using Krypton.Toolkit;
 using Serilog;
 using System.Reflection;
+using System.Windows.Forms;
 
 namespace HDLG.Tests
 {

@@ -54,13 +54,13 @@ namespace HdlgFileProperty
 			}
 		}
 
-		public virtual IReadOnlyDictionary<string, IConvertible>? GetFileProperty(string path)
+		public virtual Task<IReadOnlyDictionary<string, IConvertible>?> GetFilePropertyAsync(string path)
 		{
 			ArgumentException.ThrowIfNullOrWhiteSpace(path);
-			return GetFileProperty(new FileInfo(path));
+			return GetFilePropertyAsync(new FileInfo(path));
 		}
 
-		public virtual IReadOnlyDictionary<string, IConvertible>? GetFileProperty(FileInfo fileInfo)
+		public virtual async Task<IReadOnlyDictionary<string, IConvertible>?> GetFilePropertyAsync(FileInfo fileInfo)
 		{
 			ArgumentNullException.ThrowIfNull(fileInfo);
 			string path = fileInfo.FullName;
@@ -83,10 +83,10 @@ namespace HdlgFileProperty
 
 					propertyGetters.IncrementFile();
 					propertyGetters.StartTimer();
-					var currentProperties = GetFilePropertiesWithTimeout(
+					var currentProperties = await GetFilePropertiesWithTimeoutAsync(
 						propertyGetters.FilePropertyGetter,
 						fileInfo.FullName,
-						propertyGetters.FilePropertyGetter.GetType());
+						propertyGetters.FilePropertyGetter.GetType()).ConfigureAwait(false);
 
 					// Performance optimization: Avoid allocating a dictionary enumerator when there are no properties
 					if (currentProperties.Count > 0)
@@ -143,7 +143,7 @@ namespace HdlgFileProperty
 			return true;
 		}
 
-		private IReadOnlyDictionary<string, IConvertible> GetFilePropertiesWithTimeout(
+		private async Task<IReadOnlyDictionary<string, IConvertible>> GetFilePropertiesWithTimeoutAsync(
 			IFilePropertyGetter getter,
 			string path,
 			Type getterType)
@@ -153,43 +153,32 @@ namespace HdlgFileProperty
 
 			try
 			{
-				if (!task.Wait(propertyExtractionTimeout))
-				{
-					cts.Cancel();
-					logger.Warning(
-						"Property extraction timed out after {TimeoutSeconds}s for {PropertyGetterType}: {FilePath}",
-						propertyExtractionTimeout.TotalSeconds,
-						getterType,
-						path);
-					return IFilePropertyGetter.EmptyProperties;
-				}
-
-				if (task.IsFaulted)
-				{
-					logger.Warning(
-						task.Exception!.GetBaseException(),
-						"Property extraction failed for {PropertyGetterType}: {FilePath}",
-						getterType,
-						path);
-					return IFilePropertyGetter.EmptyProperties;
-				}
-
-				if (task.IsCanceled)
-				{
-					logger.Warning(
-						"Property extraction was canceled for {PropertyGetterType}: {FilePath}",
-						getterType,
-						path);
-					return IFilePropertyGetter.EmptyProperties;
-				}
-
-				return task.Result;
+				var result = await task.WaitAsync(propertyExtractionTimeout, cts.Token).ConfigureAwait(false);
+				return result;
 			}
-			catch (AggregateException ex) when (ex.InnerException is OperationCanceledException)
+			catch (TimeoutException)
 			{
+				cts.Cancel();
 				logger.Warning(
 					"Property extraction timed out after {TimeoutSeconds}s for {PropertyGetterType}: {FilePath}",
 					propertyExtractionTimeout.TotalSeconds,
+					getterType,
+					path);
+				return IFilePropertyGetter.EmptyProperties;
+			}
+			catch (OperationCanceledException)
+			{
+				logger.Warning(
+					"Property extraction was canceled for {PropertyGetterType}: {FilePath}",
+					getterType,
+					path);
+				return IFilePropertyGetter.EmptyProperties;
+			}
+			catch (Exception ex) when (ex is not OperationCanceledException)
+			{
+				logger.Warning(
+					ex.GetBaseException(),
+					"Property extraction failed for {PropertyGetterType}: {FilePath}",
 					getterType,
 					path);
 				return IFilePropertyGetter.EmptyProperties;

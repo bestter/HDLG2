@@ -95,10 +95,10 @@ namespace HDLG.Tests
             };
 
             var browserMock = new Mock<HdlgFileProperty.FilePropertyBrowser>(loggerMock.Object, new HdlgFileProperty.IFilePropertyGetter[0]);
-            browserMock.Setup(b => b.GetFileProperty(testFilePath)).Returns(properties);
+            browserMock.Setup(b => b.GetFilePropertyAsync(testFilePath)).ReturnsAsync(properties);
 
             var dir = new HdlgDirectory(baseDirectoryPath, true, false, loggerMock.Object);
-            dir.Browse(browserMock.Object);
+            await dir.BrowseAsync(browserMock.Object);
 
             var xmlPath = Path.Combine(Path.GetTempPath(), "test_badxml_" + Guid.NewGuid().ToString() + ".xml");
 
@@ -191,7 +191,7 @@ namespace HDLG.Tests
 
             var dirWithSubDirs = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
             var browser = new HdlgFileProperty.FilePropertyBrowser(loggerMock.Object);
-            dirWithSubDirs.Browse(browser);
+            await dirWithSubDirs.BrowseAsync(browser);
 
             var htmlPath = Path.Combine(Path.GetTempPath(), "test_xss_" + Guid.NewGuid().ToString() + ".html");
 

@@ -181,9 +181,9 @@ toolStripStatusLabelTotalTime.Visible = false;
 				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
 				Stopwatch stopwatch = Stopwatch.StartNew( );
 
-				Logger.Debug( "Ready to start {MethodName}", nameof( directory.Browse ) );
-				directory.Browse( propertyBrowser );
-				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.Browse ), directory.Name );
+				Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
+				await directory.BrowseAsync( propertyBrowser ).ConfigureAwait(false);
+				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.BrowseAsync ), directory.Name );
 				TimeSpan browseTime = stopwatch.Elapsed;
 				propertyBrowser.LogGetterStatistics( );
 
@@ -491,9 +491,9 @@ toolStripStatusLabelTotalTime.Visible = false;
 				Logger.Information( "{SelectedDirectory}", selecteDirectory );
 				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
 				Stopwatch stopwatch = Stopwatch.StartNew( );
-				Logger.Debug( "Ready to start {MethodName}", nameof( directory.Browse ) );
-				directory.Browse( propertyBrowser );
-				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.Browse ), directory.Name );
+				Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
+				await directory.BrowseAsync( propertyBrowser ).ConfigureAwait(false);
+				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.BrowseAsync ), directory.Name );
 				TimeSpan browseTime = stopwatch.Elapsed;
 				propertyBrowser.LogGetterStatistics( );
 
