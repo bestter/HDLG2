@@ -73,7 +73,7 @@ namespace HdlgFileProperty
 			for (int i = 0; i < filePropertyGetters.Length; i++)
 			{
 				var propertyGetters = filePropertyGetters[i];
-				if (propertyGetters.FilePropertyGetter.IsSupportedFile(path))
+				if (propertyGetters.FilePropertyGetter.IsSupportedFile(fileInfo.FullName))
 				{
 					fileSizeAllowed ??= IsFileSizeWithinLimit(fileInfo);
 					if (fileSizeAllowed == false)
@@ -85,7 +85,7 @@ namespace HdlgFileProperty
 					propertyGetters.StartTimer();
 					var currentProperties = GetFilePropertiesWithTimeout(
 						propertyGetters.FilePropertyGetter,
-						path,
+						fileInfo.FullName,
 						propertyGetters.FilePropertyGetter.GetType());
 
 					// Performance optimization: Avoid allocating a dictionary enumerator when there are no properties
