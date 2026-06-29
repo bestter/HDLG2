@@ -1,1 +1,1 @@
-🧪 [testing improvement] Add missing tests for ImagePropertyGetter
+🧪 Add test coverage for IOException in FilePropertyBrowser
