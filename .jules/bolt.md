@@ -101,6 +101,10 @@
 **Learning:** Evaluating `Path.GetFullPath(rootDirectory)` inside hot UI events (like `TreeView.BeforeExpand`) causes redundant I/O checks and string allocations. Because `rootDirectory` is invariant after construction, its resolved path can be calculated once.
 **Action:** When a UI component is bound to a specific root directory, resolve and cache its full path (with and without the trailing separator) in the constructor to optimize hot-path traversal checks.
 
+## 2026-06-25 - Prevent redundant OS stat calls with FileInfo
+**Learning:** Instantiating `new FileInfo(path)` forces the OS to perform a file system stat operation to retrieve attributes. When this happens downstream inside hot loops (like `GetFileProperty` or `IsFileSizeWithinLimit` checking every file yielded by `DirectoryInfo.EnumerateFiles()`), it causes massive I/O overhead and completely bypasses the pre-populated attributes already returned by the directory enumeration.
+**Action:** Always accept and pass the existing `FileInfo` or `FileSystemInfo` object through the method chain instead of string paths whenever possible to eliminate redundant OS calls and object allocations.
+
 ## 2026-06-25 - Avoid FileInfo instantiation in IsFileSizeWithinLimit
 **Learning:** Instantiating `FileInfo` from a string path multiple times during file traversal to check limits adds unnecessary overhead.
 **Action:** When filtering or checking paths for properties, accept the existing `FileInfo` object yielded by the directory enumerator.

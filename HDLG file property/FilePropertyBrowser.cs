@@ -63,6 +63,7 @@ namespace HdlgFileProperty
 		public virtual IReadOnlyDictionary<string, IConvertible>? GetFileProperty(FileInfo fileInfo)
 		{
 			ArgumentNullException.ThrowIfNull(fileInfo);
+			string path = fileInfo.FullName;
 			TotalNumberOfFiles++;
 
 			IReadOnlyDictionary<string, IConvertible>? firstProperties = null;
