@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 /*
  This file is part of HTML Directory List Generator.
 
@@ -19,7 +20,7 @@ using System.Reflection;
 
 namespace HDLG_winforms
 {
-	[System.Diagnostics.CodeAnalysis.SuppressMessage("Localization", "CA1303:Do not pass literals as localized parameters")]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage( "Localization", "CA1303:Do not pass literals as localized parameters" )]
 	public partial class MainWindow : KryptonForm
 	{
 		#region PropertyGetter
@@ -44,8 +45,8 @@ namespace HDLG_winforms
 		public MainWindow (ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter, PdfPropertyGetter pdfPropertyGetter, Mp3PropertyGetter mp3PropertyGetter, ILogger logger)
 		{
 			InitializeComponent( );
-			Icon = AppBranding.LoadApplicationIcon();
-			AppUiBootstrap.RemoveFormBranding(this);
+			Icon = AppBranding.LoadApplicationIcon( );
+			AppUiBootstrap.RemoveFormBranding( this );
 			ImagePropertyGetter = imagePropertyGetter;
 			WordPropertyGetter = wordPropertyGetter;
 			ExcelPropertyGetter = excelPropertyGetter;
@@ -258,18 +259,34 @@ toolStripStatusLabelTotalTime.Visible = false;
 			{
 				OpenWithDefaultProgram( path, p =>
 				{
-					using Process fileopener = new( );
-					fileopener.StartInfo = new ProcessStartInfo("explorer.exe")
+					if (RuntimeInformation.IsOSPlatform( OSPlatform.Windows ))
 					{
-						UseShellExecute = false,
-						WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
-					};
-					fileopener.StartInfo.ArgumentList.Add( p );
-					fileopener.Start( );
-				}, ext => {
+						Process.Start( new ProcessStartInfo
+						{
+							FileName = "explorer.exe",
+							Arguments = $"\"{p}\"",
+							UseShellExecute = false,
+							WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
+						} );
+					}
+					else if (RuntimeInformation.IsOSPlatform( OSPlatform.Linux ))
+					{
+						Process.Start( new ProcessStartInfo { FileName = "xdg-open", Arguments = $"\"{p}\"", UseShellExecute = false } );
+					}
+					else if (RuntimeInformation.IsOSPlatform( OSPlatform.OSX ))
+					{
+						Process.Start( new ProcessStartInfo { FileName = "open", Arguments = $"\"{p}\"", UseShellExecute = false } );
+					}
+					else
+					{
+						throw new PlatformNotSupportedException( "Opening files is not supported on this platform." );
+					}
+				}, ext =>
+				{
 					DialogResult res = MessageBox.Show( $"The file extension '{ext}' is not in the safe allowlist.\n\nAre you sure you want to open this file?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
 					return res == DialogResult.Yes;
-				}, fullPath => {
+				}, fullPath =>
+				{
 					DialogResult res = MessageBox.Show( $"You are about to open the following file:\n\n{fullPath}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
 					return res == DialogResult.Yes;
 				} );

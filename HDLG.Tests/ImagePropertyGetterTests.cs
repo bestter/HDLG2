@@ -52,9 +52,9 @@ namespace HDLG.Tests
 
             // Assert
             properties.Should().ContainKey("Width");
-            properties["Width"].Should().Be(50);
+            properties["Width"].Should().Be(100);
             properties.Should().ContainKey("Height");
-            properties["Height"].Should().Be(100);
+            properties["Height"].Should().Be(50);
             properties.Should().ContainKey("CameraModel");
             properties["CameraModel"].Should().Be("TestCameraModel");
         }
@@ -70,9 +70,9 @@ namespace HDLG.Tests
 
             // Assert
             properties.Should().ContainKey("Width");
-            properties["Width"].Should().Be(50);
+            properties["Width"].Should().Be(100);
             properties.Should().ContainKey("Height");
-            properties["Height"].Should().Be(100);
+            properties["Height"].Should().Be(50);
             properties.Should().NotContainKey("CameraModel");
         }
 

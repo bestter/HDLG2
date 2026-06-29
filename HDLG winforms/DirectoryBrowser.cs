@@ -23,14 +23,14 @@ namespace HDLG_winforms
 		/// <summary>
 		/// Logger
 		/// </summary>
-		private static readonly string[] Spacers = CreateSpacers();
+		private static readonly string [ ] Spacers = CreateSpacers( );
 
-		private static string[] CreateSpacers()
+		private static string [ ] CreateSpacers ()
 		{
-			var spacers = new string[20];
+			var spacers = new string [20];
 			for (int i = 0; i < 20; i++)
 			{
-				spacers[i] = new string(' ', i);
+				spacers [i] = new string( ' ', i );
 			}
 			return spacers;
 		}
@@ -46,12 +46,12 @@ namespace HDLG_winforms
 		/// <summary>
 		/// Cache for HTML encoded property keys to avoid redundant allocations and parsing.
 		/// </summary>
-		private readonly Dictionary<string, string> _encodedPropertyKeys = new();
+		private readonly Dictionary<string, string> _encodedPropertyKeys = new( );
 
 		/// <summary>
 		/// Cache for XML encoded property keys to avoid redundant allocations and parsing.
 		/// </summary>
-		private readonly Dictionary<string, string> _xmlEncodedPropertyKeys = new();
+		private readonly Dictionary<string, string> _xmlEncodedPropertyKeys = new( );
 
 		public DirectoryBrowser (ILogger log)
 		{
@@ -377,7 +377,7 @@ namespace HDLG_winforms
 
 			await WriteDirectoriesListAsync( sw, directory ).ConfigureAwait( false );
 
-            string encodedRootDirectoryPath = WebUtility.HtmlEncode( directory.Path );
+			string encodedRootDirectoryPath = WebUtility.HtmlEncode( directory.Path );
 			await sw.WriteLineAsync( "<div class=\"directoryHeader\">" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( "<span>Directory</span>" ).ConfigureAwait( false );
 			await sw.WriteLineAsync( $"<h2>{encodedRootDirectoryPath}</h2>" ).ConfigureAwait( false );
@@ -428,7 +428,7 @@ namespace HDLG_winforms
 
 		private static async Task WriteDirectoriesListContainAsync (TextWriter writer, HdlgDirectory directory, int depth)
 		{
-			string spacer = depth < 20 ? Spacers[depth] : new string( ' ', depth );
+			string spacer = depth < 20 ? Spacers [depth] : new string( ' ', depth );
 
 			await writer.WriteLineAsync( spacer + "<ul>" ).ConfigureAwait( false );
 
@@ -439,10 +439,10 @@ namespace HDLG_winforms
 
 		private static async Task WriteDirectoryListContainAsync (TextWriter writer, HdlgDirectory directory, int depth)
 		{
-			string spacer = (depth + 1) < 20 ? Spacers[depth + 1] : new string( ' ', depth + 1 );
+			string spacer = (depth + 1) < 20 ? Spacers [depth + 1] : new string( ' ', depth + 1 );
 			// Truncate long directory names with ellipsis + native title hover popup (per user choice: minimal native title + CSS, ~26ch, no JS).
 			string dirName = WebUtility.HtmlEncode( directory.Name );
-            string dirPath = WebUtility.HtmlEncode( directory.Path );
+			string dirPath = WebUtility.HtmlEncode( directory.Path );
 			await writer.WriteLineAsync( $"{spacer}<li><a href=\"#{dirPath}\" title=\"{dirName}\">{dirName}</a></li>" ).ConfigureAwait( false );
 
 			if (directory.Directories.Count > 0)
@@ -466,7 +466,7 @@ namespace HDLG_winforms
 		private async Task WritHtmlDirectoryAsync (TextWriter writer, HdlgDirectory directory, int depth)
 		{
 			log.Debug( "In {Method} {Type} {Directory}", nameof( WritHtmlDirectoryAsync ), nameof( HdlgDirectory ), directory );
-			string spacer = depth < 20 ? Spacers[depth] : new string( ' ', depth );
+			string spacer = depth < 20 ? Spacers [depth] : new string( ' ', depth );
 			string encodedPath = WebUtility.HtmlEncode( directory.Path );
 			string id = encodedPath; // Re-use cached encoded path
 			string name = WebUtility.HtmlEncode( directory.Name );
@@ -547,10 +547,10 @@ namespace HDLG_winforms
 					{
 						if (!string.IsNullOrWhiteSpace( property.Key ) && property.Value != null)
 						{
-							if (!_encodedPropertyKeys.TryGetValue(property.Key, out string? encodedKey))
+							if (!_encodedPropertyKeys.TryGetValue( property.Key, out string? encodedKey ))
 							{
-								encodedKey = WebUtility.HtmlEncode(property.Key);
-								_encodedPropertyKeys[property.Key] = encodedKey;
+								encodedKey = WebUtility.HtmlEncode( property.Key );
+								_encodedPropertyKeys [property.Key] = encodedKey;
 							}
 							await writer.WriteLineAsync( spacer + "\t\t<li class=\"extentedProperty\">" ).ConfigureAwait( false );
 							await writer.WriteLineAsync( $"{spacer}\t\t\t<span>{encodedKey}</span>" ).ConfigureAwait( false );
@@ -581,10 +581,10 @@ namespace HDLG_winforms
 					{
 						if (!string.IsNullOrWhiteSpace( property.Key ) && property.Value != null)
 						{
-							if (!_encodedPropertyKeys.TryGetValue(property.Key, out string? encodedKey))
+							if (!_encodedPropertyKeys.TryGetValue( property.Key, out string? encodedKey ))
 							{
-								encodedKey = WebUtility.HtmlEncode(property.Key);
-								_encodedPropertyKeys[property.Key] = encodedKey;
+								encodedKey = WebUtility.HtmlEncode( property.Key );
+								_encodedPropertyKeys [property.Key] = encodedKey;
 							}
 							await writer.WriteLineAsync( spacer + "\t\t<li class=\"extentedProperty\">" ).ConfigureAwait( false );
 							await writer.WriteLineAsync( $"{spacer}\t\t\t<span>{encodedKey}</span>" ).ConfigureAwait( false );

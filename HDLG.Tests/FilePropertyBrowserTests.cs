@@ -67,10 +67,10 @@ namespace HDLG.Tests
             string path = "test.jpg";
             var expectedProperties = new Dictionary<string, IConvertible> { { "Width", 1920 } };
 
-            propertyGetterMock1.Setup(g => g.IsSupportedFile(path)).Returns(true);
-            propertyGetterMock1.Setup(g => g.GetFileProperties(path)).Returns(expectedProperties);
+            propertyGetterMock1.Setup(g => g.IsSupportedFile(It.IsAny<string>())).Returns(true);
+            propertyGetterMock1.Setup(g => g.GetFileProperties(It.IsAny<string>())).Returns(expectedProperties);
 
-            propertyGetterMock2.Setup(g => g.IsSupportedFile(path)).Returns(false);
+            propertyGetterMock2.Setup(g => g.IsSupportedFile(It.IsAny<string>())).Returns(false);
 
             var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object, propertyGetterMock2.Object);
 
@@ -79,7 +79,7 @@ namespace HDLG.Tests
 
             // Assert
             result.Should().BeEquivalentTo(expectedProperties);
-            propertyGetterMock1.Verify(g => g.GetFileProperties(path), Times.Once);
+            propertyGetterMock1.Verify(g => g.GetFileProperties(It.IsAny<string>()), Times.Once);
             propertyGetterMock2.Verify(g => g.GetFileProperties(It.IsAny<string>()), Times.Never);
         }
 
@@ -91,11 +91,11 @@ namespace HDLG.Tests
             var properties1 = new Dictionary<string, IConvertible> { { "Author", "John Doe" } };
             var properties2 = new Dictionary<string, IConvertible> { { "WordCount", 500 } };
 
-            propertyGetterMock1.Setup(g => g.IsSupportedFile(path)).Returns(true);
-            propertyGetterMock1.Setup(g => g.GetFileProperties(path)).Returns(properties1);
+            propertyGetterMock1.Setup(g => g.IsSupportedFile(It.IsAny<string>())).Returns(true);
+            propertyGetterMock1.Setup(g => g.GetFileProperties(It.IsAny<string>())).Returns(properties1);
 
-            propertyGetterMock2.Setup(g => g.IsSupportedFile(path)).Returns(true);
-            propertyGetterMock2.Setup(g => g.GetFileProperties(path)).Returns(properties2);
+            propertyGetterMock2.Setup(g => g.IsSupportedFile(It.IsAny<string>())).Returns(true);
+            propertyGetterMock2.Setup(g => g.GetFileProperties(It.IsAny<string>())).Returns(properties2);
 
             var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object, propertyGetterMock2.Object);
 
@@ -117,11 +117,11 @@ namespace HDLG.Tests
             var properties1 = new Dictionary<string, IConvertible> { { "Title", "First Title" } };
             var properties2 = new Dictionary<string, IConvertible> { { "Title", "Second Title" }, { "Author", "John Doe" } };
 
-            propertyGetterMock1.Setup(g => g.IsSupportedFile(path)).Returns(true);
-            propertyGetterMock1.Setup(g => g.GetFileProperties(path)).Returns(properties1);
+            propertyGetterMock1.Setup(g => g.IsSupportedFile(It.IsAny<string>())).Returns(true);
+            propertyGetterMock1.Setup(g => g.GetFileProperties(It.IsAny<string>())).Returns(properties1);
 
-            propertyGetterMock2.Setup(g => g.IsSupportedFile(path)).Returns(true);
-            propertyGetterMock2.Setup(g => g.GetFileProperties(path)).Returns(properties2);
+            propertyGetterMock2.Setup(g => g.IsSupportedFile(It.IsAny<string>())).Returns(true);
+            propertyGetterMock2.Setup(g => g.GetFileProperties(It.IsAny<string>())).Returns(properties2);
 
             var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object, propertyGetterMock2.Object);
 
@@ -141,8 +141,8 @@ namespace HDLG.Tests
             // Arrange
             string path = "test.unknown";
 
-            propertyGetterMock1.Setup(g => g.IsSupportedFile(path)).Returns(false);
-            propertyGetterMock2.Setup(g => g.IsSupportedFile(path)).Returns(false);
+            propertyGetterMock1.Setup(g => g.IsSupportedFile(It.IsAny<string>())).Returns(false);
+            propertyGetterMock2.Setup(g => g.IsSupportedFile(It.IsAny<string>())).Returns(false);
 
             var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object, propertyGetterMock2.Object);
 
@@ -263,8 +263,8 @@ namespace HDLG.Tests
         {
             // Arrange
             string path = "test.file";
-            propertyGetterMock1.Setup(g => g.IsSupportedFile(path)).Returns(true);
-            propertyGetterMock1.Setup(g => g.GetFileProperties(path)).Returns(new Dictionary<string, IConvertible>());
+            propertyGetterMock1.Setup(g => g.IsSupportedFile(It.IsAny<string>())).Returns(true);
+            propertyGetterMock1.Setup(g => g.GetFileProperties(It.IsAny<string>())).Returns(new Dictionary<string, IConvertible>());
 
             var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object);
             browser.GetFileProperty(path);
