@@ -283,5 +283,55 @@ namespace HDLG.Tests
 
             loggerMock.Verify(l => l.Information("Total number of files {TotalNumberOfFiles}", 1L), Times.Once);
         }
-    }
+
+        [Fact]
+        public void GetFileProperty_ThrowsIOExceptionDuringSizeCheck_LogsWarningAndSkipsExtraction()
+        {
+            // Arrange
+            var tempFile = Path.GetTempFileName();
+            try
+            {
+                using (var stream = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    stream.SetLength(200);
+                }
+
+                propertyGetterMock1.Setup(g => g.IsSupportedFile(tempFile)).Returns(true);
+
+                var ioException = new IOException("Simulated exception");
+                loggerMock.Setup(l => l.Warning(
+                    It.Is<string>(s => s.Contains("File exceeds maximum allowed size")),
+                    It.IsAny<long>(),
+                    It.IsAny<long>(),
+                    It.IsAny<string>()))
+                    .Throws(ioException);
+
+                var browser = new FilePropertyBrowser(
+                    loggerMock.Object,
+                    maxFileSizeBytes: 100,
+                    propertyExtractionTimeout: TimeSpan.FromSeconds(30),
+                    propertyGetterMock1.Object);
+
+                // Act
+                var result = browser.GetFileProperty(tempFile);
+
+                // Assert
+                result.Should().BeNull();
+                propertyGetterMock1.Verify(g => g.GetFileProperties(It.IsAny<string>()), Times.Never);
+                loggerMock.Verify(
+                    l => l.Warning(
+                        ioException,
+                        It.Is<string>(s => s.Contains("Cannot determine file size")),
+                        tempFile),
+                    Times.Once);
+            }
+            finally
+            {
+                if (File.Exists(tempFile))
+                {
+                    File.Delete(tempFile);
+                }
+            }
+        }
+}
 }
