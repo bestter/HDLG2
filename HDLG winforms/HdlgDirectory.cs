@@ -98,7 +98,7 @@ namespace HDLG_winforms
 						}
 						else if (info is FileInfo f)
 						{
-							var properties = propertyBrowser.GetFileProperty( f.FullName );
+							var properties = propertyBrowser.GetFileProperty( f );
 							var file = new HdlgFile( f, properties );
 							files.Add( file );
 						}
@@ -120,7 +120,7 @@ namespace HDLG_winforms
 				{
 					foreach (var f in directoryInfo.EnumerateFiles( ))
 					{
-						var properties = propertyBrowser.GetFileProperty( f.FullName );
+						var properties = propertyBrowser.GetFileProperty( f );
 						var file = new HdlgFile( f, properties );
 						files.Add( file );
 					}
