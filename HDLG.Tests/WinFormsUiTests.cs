@@ -1,3 +1,4 @@
+using System.Windows.Forms;
 using FluentAssertions;
 using HdlgFileProperty;
 using HDLG_winforms;
