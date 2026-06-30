@@ -16,7 +16,7 @@ namespace HDLG_winforms
 		public TimeSpan SaveTime;
 		public TimeSpan TotalTime;
 
-		public static readonly PerformanceCount Empty = new( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
+		public static readonly PerformanceCount Empty = new() { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
 	}
 
 

@@ -24,8 +24,6 @@ namespace HDLG.Tests
             ImageSetup.CreateImages();
             WordSetup.CreateWordDocs();
             WordPropertyGetterTestSetup.EnsureTestFilesExist();
-            Mp3Setup.CreateMp3Docs();
-            PdfSetup.CreatePdfDocs();
         }
 
 
@@ -93,7 +91,7 @@ namespace HDLG.Tests
                 }
 
                 // Act
-                var properties = getter.GetFileProperties(tempFile);
+                var properties = getter.GetFileProperties(new FileInfo(tempFile));
 
                 // Assert
                 properties.Should().BeEmpty();
@@ -121,7 +119,7 @@ namespace HDLG.Tests
             var getter = new ImagePropertyGetter();
 
             // Act
-            var properties = getter.GetFileProperties("test_valid_exif.jpg");
+            var properties = getter.GetFileProperties(new FileInfo("test_valid_exif.jpg"));
 
             // Assert
             properties.Should().ContainKey("Width");
@@ -139,7 +137,7 @@ namespace HDLG.Tests
             var getter = new ImagePropertyGetter();
 
             // Act
-            var properties = getter.GetFileProperties("test_valid_no_exif.jpg");
+            var properties = getter.GetFileProperties(new FileInfo("test_valid_no_exif.jpg"));
 
             // Assert
             properties.Should().ContainKey("Width");
@@ -156,7 +154,7 @@ namespace HDLG.Tests
             var getter = new ImagePropertyGetter();
 
             // Act
-            var properties = getter.GetFileProperties("test.png");
+            var properties = getter.GetFileProperties(new FileInfo("test.png"));
 
             // Assert
             properties.Should().ContainKey("Width");
@@ -173,7 +171,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("nonexistent.jpg");
+            var properties = getter.GetFileProperties(new FileInfo("nonexistent.jpg"));
 
             // Assert
             properties.Should().BeEmpty();
@@ -189,7 +187,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("test_invalid.jpg");
+            var properties = getter.GetFileProperties(new FileInfo("test_invalid.jpg"));
 
             // Assert
             properties.Should().BeEmpty();
@@ -204,7 +202,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("test_corrupted.jpg");
+            var properties = getter.GetFileProperties(new FileInfo("test_corrupted.jpg"));
 
             // Assert
             properties.Should().BeEmpty();
@@ -214,6 +212,88 @@ namespace HDLG.Tests
 
 
         [Fact]
+        public void Mp3PropertyGetter_AddLogger_SetsLogger()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+
+            // Act
+            getter.AddLogger(loggerMock.Object);
+
+            // Assert
+            getter.Logger.Should().Be(loggerMock.Object);
+        }
+
+        [Fact]
+        public void Mp3PropertyGetter_AddLogger_NullLogger_ThrowsArgumentNullException()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => getter.AddLogger(null!));
+        }
+
+        [Fact]
+        public void Mp3PropertyGetter_GetFileProperties_AllProperties_ReturnsCompleteDictionary()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+            var testFile = "test_full.mp3";
+
+            // Create a test file with all properties filled to verify they are extracted correctly
+            System.IO.File.Copy("test.mp3", testFile, true);
+            using (var f = TagLib.File.Create(testFile))
+            {
+                f.Tag.Title = "Test Complete Title";
+                f.Tag.Album = "Test Complete Album";
+                f.Tag.Year = 2024;
+                f.Tag.Performers = new[] { "John Doe", "Jane Doe" };
+                f.Tag.AlbumArtists = new[] { "Band A", "Band B" };
+                f.Tag.Composers = new[] { "Mozart", "Beethoven" };
+                f.Tag.Copyright = "2024 Test Corp";
+                f.Save();
+            }
+
+            try
+            {
+                // Act
+                var properties = getter.GetFileProperties(new FileInfo(testFile));
+
+                // Assert
+                properties.Should().ContainKey("Title");
+                properties["Title"].Should().Be("Test Complete Title");
+
+                properties.Should().ContainKey("Album");
+                properties["Album"].Should().Be("Test Complete Album");
+
+                properties.Should().ContainKey("Year");
+                properties["Year"].Should().Be(2024u);
+
+                properties.Should().ContainKey("Performers");
+                properties["Performers"].Should().Be("John Doe, Jane Doe");
+
+                properties.Should().ContainKey("AlbumArtists");
+                properties["AlbumArtists"].Should().Be("Band A, Band B");
+
+                properties.Should().ContainKey("Composers");
+                properties["Composers"].Should().Be("Mozart, Beethoven");
+
+                properties.Should().ContainKey("Copyright");
+                properties["Copyright"].Should().Be("2024 Test Corp");
+
+                properties.Should().ContainKey("Duration");
+            }
+            finally
+            {
+                if (System.IO.File.Exists(testFile))
+                {
+                    System.IO.File.Delete(testFile);
+                }
+            }
+        }
+
+        [Fact]
         public void ImagePropertyGetter_GetFileProperties_CorruptedImage_LogsWarningAndReturnsEmpty()
         {
             // Arrange
@@ -221,7 +301,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("test_corrupted.jpg");
+            var properties = getter.GetFileProperties(new FileInfo("test_corrupted.jpg"));
 
             // Assert
             properties.Should().BeEmpty();
@@ -252,7 +332,7 @@ namespace HDLG.Tests
             var getter = new Mp3PropertyGetter();
 
             // Act
-            var properties = getter.GetFileProperties("test.mp3");
+            var properties = getter.GetFileProperties(new FileInfo("test.mp3"));
 
             // Assert
             properties.Should().ContainKey("Title");
@@ -271,7 +351,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("nonexistent.mp3");
+            var properties = getter.GetFileProperties(new FileInfo("nonexistent.mp3"));
 
             // Assert
             loggerMock.Verify(l => l.Error(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Cannot read file")), It.IsAny<string>()), Times.Once);
@@ -284,13 +364,13 @@ namespace HDLG.Tests
             // Arrange
             var getter = new Mp3PropertyGetter();
             getter.AddLogger(loggerMock.Object);
-            var invalidFile = "test_invalid_temp.mp3";
+            var invalidFile = "test_invalid.mp3";
             System.IO.File.WriteAllText(invalidFile, "invalid mp3 content");
 
             try
             {
                 // Act
-                var properties = getter.GetFileProperties(invalidFile);
+                var properties = getter.GetFileProperties(new FileInfo(invalidFile));
 
                 // Assert
                 loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("is corrupted") || s.Contains("is not supported") || s.Contains("Cannot read properties from file")), It.IsAny<string>()), Times.Once);
@@ -305,6 +385,8 @@ namespace HDLG.Tests
             }
         }
 
+
+
         [Fact]
         public void PdfPropertyGetter_GetFileProperties_ValidFileWithTitle_ReturnsTitle()
         {
@@ -312,7 +394,7 @@ namespace HDLG.Tests
             var getter = new PdfPropertyGetter();
 
             // Act
-            var properties = getter.GetFileProperties("test.pdf");
+            var properties = getter.GetFileProperties(new FileInfo("test.pdf"));
 
             // Assert
             properties.Should().ContainKey("Title");
@@ -326,7 +408,7 @@ namespace HDLG.Tests
             var getter = new PdfPropertyGetter();
 
             // Act
-            var properties = getter.GetFileProperties("test_empty_title.pdf");
+            var properties = getter.GetFileProperties(new FileInfo("test_empty_title.pdf"));
 
             // Assert
             properties.Should().NotContainKey("Title");
@@ -342,7 +424,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("nonexistent.pdf");
+            var properties = getter.GetFileProperties(new FileInfo("nonexistent.pdf"));
 
             // Assert
 
@@ -357,7 +439,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("test_invalid.pdf");
+            var properties = getter.GetFileProperties(new FileInfo("test_invalid.pdf"));
 
             // Assert
 
@@ -372,7 +454,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("test_encrypted.pdf");
+            var properties = getter.GetFileProperties(new FileInfo("test_encrypted.pdf"));
 
             // Assert
             loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("password protected")), It.IsAny<string>()), Times.Once);
@@ -404,7 +486,7 @@ namespace HDLG.Tests
             var getter = new ExcelPropertyGetter();
 
             // Act
-            var properties = getter.GetFileProperties("test.xlsx");
+            var properties = getter.GetFileProperties(new FileInfo("test.xlsx"));
 
             // Assert
             properties.Should().ContainKey("Title");
@@ -421,7 +503,7 @@ namespace HDLG.Tests
             var getter = new ExcelPropertyGetter();
 
             // Act
-            var properties = getter.GetFileProperties("test_empty.xlsx");
+            var properties = getter.GetFileProperties(new FileInfo("test_empty.xlsx"));
 
             // Assert
             properties.Should().NotContainKey("Title");
@@ -450,7 +532,7 @@ namespace HDLG.Tests
             try
             {
                 // Act
-                var properties = getter.GetFileProperties(path);
+                var properties = getter.GetFileProperties(new FileInfo(path));
 
                 // Assert
                 properties.Should().BeEmpty();
@@ -472,7 +554,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("nonexistent.xlsx");
+            var properties = getter.GetFileProperties(new FileInfo("nonexistent.xlsx"));
 
             // Assert
             loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Could not open Excel file")), It.IsAny<string>()), Times.Once);
@@ -487,7 +569,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("test_invalid.xlsx");
+            var properties = getter.GetFileProperties(new FileInfo("test_invalid.xlsx"));
 
             // Assert
             loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Could not open Excel file")), It.IsAny<string>()), Times.Once);

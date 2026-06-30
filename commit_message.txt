@@ -1,5 +1,5 @@
-🧪 [testing improvement] Add missing tests for ImagePropertyGetter
+Refactor IFilePropertyGetter to accept FileInfo instead of string path
 
-🎯 What: Added a complete test suite for `ImagePropertyGetter`.
-📊 Coverage: Tested valid images with/without EXIF data, a valid PNG, corrupted files, nonexistent files, and unsupported formats.
-✨ Result: `ImagePropertyGetter` is now properly covered, completing the work started with `ImageSetup.cs`.
+Passed the existing `FileInfo` object yielded from directory enumeration downstream through the `FilePropertyBrowser` and into individual `IFilePropertyGetter` implementations. This prevents each getter from redundantly instantiating `new FileInfo(path)` just to check properties like `Length`, which forces the OS to re-stat the file. Also resolved the remaining CA1062 issue by checking for null FileInfo before logging.
+
+Generated-by: Jules
