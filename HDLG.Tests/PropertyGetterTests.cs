@@ -24,6 +24,8 @@ namespace HDLG.Tests
             ImageSetup.CreateImages();
             WordSetup.CreateWordDocs();
             WordPropertyGetterTestSetup.EnsureTestFilesExist();
+            Mp3Setup.CreateMp3Docs();
+            PdfSetup.CreatePdfDocs();
         }
 
 
@@ -364,7 +366,7 @@ namespace HDLG.Tests
             // Arrange
             var getter = new Mp3PropertyGetter();
             getter.AddLogger(loggerMock.Object);
-            var invalidFile = "test_invalid.mp3";
+            var invalidFile = "test_invalid_temp.mp3";
             System.IO.File.WriteAllText(invalidFile, "invalid mp3 content");
 
             try
@@ -384,8 +386,6 @@ namespace HDLG.Tests
                 }
             }
         }
-
-
 
         [Fact]
         public void PdfPropertyGetter_GetFileProperties_ValidFileWithTitle_ReturnsTitle()

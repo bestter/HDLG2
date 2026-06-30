@@ -1,1 +1,1 @@
-🛡️ Sentinel: Medium Fix Insecure Process.Start without user confirmation
+🧪 Add test coverage for IOException in FilePropertyBrowser

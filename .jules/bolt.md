@@ -107,3 +107,11 @@
 ## 2026-06-25 - Prevent redundant OS stat calls with FileInfo
 **Learning:** Instantiating `new FileInfo(path)` forces the OS to perform a file system stat operation to retrieve attributes. When this happens downstream inside hot loops (like `GetFileProperty` or `IsFileSizeWithinLimit` checking every file yielded by `DirectoryInfo.EnumerateFiles()`), it causes massive I/O overhead and completely bypasses the pre-populated attributes already returned by the directory enumeration.
 **Action:** Always accept and pass the existing `FileInfo` or `FileSystemInfo` object through the method chain instead of string paths whenever possible to eliminate redundant OS calls and object allocations.
+
+## 2026-06-25 - Avoid FileInfo instantiation in IsFileSizeWithinLimit
+**Learning:** Instantiating `FileInfo` from a string path multiple times during file traversal to check limits adds unnecessary overhead.
+**Action:** When filtering or checking paths for properties, accept the existing `FileInfo` object yielded by the directory enumerator.
+
+## 2026-06-25 - Avoid tuple and iterator allocation with Zip in hot paths
+**Learning:** Using `LINQ Zip` with tuples in a `foreach` loop (e.g. `foreach ((int size, byte[] pngBytes) in sizes.Zip(pngEntries))`) involves the allocation of an iterator, a tuple for every iteration, and introduces virtual dispatch overhead. When performance is critical and both collections are indexable arrays or lists with known matching lengths, a standard `for` loop is significantly faster.
+**Action:** Replace `foreach` with `LINQ Zip` with an index-based `for` loop when iterating over parallel collections of the same length in performance-critical paths to avoid allocations and virtual dispatch overhead.
