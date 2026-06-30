@@ -85,7 +85,7 @@ namespace HdlgFileProperty
 					propertyGetters.StartTimer();
 					var currentProperties = GetFilePropertiesWithTimeout(
 						propertyGetters.FilePropertyGetter,
-						path,
+						fileInfo,
 						propertyGetters.FilePropertyGetter.GetType());
 
 					// Performance optimization: Avoid allocating a dictionary enumerator when there are no properties
@@ -145,11 +145,11 @@ namespace HdlgFileProperty
 
 		private IReadOnlyDictionary<string, IConvertible> GetFilePropertiesWithTimeout(
 			IFilePropertyGetter getter,
-			string path,
+			FileInfo fileInfo,
 			Type getterType)
 		{
 			using var cts = new CancellationTokenSource(propertyExtractionTimeout);
-			var task = Task.Run(() => getter.GetFileProperties(path), cts.Token);
+			var task = Task.Run(() => getter.GetFileProperties(fileInfo), cts.Token);
 
 			try
 			{
@@ -160,7 +160,7 @@ namespace HdlgFileProperty
 						"Property extraction timed out after {TimeoutSeconds}s for {PropertyGetterType}: {FilePath}",
 						propertyExtractionTimeout.TotalSeconds,
 						getterType,
-						path);
+						fileInfo.FullName);
 					return IFilePropertyGetter.EmptyProperties;
 				}
 
@@ -170,7 +170,7 @@ namespace HdlgFileProperty
 						task.Exception!.GetBaseException(),
 						"Property extraction failed for {PropertyGetterType}: {FilePath}",
 						getterType,
-						path);
+						fileInfo.FullName);
 					return IFilePropertyGetter.EmptyProperties;
 				}
 
@@ -179,7 +179,7 @@ namespace HdlgFileProperty
 					logger.Warning(
 						"Property extraction was canceled for {PropertyGetterType}: {FilePath}",
 						getterType,
-						path);
+						fileInfo.FullName);
 					return IFilePropertyGetter.EmptyProperties;
 				}
 
@@ -191,7 +191,7 @@ namespace HdlgFileProperty
 					"Property extraction timed out after {TimeoutSeconds}s for {PropertyGetterType}: {FilePath}",
 					propertyExtractionTimeout.TotalSeconds,
 					getterType,
-					path);
+					fileInfo.FullName);
 				return IFilePropertyGetter.EmptyProperties;
 			}
 		}

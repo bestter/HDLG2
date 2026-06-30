@@ -7,6 +7,7 @@ HTML Directory List Generator is distributed in the hope that it will be useful,
 
 You should have received a copy of the GNU General Public License along with HTML Directory List Generator. If not, see <https://www.gnu.org/licenses/>. 
  */
+using System.IO;
 using Serilog;
 
 namespace HdlgFileProperty
@@ -31,8 +32,8 @@ namespace HdlgFileProperty
         /// <summary>
         /// Get the file properties
         /// </summary>
-        /// <param name="path">The full file path</param>
+        /// <param name="fileInfo">The file info</param>
         /// <returns></returns>
-        IReadOnlyDictionary<string, IConvertible> GetFileProperties(string path);
+        IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo);
     }
 }

@@ -20,25 +20,7 @@ namespace HDLG.Tests
 
         public void Dispose()
         {
-            var files = new[]
-            {
-                "test.jpg",
-                "test_no_exif.jpg",
-                "test.png",
-                "test_invalid.jpg",
-                "test_corrupted.png",
-                "test_valid_exif.jpg",
-                "test_valid_no_exif.jpg",
-                "test_corrupted.jpg"
-            };
-
-            foreach (var file in files)
-            {
-                if (File.Exists(file))
-                {
-                    try { File.Delete(file); } catch { }
-                }
-            }
+            // Do not delete files during parallel test execution to prevent race conditions.
         }
 
         [Fact]
