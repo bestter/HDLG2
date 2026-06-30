@@ -70,7 +70,7 @@ namespace HDLG.Tests
             propertyGetterMock1.Setup(g => g.IsSupportedFile(Path.GetFullPath(path))).Returns(true);
             propertyGetterMock1.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f.FullName == Path.GetFullPath(path)))).Returns(expectedProperties);
 
-            propertyGetterMock2.Setup(g => g.IsSupportedFile(It.IsAny<string>())).Returns(false);
+            propertyGetterMock2.Setup(g => g.IsSupportedFile(path)).Returns(false);
 
             var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object, propertyGetterMock2.Object);
 
@@ -141,8 +141,8 @@ namespace HDLG.Tests
             // Arrange
             string path = "test.unknown";
 
-            propertyGetterMock1.Setup(g => g.IsSupportedFile(It.IsAny<string>())).Returns(false);
-            propertyGetterMock2.Setup(g => g.IsSupportedFile(It.IsAny<string>())).Returns(false);
+            propertyGetterMock1.Setup(g => g.IsSupportedFile(path)).Returns(false);
+            propertyGetterMock2.Setup(g => g.IsSupportedFile(path)).Returns(false);
 
             var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object, propertyGetterMock2.Object);
 

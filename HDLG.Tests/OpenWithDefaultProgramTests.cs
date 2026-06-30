@@ -163,7 +163,7 @@ namespace HDLG.Tests
             var unknownFile = System.IO.Path.Combine(tempDir, "unknown.xyz123");
             System.IO.File.WriteAllText(unknownFile, "unknown content");
 
-            var act = () => MainWindow.OpenWithDefaultProgram(unknownFile, _ => { }, null, _ => true);
+            var act = () => MainWindow.OpenWithDefaultProgram(unknownFile, _ => {}, null, _ => true);
             act.Should().Throw<InvalidOperationException>()
                 .WithMessage("*not allowed for security reasons*");
         }

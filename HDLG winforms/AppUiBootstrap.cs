@@ -17,14 +17,14 @@ namespace HDLG_winforms
 	/// </summary>
 	public static class AppUiBootstrap
 	{
-		private static readonly object configureLock = new( );
+		private static readonly object configureLock = new();
 		private static KryptonManager? uiManager;
 		private static bool isConfigured;
 
 		/// <summary>
 		/// Applies the global Krypton palette used by all forms.
 		/// </summary>
-		public static void Configure ()
+		public static void Configure()
 		{
 			lock (configureLock)
 			{
@@ -33,7 +33,7 @@ namespace HDLG_winforms
 					return;
 				}
 
-				uiManager = new KryptonManager( );
+				uiManager = new KryptonManager();
 				uiManager.GlobalPaletteMode = PaletteMode.Microsoft365BlueLightMode;
 				isConfigured = true;
 			}
@@ -42,9 +42,9 @@ namespace HDLG_winforms
 		/// <summary>
 		/// Removes the default Krypton watermark rendered in the form client area.
 		/// </summary>
-		public static void RemoveFormBranding (KryptonForm form)
+		public static void RemoveFormBranding(KryptonForm form)
 		{
-			ArgumentNullException.ThrowIfNull( form );
+			ArgumentNullException.ThrowIfNull(form);
 
 			PaletteBack commonBack = form.StateCommon!.Back!;
 			commonBack.Image = null;
