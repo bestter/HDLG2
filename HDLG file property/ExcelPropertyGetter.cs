@@ -22,13 +22,12 @@ namespace HdlgFileProperty
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo)
+        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(string path)
         {
-            ArgumentNullException.ThrowIfNull(fileInfo);
             Dictionary<string, IConvertible>? properties = null;
             try
             {
-                using FileStream stream = new(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using FileStream stream = new(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 using SpreadsheetDocument excelDoc = SpreadsheetDocument.Open(stream, false);
                 var packageProperties = excelDoc.PackageProperties;
 
@@ -53,12 +52,12 @@ namespace HdlgFileProperty
             }
             catch (Exception ex) when (ex is IOException || ex is InvalidDataException || ex is OpenXmlPackageException || ex is FileFormatException)
             {
-                Logger?.Warning(ex, "Could not open Excel file or extract properties for {Path}", fileInfo.FullName);
+                Logger?.Warning(ex, "Could not open Excel file or extract properties for {Path}", path);
             }
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
             catch (Exception ex)
             {
-                Logger?.Warning(ex, "Cannot read properties from file {Path}", fileInfo.FullName);
+                Logger?.Warning(ex, "Cannot read properties from file {Path}", path);
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
 

@@ -55,7 +55,7 @@ namespace HDLG_winforms
 		/// Browse the content
 		/// </summary>
 		/// <param name="propertyBrowser"></param>
-		public void Browse (FilePropertyBrowser propertyBrowser)
+		public async Task BrowseAsync (FilePropertyBrowser propertyBrowser)
 		{
 			ArgumentNullException.ThrowIfNull( propertyBrowser );
 			log.Debug( "Directory: {Path} {IsTopDirectoryName}: {IsTopDirectory} {BrowseSubdirectoryName}: {BrowseSubdirectory}", Path, nameof( IsTopDirectory ), IsTopDirectory, nameof( BrowseSubdirectory ), BrowseSubdirectory );
@@ -71,7 +71,7 @@ namespace HDLG_winforms
 
 			foreach (var f in directoryInfo.EnumerateFiles( ))
 			{
-				var properties = propertyBrowser.GetFileProperty( f );
+				var properties = await propertyBrowser.GetFilePropertyAsync( f ).ConfigureAwait(false);
 				var file = new File( f.FullName, properties ?? System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>.Empty );
 				files.Add( file );
 			}
@@ -79,7 +79,7 @@ namespace HDLG_winforms
 
 			foreach (Directory d in directories)
 			{
-				d.Browse( propertyBrowser );
+				await d.BrowseAsync( propertyBrowser ).ConfigureAwait(false);
 			}
 		}
 

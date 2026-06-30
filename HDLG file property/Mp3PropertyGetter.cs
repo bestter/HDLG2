@@ -21,14 +21,13 @@ namespace HdlgFileProperty
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo)
+        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(string path)
         {
-            ArgumentNullException.ThrowIfNull(fileInfo);
-            Logger?.Verbose("In {Class}.{Method}: {Path}", nameof(Mp3PropertyGetter), nameof(GetFileProperties), fileInfo.FullName);
+            Logger?.Verbose("In {Class}.{Method}: {Path}", nameof(Mp3PropertyGetter), nameof(GetFileProperties), path);
             Dictionary<string, IConvertible>? properties = null;
             try
             {
-                using TagLib.File f = TagLib.File.Create(fileInfo.FullName);
+                using TagLib.File f = TagLib.File.Create(path);
                 if (!f.PossiblyCorrupt)
                 {
                     if (!f.Tag.IsEmpty)
@@ -65,25 +64,25 @@ namespace HdlgFileProperty
                 else
                 {
                     // Performance optimization: Avoid eager string.Join allocation, let Serilog format the collection
-                    Logger?.Warning("File {Path} might be corrupted because {CorruptionReasons}", fileInfo.FullName, f.CorruptionReasons);
+                    Logger?.Warning("File {Path} might be corrupted because {CorruptionReasons}", path, f.CorruptionReasons);
                 }
             }
             catch (IOException ioe)
             {
-                Logger?.Error(ioe, "Cannot read file {Path}", fileInfo.FullName);
+                Logger?.Error(ioe, "Cannot read file {Path}", path);
             }
             catch (TagLib.UnsupportedFormatException ufe)
             {
-                Logger?.Warning(ufe, "File {Path} is not supported", fileInfo.FullName);
+                Logger?.Warning(ufe, "File {Path} is not supported", path);
             }
             catch (TagLib.CorruptFileException cfe)
             {
-                Logger?.Warning(cfe, "File {Path} is corrupted", fileInfo.FullName);
+                Logger?.Warning(cfe, "File {Path} is corrupted", path);
             }
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
             catch (Exception e)
             {
-                Logger?.Warning(e, "Cannot read properties from file {Path}", fileInfo.FullName);
+                Logger?.Warning(e, "Cannot read properties from file {Path}", path);
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
             return (IReadOnlyDictionary<string, IConvertible>?)properties ?? IFilePropertyGetter.EmptyProperties;

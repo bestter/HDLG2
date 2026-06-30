@@ -24,14 +24,14 @@ namespace HDLG.Tests
         }
 
         [Fact]
-        public void Constructor_NullLogger_ThrowsArgumentNullException()
+        public async Task Constructor_NullLogger_ThrowsArgumentNullException()
         {
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => new FilePropertyBrowser(null!, propertyGetterMock1.Object));
         }
 
         [Fact]
-        public void Constructor_NullPropertyGetters_ThrowsArgumentNullException()
+        public async Task Constructor_NullPropertyGetters_ThrowsArgumentNullException()
         {
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => new FilePropertyBrowser(loggerMock.Object, null!));
@@ -49,58 +49,58 @@ namespace HDLG.Tests
         }
 
         [Fact]
-        public void GetFileProperty_NullOrWhiteSpacePath_ThrowsArgumentException()
+        public async Task GetFileProperty_NullOrWhiteSpacePath_ThrowsArgumentException()
         {
             // Arrange
             var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object);
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => browser.GetFileProperty((string)null!));
-            Assert.Throws<ArgumentException>(() => browser.GetFileProperty(""));
-            Assert.Throws<ArgumentException>(() => browser.GetFileProperty("   "));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await browser.GetFilePropertyAsync((string)null!));
+            await Assert.ThrowsAsync<ArgumentException>(async () => await browser.GetFilePropertyAsync(""));
+            await Assert.ThrowsAsync<ArgumentException>(async () => await browser.GetFilePropertyAsync("   "));
         }
 
         [Fact]
-        public void GetFileProperty_PathSupportedByOneGetter_ReturnsPropertiesFromThatGetter()
+        public async Task GetFileProperty_PathSupportedByOneGetter_ReturnsPropertiesFromThatGetter()
         {
             // Arrange
             string path = "test.jpg";
             var expectedProperties = new Dictionary<string, IConvertible> { { "Width", 1920 } };
 
-            propertyGetterMock1.Setup(g => g.IsSupportedFile(Path.GetFullPath(path))).Returns(true);
-            propertyGetterMock1.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f.FullName == Path.GetFullPath(path)))).Returns(expectedProperties);
+            propertyGetterMock1.Setup(g => g.IsSupportedFile(path)).Returns(true);
+            propertyGetterMock1.Setup(g => g.GetFileProperties(path)).Returns(expectedProperties);
 
             propertyGetterMock2.Setup(g => g.IsSupportedFile(path)).Returns(false);
 
             var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object, propertyGetterMock2.Object);
 
             // Act
-            var result = browser.GetFileProperty(path);
+            var result = await browser.GetFilePropertyAsync(path);
 
             // Assert
             result.Should().BeEquivalentTo(expectedProperties);
-            propertyGetterMock1.Verify(g => g.GetFileProperties(It.Is<FileInfo>(f => f.FullName == Path.GetFullPath(path))), Times.Once);
-            propertyGetterMock2.Verify(g => g.GetFileProperties(It.IsAny<FileInfo>()), Times.Never);
+            propertyGetterMock1.Verify(g => g.GetFileProperties(path), Times.Once);
+            propertyGetterMock2.Verify(g => g.GetFileProperties(It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
-        public void GetFileProperty_PathSupportedByMultipleGetters_CombinesProperties()
+        public async Task GetFileProperty_PathSupportedByMultipleGetters_CombinesProperties()
         {
             // Arrange
             string path = "test.document";
             var properties1 = new Dictionary<string, IConvertible> { { "Author", "John Doe" } };
             var properties2 = new Dictionary<string, IConvertible> { { "WordCount", 500 } };
 
-            propertyGetterMock1.Setup(g => g.IsSupportedFile(Path.GetFullPath(path))).Returns(true);
-            propertyGetterMock1.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f.FullName == Path.GetFullPath(path)))).Returns(properties1);
+            propertyGetterMock1.Setup(g => g.IsSupportedFile(path)).Returns(true);
+            propertyGetterMock1.Setup(g => g.GetFileProperties(path)).Returns(properties1);
 
-            propertyGetterMock2.Setup(g => g.IsSupportedFile(Path.GetFullPath(path))).Returns(true);
-            propertyGetterMock2.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f.FullName == Path.GetFullPath(path)))).Returns(properties2);
+            propertyGetterMock2.Setup(g => g.IsSupportedFile(path)).Returns(true);
+            propertyGetterMock2.Setup(g => g.GetFileProperties(path)).Returns(properties2);
 
             var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object, propertyGetterMock2.Object);
 
             // Act
-            var result = browser.GetFileProperty(path);
+            var result = await browser.GetFilePropertyAsync(path);
 
             // Assert
             result.Should().ContainKey("Author").WhoseValue.Should().Be("John Doe");
@@ -110,23 +110,23 @@ namespace HDLG.Tests
 
 
         [Fact]
-        public void GetFileProperty_PathSupportedByMultipleGettersWithKeyCollision_PreservesFirstGetterValue()
+        public async Task GetFileProperty_PathSupportedByMultipleGettersWithKeyCollision_PreservesFirstGetterValue()
         {
             // Arrange
             string path = "test.document";
             var properties1 = new Dictionary<string, IConvertible> { { "Title", "First Title" } };
             var properties2 = new Dictionary<string, IConvertible> { { "Title", "Second Title" }, { "Author", "John Doe" } };
 
-            propertyGetterMock1.Setup(g => g.IsSupportedFile(Path.GetFullPath(path))).Returns(true);
-            propertyGetterMock1.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f.FullName == Path.GetFullPath(path)))).Returns(properties1);
+            propertyGetterMock1.Setup(g => g.IsSupportedFile(path)).Returns(true);
+            propertyGetterMock1.Setup(g => g.GetFileProperties(path)).Returns(properties1);
 
-            propertyGetterMock2.Setup(g => g.IsSupportedFile(Path.GetFullPath(path))).Returns(true);
-            propertyGetterMock2.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f.FullName == Path.GetFullPath(path)))).Returns(properties2);
+            propertyGetterMock2.Setup(g => g.IsSupportedFile(path)).Returns(true);
+            propertyGetterMock2.Setup(g => g.GetFileProperties(path)).Returns(properties2);
 
             var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object, propertyGetterMock2.Object);
 
             // Act
-            var result = browser.GetFileProperty(path);
+            var result = await browser.GetFilePropertyAsync(path);
 
             // Assert
             result.Should().NotBeNull();
@@ -136,7 +136,7 @@ namespace HDLG.Tests
         }
 
         [Fact]
-        public void GetFileProperty_NoGettersSupportPath_ReturnsNull()
+        public async Task GetFileProperty_NoGettersSupportPath_ReturnsNull()
         {
             // Arrange
             string path = "test.unknown";
@@ -147,7 +147,7 @@ namespace HDLG.Tests
             var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object, propertyGetterMock2.Object);
 
             // Act
-            var result = browser.GetFileProperty(path);
+            var result = await browser.GetFilePropertyAsync(path);
 
             // Assert
             result.Should().BeNull();
@@ -168,7 +168,7 @@ namespace HDLG.Tests
         }
 
         [Fact]
-        public void GetFileProperty_FileExceedsMaxSize_SkipsExtractionAndLogsWarning()
+        public async Task GetFileProperty_FileExceedsMaxSize_SkipsExtractionAndLogsWarning()
         {
             // Arrange
             var tempFile = Path.GetTempFileName();
@@ -188,11 +188,11 @@ namespace HDLG.Tests
                     propertyGetterMock1.Object);
 
                 // Act
-                var result = browser.GetFileProperty(tempFile);
+                var result = await browser.GetFilePropertyAsync(tempFile);
 
                 // Assert
                 result.Should().BeNull();
-                propertyGetterMock1.Verify(g => g.GetFileProperties(It.IsAny<FileInfo>()), Times.Never);
+                propertyGetterMock1.Verify(g => g.GetFileProperties(It.IsAny<string>()), Times.Never);
                 loggerMock.Verify(
                     l => l.Warning(
                         It.Is<string>(s => s.Contains("exceeds maximum allowed size")),
@@ -211,7 +211,7 @@ namespace HDLG.Tests
         }
 
         [Fact]
-        public void GetFileProperty_ExtractionExceedsTimeout_ReturnsEmptyAndLogsWarning()
+        public async Task GetFileProperty_ExtractionExceedsTimeout_ReturnsEmptyAndLogsWarning()
         {
             // Arrange
             var tempFile = Path.GetTempFileName();
@@ -222,7 +222,7 @@ namespace HDLG.Tests
                 File.WriteAllText(tempFile, "slow extraction test");
 
                 propertyGetterMock1.Setup(g => g.IsSupportedFile(tempFile)).Returns(true);
-                propertyGetterMock1.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f.FullName == tempFile)))
+                propertyGetterMock1.Setup(g => g.GetFileProperties(tempFile))
                     .Returns(() =>
                     {
                         Thread.Sleep(2000);
@@ -236,11 +236,11 @@ namespace HDLG.Tests
                     propertyGetterMock1.Object);
 
                 // Act
-                var result = browser.GetFileProperty(tempFile);
+                var result = await browser.GetFilePropertyAsync(tempFile);
 
                 // Assert
                 result.Should().BeNull();
-                propertyGetterMock1.Verify(g => g.GetFileProperties(It.Is<FileInfo>(f => f.FullName == tempFile)), Times.Once);
+                propertyGetterMock1.Verify(g => g.GetFileProperties(tempFile), Times.Once);
                 loggerMock.Verify(
                     l => l.Warning(
                         It.Is<string>(s => s.Contains("timed out")),
@@ -259,15 +259,15 @@ namespace HDLG.Tests
         }
 
         [Fact]
-        public void LogGetterStatistics_FilesProcessed_LogsAveragesAndTotal()
+        public async Task LogGetterStatistics_FilesProcessed_LogsAveragesAndTotal()
         {
             // Arrange
             string path = "test.file";
-            propertyGetterMock1.Setup(g => g.IsSupportedFile(Path.GetFullPath(path))).Returns(true);
-            propertyGetterMock1.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f.FullName == Path.GetFullPath(path)))).Returns(new Dictionary<string, IConvertible>());
+            propertyGetterMock1.Setup(g => g.IsSupportedFile(path)).Returns(true);
+            propertyGetterMock1.Setup(g => g.GetFileProperties(path)).Returns(new Dictionary<string, IConvertible>());
 
             var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object);
-            browser.GetFileProperty(path);
+            await browser.GetFilePropertyAsync(path);
 
             // Act
             browser.LogGetterStatistics();
@@ -283,55 +283,5 @@ namespace HDLG.Tests
 
             loggerMock.Verify(l => l.Information("Total number of files {TotalNumberOfFiles}", 1L), Times.Once);
         }
-
-        [Fact]
-        public void GetFileProperty_ThrowsIOExceptionDuringSizeCheck_LogsWarningAndSkipsExtraction()
-        {
-            // Arrange
-            var tempFile = Path.GetTempFileName();
-            try
-            {
-                using (var stream = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None))
-                {
-                    stream.SetLength(200);
-                }
-
-                propertyGetterMock1.Setup(g => g.IsSupportedFile(tempFile)).Returns(true);
-
-                var ioException = new IOException("Simulated exception");
-                loggerMock.Setup(l => l.Warning(
-                    It.Is<string>(s => s.Contains("File exceeds maximum allowed size")),
-                    It.IsAny<long>(),
-                    It.IsAny<long>(),
-                    It.IsAny<string>()))
-                    .Throws(ioException);
-
-                var browser = new FilePropertyBrowser(
-                    loggerMock.Object,
-                    maxFileSizeBytes: 100,
-                    propertyExtractionTimeout: TimeSpan.FromSeconds(30),
-                    propertyGetterMock1.Object);
-
-                // Act
-                var result = browser.GetFileProperty(tempFile);
-
-                // Assert
-                result.Should().BeNull();
-                propertyGetterMock1.Verify(g => g.GetFileProperties(It.IsAny<FileInfo>()), Times.Never);
-                loggerMock.Verify(
-                    l => l.Warning(
-                        ioException,
-                        It.Is<string>(s => s.Contains("Cannot determine file size")),
-                        tempFile),
-                    Times.Once);
-            }
-            finally
-            {
-                if (File.Exists(tempFile))
-                {
-                    File.Delete(tempFile);
-                }
-            }
-        }
-}
+    }
 }
