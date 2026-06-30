@@ -95,7 +95,7 @@ namespace HDLG.Tests
             };
 
             var browserMock = new Mock<HdlgFileProperty.FilePropertyBrowser>(loggerMock.Object, new HdlgFileProperty.IFilePropertyGetter[0]);
-            browserMock.Setup(b => b.GetFileProperty(It.IsAny<FileInfo>())).Returns(properties);
+            browserMock.Setup(b => b.GetFileProperty(testFilePath)).Returns(properties);
 
             var dir = new HdlgDirectory(baseDirectoryPath, true, false, loggerMock.Object);
             dir.Browse(browserMock.Object);
