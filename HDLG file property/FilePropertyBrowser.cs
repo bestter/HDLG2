@@ -73,7 +73,7 @@ namespace HdlgFileProperty
 			for (int i = 0; i < filePropertyGetters.Length; i++)
 			{
 				var propertyGetters = filePropertyGetters[i];
-				if (propertyGetters.FilePropertyGetter.IsSupportedFile(path))
+				if (propertyGetters.FilePropertyGetter.IsSupportedFile(fileInfo.FullName))
 				{
 					fileSizeAllowed ??= IsFileSizeWithinLimit(fileInfo);
 					if (fileSizeAllowed == false)
@@ -145,11 +145,11 @@ namespace HdlgFileProperty
 
 		private async Task<IReadOnlyDictionary<string, IConvertible>> GetFilePropertiesWithTimeoutAsync(
 			IFilePropertyGetter getter,
-			FileInfo fileInfo,
+			string path,
 			Type getterType)
 		{
 			using var cts = new CancellationTokenSource(propertyExtractionTimeout);
-			var task = Task.Run(() => getter.GetFileProperties(fileInfo), cts.Token);
+			var task = Task.Run(() => getter.GetFileProperties(path), cts.Token);
 
 			try
 			{
@@ -180,7 +180,7 @@ namespace HdlgFileProperty
 					ex.GetBaseException(),
 					"Property extraction failed for {PropertyGetterType}: {FilePath}",
 					getterType,
-					fileInfo.FullName);
+					path);
 				return IFilePropertyGetter.EmptyProperties;
 			}
 		}

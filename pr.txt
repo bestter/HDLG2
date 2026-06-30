@@ -1,7 +1,6 @@
-⚡ Bolt: Convert synchronous task.Wait to async to avoid thread pool blocking
+🧪 Add missing test for GetFileProperty when no getters match
 
-💡 What: Refactored `GetFilePropertiesWithTimeout` to `GetFilePropertiesWithTimeoutAsync` using `task.WaitAsync(timeout)`. Propagated the asynchronous pattern up the call chain through the `FilePropertyBrowser`, directory abstractions, and into the WinForms calling logic.
-🎯 Why: The original implementation wrapped the property extraction in `Task.Run` but then synchronously blocked the calling thread using `task.Wait(timeout)`. This consumed 2 thread pool threads for a single operation, severely limiting scalability and causing thread pool starvation on large directories.
-📊 Measured Improvement: A thread pool starvation benchmark simulating 100 properties extraction parallelized with a 500ms timeout showed:
-  - Baseline (Synchronous Wait): 22518 ms
-  - Optimized (WaitAsync): 1013 ms
+🎯 What: Added test to ensure FilePropertyBrowser.GetFileProperty correctly handles the case where no property getters support the given file path.
+📊 Coverage: Added the `GetFileProperty_NoGettersSupportPath_ReturnsNull` test which verifies `GetFileProperty` returns `null` when all mocked getters return false for `IsSupportedFile`.
+✨ Result: Improved coverage for `FilePropertyBrowser.cs` by handling unsupported file type scenarios correctly without crashing or leaking memory.
+⚡ Bolt: Eliminate ToArray() allocation in TreeView expansion

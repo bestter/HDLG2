@@ -28,24 +28,23 @@ namespace HdlgFileProperty
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo)
+        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(string path)
         {
-            ArgumentNullException.ThrowIfNull(fileInfo);
             Dictionary<string, IConvertible>? properties = null;
             try
             {
-                var fileLength = fileInfo.Length;
+                var fileLength = new FileInfo(path).Length;
                 if (fileLength > FilePropertyLimits.MaxFileSizeBytes)
                 {
                     Logger?.Warning(
                         "File exceeds maximum allowed size ({MaxFileSizeBytes} bytes, actual {ActualFileSizeBytes} bytes), skipping image property extraction: {FilePath}",
                         FilePropertyLimits.MaxFileSizeBytes,
                         fileLength,
-                        fileInfo.FullName);
+                        path);
                     return IFilePropertyGetter.EmptyProperties;
                 }
 
-                var imageInfo = SixLabors.ImageSharp.Image.Identify(IdentifyOptions, fileInfo.FullName);
+                var imageInfo = SixLabors.ImageSharp.Image.Identify(IdentifyOptions, path);
                 if (imageInfo != null)
                 {
                     if (imageInfo.Width > FilePropertyLimits.MaxImageDimension || imageInfo.Height > FilePropertyLimits.MaxImageDimension)
@@ -55,7 +54,7 @@ namespace HdlgFileProperty
                             imageInfo.Width,
                             imageInfo.Height,
                             FilePropertyLimits.MaxImageDimension,
-                            fileInfo.FullName);
+                            path);
                         return IFilePropertyGetter.EmptyProperties;
                     }
 
@@ -80,17 +79,17 @@ namespace HdlgFileProperty
             catch (UnknownImageFormatException e)
             {
                 // The stream does not have a valid image format.
-                Logger?.Warning(e, "Unsupported image format for file: {FilePath}", fileInfo.FullName);
+                Logger?.Warning(e, "Unsupported image format for file: {FilePath}", path);
             }
             catch (InvalidImageContentException e)
             {
                 // The image content is corrupted or invalid.
-                Logger?.Warning(e, "Invalid image content for file: {FilePath}", fileInfo.FullName);
+                Logger?.Warning(e, "Invalid image content for file: {FilePath}", path);
             }
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
             catch (Exception e)
             {
-                Logger?.Warning(e, "Cannot read properties from file: {FilePath}", fileInfo.FullName);
+                Logger?.Warning(e, "Cannot read properties from file: {FilePath}", path);
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
             return (IReadOnlyDictionary<string, IConvertible>?)properties ?? IFilePropertyGetter.EmptyProperties;
