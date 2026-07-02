@@ -1,3 +1,4 @@
+#pragma warning disable CA1062
 /*
  This file is part of HTML Directory List Generator.
 
