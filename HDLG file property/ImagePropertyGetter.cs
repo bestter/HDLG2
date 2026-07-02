@@ -28,12 +28,14 @@ namespace HdlgFileProperty
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(string path)
+        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo)
         {
+            ArgumentNullException.ThrowIfNull(fileInfo);
+            string path = fileInfo.FullName;
             Dictionary<string, IConvertible>? properties = null;
             try
             {
-                var fileLength = new FileInfo(path).Length;
+                var fileLength = fileInfo.Length;
                 if (fileLength > FilePropertyLimits.MaxFileSizeBytes)
                 {
                     Logger?.Warning(
@@ -130,8 +132,10 @@ namespace HdlgFileProperty
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        public bool IsSupportedFile(string path)
+        public bool IsSupportedFile(FileInfo fileInfo)
         {
+            if (fileInfo == null) return false;
+            string path = fileInfo.FullName;
             if (string.IsNullOrWhiteSpace(path)) return false;
             var extension = Path.GetExtension(path.AsSpan());
             return !extension.IsEmpty && _supportedImageExtensions.GetAlternateLookup<ReadOnlySpan<char>>().Contains(extension);

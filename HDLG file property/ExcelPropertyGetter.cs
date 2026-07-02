@@ -22,8 +22,10 @@ namespace HdlgFileProperty
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(string path)
+        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo)
         {
+            ArgumentNullException.ThrowIfNull(fileInfo);
+            string path = fileInfo.FullName;
             Dictionary<string, IConvertible>? properties = null;
             try
             {
@@ -64,8 +66,10 @@ namespace HdlgFileProperty
             return properties ?? IFilePropertyGetter.EmptyProperties;
         }
 
-        public bool IsSupportedFile(string path)
+        public bool IsSupportedFile(FileInfo fileInfo)
         {
+            if (fileInfo == null) return false;
+            string path = fileInfo.FullName;
             ArgumentException.ThrowIfNullOrWhiteSpace(path);
             return path.AsSpan().EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase);
         }

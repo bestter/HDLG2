@@ -108,3 +108,6 @@
 ## 2026-06-25 - Avoid FileInfo instantiation in IsFileSizeWithinLimit
 **Learning:** Instantiating `FileInfo` from a string path multiple times during file traversal to check limits adds unnecessary overhead.
 **Action:** When filtering or checking paths for properties, accept the existing `FileInfo` object yielded by the directory enumerator.
+## 2026-06-25 - Avoid FileInfo instantiation in IsSupportedFile and GetFileProperties
+**Learning:** During property extraction, passing string paths to `IFilePropertyGetter.IsSupportedFile` and `GetFileProperties` causes redundant `FileInfo` instantiations within the getters (e.g. to check `.Length` or `.Exists`), triggering unnecessary OS stat calls. When processing thousands of files, this creates significant I/O and CPU overhead. Additionally, when using Moq to match `FileInfo` objects in tests, `f.FullName` returns absolute paths, which will fail to match relative paths like `"test.jpg"` used in unit tests.
+**Action:** Update interfaces and getters to accept the existing `FileInfo` object yielded by the directory enumerator. Update test mocks to use `f.Name == path` when verifying relative paths against `FileInfo` arguments.

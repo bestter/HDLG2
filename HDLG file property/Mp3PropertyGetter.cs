@@ -21,8 +21,10 @@ namespace HdlgFileProperty
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(string path)
+        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo)
         {
+            ArgumentNullException.ThrowIfNull(fileInfo);
+            string path = fileInfo.FullName;
             Logger?.Verbose("In {Class}.{Method}: {Path}", nameof(Mp3PropertyGetter), nameof(GetFileProperties), path);
             Dictionary<string, IConvertible>? properties = null;
             try
@@ -94,8 +96,10 @@ namespace HdlgFileProperty
             ".AA", ".AAX", ".AAC", ".AIFF", ".APE", ".DSF", ".FLAC", ".M4A", ".M4B", ".MP3", ".MPC", ".MPP", ".OGG", ".OGA", ".WAV", ".WMA", ".WV", ".WEBM"
         };
 
-        public bool IsSupportedFile(string path)
+        public bool IsSupportedFile(FileInfo fileInfo)
         {
+            if (fileInfo == null) return false;
+            string path = fileInfo.FullName;
             var extension = Path.GetExtension(path.AsSpan());
             // Optimization: _supportedExtensions uses StringComparer.OrdinalIgnoreCase,
             // so ToUpperInvariant() is an unnecessary allocation.

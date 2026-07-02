@@ -30,7 +30,7 @@ namespace HDLG.Tests
             var getter = new ExcelPropertyGetter();
 
             // Act
-            var properties = getter.GetFileProperties("test_excel.xlsx");
+            var properties = getter.GetFileProperties(new FileInfo("test_excel.xlsx"));
 
             // Assert
             properties.Should().ContainKey("Title");
@@ -49,7 +49,7 @@ namespace HDLG.Tests
             var getter = new ExcelPropertyGetter();
 
             // Act
-            var properties = getter.GetFileProperties("test_excel_empty.xlsx");
+            var properties = getter.GetFileProperties(new FileInfo("test_excel_empty.xlsx"));
 
             // Assert
             properties.Should().BeEmpty();
@@ -63,7 +63,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("nonexistent_excel.xlsx");
+            var properties = getter.GetFileProperties(new FileInfo("nonexistent_excel.xlsx"));
 
             // Assert
             properties.Should().BeEmpty();
@@ -78,7 +78,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("test_excel_invalid.xlsx");
+            var properties = getter.GetFileProperties(new FileInfo("test_excel_invalid.xlsx"));
 
             // Assert
             properties.Should().BeEmpty();
@@ -95,7 +95,7 @@ namespace HDLG.Tests
             var getter = new ExcelPropertyGetter();
 
             // Act
-            var result = getter.IsSupportedFile(path);
+            var result = getter.IsSupportedFile(new FileInfo(path));
 
             // Assert
             result.Should().Be(expected);
