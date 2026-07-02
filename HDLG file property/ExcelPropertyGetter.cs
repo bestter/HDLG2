@@ -26,7 +26,6 @@ namespace HdlgFileProperty
         public IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo)
         {
             ArgumentNullException.ThrowIfNull(fileInfo);
-            string path = fileInfo.FullName;
             Dictionary<string, IConvertible>? properties = null;
             try
             {

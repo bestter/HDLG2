@@ -23,8 +23,8 @@ namespace HdlgFileProperty
         }
 
         public IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo)
-        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo)
         {
+            ArgumentNullException.ThrowIfNull(fileInfo);
             Logger?.Verbose("In {Class}.{Method}: {Path}", nameof(Mp3PropertyGetter), nameof(GetFileProperties), fileInfo.FullName);
             Dictionary<string, IConvertible>? properties = null;
             try

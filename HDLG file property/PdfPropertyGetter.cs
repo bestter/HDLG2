@@ -25,7 +25,6 @@ namespace HdlgFileProperty
         public IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo)
         {
             ArgumentNullException.ThrowIfNull(fileInfo);
-            string path = fileInfo.FullName;
             Dictionary<string, IConvertible>? properties = null;
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
             try
