@@ -67,10 +67,10 @@ namespace HDLG.Tests
             string path = "test.jpg";
             var expectedProperties = new Dictionary<string, IConvertible> { { "Width", 1920 } };
 
-            propertyGetterMock1.Setup(g => g.IsSupportedFile(It.Is<string>(s => s != null && (s.EndsWith(path) || path.EndsWith(s) || s == path)))).Returns(true);
-            propertyGetterMock1.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f != null && (f.Name == path || f.FullName == path || f.FullName.EndsWith(path))))).Returns(expectedProperties);
+            propertyGetterMock1.Setup(g => g.IsSupportedFile(It.Is<FileInfo>(f => f.Name == path))).Returns(true);
+            propertyGetterMock1.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f.Name == path))).Returns(expectedProperties);
 
-            propertyGetterMock2.Setup(g => g.IsSupportedFile(It.Is<string>(s => s != null && (s.EndsWith(path) || path.EndsWith(s) || s == path)))).Returns(false);
+            propertyGetterMock2.Setup(g => g.IsSupportedFile(It.Is<FileInfo>(f => f.Name == path))).Returns(false);
 
             var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object, propertyGetterMock2.Object);
 
@@ -79,7 +79,7 @@ namespace HDLG.Tests
 
             // Assert
             result.Should().BeEquivalentTo(expectedProperties);
-            propertyGetterMock1.Verify(g => g.GetFileProperties(It.Is<FileInfo>(f => f != null && (f.Name == path || f.FullName == path || f.FullName.EndsWith(path)))), Times.Once);
+            propertyGetterMock1.Verify(g => g.GetFileProperties(It.Is<FileInfo>(f => f.Name == path)), Times.Once);
             propertyGetterMock2.Verify(g => g.GetFileProperties(It.IsAny<FileInfo>()), Times.Never);
         }
 
@@ -91,11 +91,11 @@ namespace HDLG.Tests
             var properties1 = new Dictionary<string, IConvertible> { { "Author", "John Doe" } };
             var properties2 = new Dictionary<string, IConvertible> { { "WordCount", 500 } };
 
-            propertyGetterMock1.Setup(g => g.IsSupportedFile(It.Is<string>(s => s != null && (s.EndsWith(path) || path.EndsWith(s) || s == path)))).Returns(true);
-            propertyGetterMock1.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f != null && (f.Name == path || f.FullName == path || f.FullName.EndsWith(path))))).Returns(properties1);
+            propertyGetterMock1.Setup(g => g.IsSupportedFile(It.Is<FileInfo>(f => f.Name == path))).Returns(true);
+            propertyGetterMock1.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f.Name == path))).Returns(properties1);
 
-            propertyGetterMock2.Setup(g => g.IsSupportedFile(It.Is<string>(s => s != null && (s.EndsWith(path) || path.EndsWith(s) || s == path)))).Returns(true);
-            propertyGetterMock2.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f != null && (f.Name == path || f.FullName == path || f.FullName.EndsWith(path))))).Returns(properties2);
+            propertyGetterMock2.Setup(g => g.IsSupportedFile(It.Is<FileInfo>(f => f.Name == path))).Returns(true);
+            propertyGetterMock2.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f.Name == path))).Returns(properties2);
 
             var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object, propertyGetterMock2.Object);
 
@@ -117,11 +117,11 @@ namespace HDLG.Tests
             var properties1 = new Dictionary<string, IConvertible> { { "Title", "First Title" } };
             var properties2 = new Dictionary<string, IConvertible> { { "Title", "Second Title" }, { "Author", "John Doe" } };
 
-            propertyGetterMock1.Setup(g => g.IsSupportedFile(It.Is<string>(s => s != null && (s.EndsWith(path) || path.EndsWith(s) || s == path)))).Returns(true);
-            propertyGetterMock1.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f != null && (f.Name == path || f.FullName == path || f.FullName.EndsWith(path))))).Returns(properties1);
+            propertyGetterMock1.Setup(g => g.IsSupportedFile(It.Is<FileInfo>(f => f.Name == path))).Returns(true);
+            propertyGetterMock1.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f.Name == path))).Returns(properties1);
 
-            propertyGetterMock2.Setup(g => g.IsSupportedFile(It.Is<string>(s => s != null && (s.EndsWith(path) || path.EndsWith(s) || s == path)))).Returns(true);
-            propertyGetterMock2.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f != null && (f.Name == path || f.FullName == path || f.FullName.EndsWith(path))))).Returns(properties2);
+            propertyGetterMock2.Setup(g => g.IsSupportedFile(It.Is<FileInfo>(f => f.Name == path))).Returns(true);
+            propertyGetterMock2.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f.Name == path))).Returns(properties2);
 
             var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object, propertyGetterMock2.Object);
 
@@ -141,8 +141,8 @@ namespace HDLG.Tests
             // Arrange
             string path = "test.unknown";
 
-            propertyGetterMock1.Setup(g => g.IsSupportedFile(It.Is<string>(s => s != null && (s.EndsWith(path) || path.EndsWith(s) || s == path)))).Returns(false);
-            propertyGetterMock2.Setup(g => g.IsSupportedFile(It.Is<string>(s => s != null && (s.EndsWith(path) || path.EndsWith(s) || s == path)))).Returns(false);
+            propertyGetterMock1.Setup(g => g.IsSupportedFile(It.Is<FileInfo>(f => f.Name == path))).Returns(false);
+            propertyGetterMock2.Setup(g => g.IsSupportedFile(It.Is<FileInfo>(f => f.Name == path))).Returns(false);
 
             var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object, propertyGetterMock2.Object);
 
@@ -179,7 +179,7 @@ namespace HDLG.Tests
                     stream.SetLength(200);
                 }
 
-                propertyGetterMock1.Setup(g => g.IsSupportedFile(It.Is<string>(s => s != null && (s.EndsWith(tempFile) || tempFile.EndsWith(s) || s == tempFile)))).Returns(true);
+                propertyGetterMock1.Setup(g => g.IsSupportedFile(It.Is<FileInfo>(f => f.FullName == tempFile))).Returns(true);
 
                 var browser = new FilePropertyBrowser(
                     loggerMock.Object,
@@ -221,8 +221,8 @@ namespace HDLG.Tests
             {
                 File.WriteAllText(tempFile, "slow extraction test");
 
-                propertyGetterMock1.Setup(g => g.IsSupportedFile(It.Is<string>(s => s != null && (s.EndsWith(tempFile) || tempFile.EndsWith(s) || s == tempFile)))).Returns(true);
-                propertyGetterMock1.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f != null && (f.FullName == tempFile || f.Name == tempFile || f.FullName.EndsWith(tempFile)))))
+                propertyGetterMock1.Setup(g => g.IsSupportedFile(It.Is<FileInfo>(f => f.FullName == tempFile))).Returns(true);
+                propertyGetterMock1.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f.FullName == tempFile)))
                     .Returns(() =>
                     {
                         Thread.Sleep(2000);
@@ -240,7 +240,7 @@ namespace HDLG.Tests
 
                 // Assert
                 result.Should().BeNull();
-                propertyGetterMock1.Verify(g => g.GetFileProperties(It.Is<FileInfo>(f => f != null && (f.FullName == tempFile || f.Name == tempFile || f.FullName.EndsWith(tempFile)))), Times.Once);
+                propertyGetterMock1.Verify(g => g.GetFileProperties(It.Is<FileInfo>(f => f.FullName == tempFile)), Times.Once);
                 loggerMock.Verify(
                     l => l.Warning(
                         It.Is<string>(s => s.Contains("timed out")),
@@ -263,8 +263,8 @@ namespace HDLG.Tests
         {
             // Arrange
             string path = "test.file";
-            propertyGetterMock1.Setup(g => g.IsSupportedFile(It.Is<string>(s => s != null && (s.EndsWith(path) || path.EndsWith(s) || s == path)))).Returns(true);
-            propertyGetterMock1.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f != null && (f.Name == path || f.FullName == path || f.FullName.EndsWith(path))))).Returns(new Dictionary<string, IConvertible>());
+            propertyGetterMock1.Setup(g => g.IsSupportedFile(It.Is<FileInfo>(f => f.Name == path))).Returns(true);
+            propertyGetterMock1.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f.Name == path))).Returns(new Dictionary<string, IConvertible>());
 
             var browser = new FilePropertyBrowser(loggerMock.Object, propertyGetterMock1.Object);
             await browser.GetFilePropertyAsync(path);
@@ -276,9 +276,9 @@ namespace HDLG.Tests
             loggerMock.Verify(l => l.Information(
                 "{PropertyGetterType} total runtime: {TotalExecutionTime}. Number of files: {TotalFiles}. Average: {AverageTime}",
                 propertyGetterMock1.Object.GetType(),
-                It.IsAny<FileInfo>(), // TotalExecutionTime
+                It.IsAny<string>(), // TotalExecutionTime
                 1L, // TotalFiles
-                It.IsAny<FileInfo>() // AverageTime
+                It.IsAny<string>() // AverageTime
             ), Times.Once);
 
             loggerMock.Verify(l => l.Information("Total number of files {TotalNumberOfFiles}", 1L), Times.Once);

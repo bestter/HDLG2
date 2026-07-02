@@ -31,6 +31,7 @@ namespace HdlgFileProperty
 
         public IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo)
         {
+            ArgumentNullException.ThrowIfNull(fileInfo);
             Dictionary<string, IConvertible>? properties = null;
             try
             {
@@ -131,8 +132,10 @@ namespace HdlgFileProperty
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        public bool IsSupportedFile(string path)
+        public bool IsSupportedFile(FileInfo fileInfo)
         {
+            if (fileInfo == null) return false;
+            string path = fileInfo.FullName;
             if (string.IsNullOrWhiteSpace(path)) return false;
             var extension = Path.GetExtension(path.AsSpan());
             return !extension.IsEmpty && _supportedImageExtensions.GetAlternateLookup<ReadOnlySpan<char>>().Contains(extension);

@@ -26,7 +26,7 @@ namespace HdlgFileProperty
         /// </summary>
         /// <param name="path">The full file path</param>
         /// <returns></returns>
-        bool IsSupportedFile(string path);
+        bool IsSupportedFile(FileInfo fileInfo);
 
         /// <summary>
         /// Get the file properties

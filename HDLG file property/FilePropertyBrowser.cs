@@ -73,7 +73,7 @@ namespace HdlgFileProperty
 			for (int i = 0; i < filePropertyGetters.Length; i++)
 			{
 				var propertyGetters = filePropertyGetters[i];
-				if (propertyGetters.FilePropertyGetter.IsSupportedFile(fileInfo.FullName))
+				if (propertyGetters.FilePropertyGetter.IsSupportedFile(fileInfo))
 				{
 					fileSizeAllowed ??= IsFileSizeWithinLimit(fileInfo);
 					if (fileSizeAllowed == false)

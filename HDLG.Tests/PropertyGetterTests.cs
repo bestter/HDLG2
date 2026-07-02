@@ -69,7 +69,15 @@ namespace HDLG.Tests
             var getter = new ImagePropertyGetter();
 
             // Act
-            var result = getter.IsSupportedFile(path!);
+            bool result;
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                result = getter.IsSupportedFile(null!);
+            }
+            else
+            {
+                result = getter.IsSupportedFile(new FileInfo(path));
+            }
 
             // Assert
             result.Should().Be(expected);
@@ -319,7 +327,7 @@ namespace HDLG.Tests
             var getter = new Mp3PropertyGetter();
 
             // Act
-            var result = getter.IsSupportedFile(path);
+            var result = getter.IsSupportedFile(new FileInfo(path));
 
             // Assert
             result.Should().Be(expected);
@@ -469,7 +477,7 @@ namespace HDLG.Tests
             var getter = new PdfPropertyGetter();
 
             // Act
-            var result = getter.IsSupportedFile(path);
+            var result = getter.IsSupportedFile(new FileInfo(path));
 
             // Assert
             result.Should().Be(expected);
@@ -586,7 +594,7 @@ namespace HDLG.Tests
             var getter = new ExcelPropertyGetter();
 
             // Act
-            var result = getter.IsSupportedFile(path);
+            var result = getter.IsSupportedFile(new FileInfo(path));
 
             // Assert
             result.Should().Be(expected);
