@@ -31,7 +31,7 @@ namespace HdlgFileProperty
         /// <summary>
         /// Get the file properties
         /// </summary>
-        /// <param name="path">The full file path</param>
+        /// <param name="fileInfo">The FileInfo of the file</param>
         /// <returns></returns>
         IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo);
     }

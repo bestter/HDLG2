@@ -95,7 +95,7 @@ namespace HDLG.Tests
             };
 
             var browserMock = new Mock<HdlgFileProperty.FilePropertyBrowser>(loggerMock.Object, new HdlgFileProperty.IFilePropertyGetter[0]);
-            browserMock.Setup(b => b.GetFilePropertyAsync(testFilePath)).ReturnsAsync(properties);
+            browserMock.Setup(b => b.GetFilePropertyAsync(It.Is<FileInfo>(f => f != null && (f.FullName == testFilePath || f.FullName.EndsWith("badxml.mp3"))))).ReturnsAsync(properties);
 
             var dir = new HdlgDirectory(baseDirectoryPath, true, false, loggerMock.Object);
             await dir.BrowseAsync(browserMock.Object);

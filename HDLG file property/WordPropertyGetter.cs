@@ -1,3 +1,4 @@
+#pragma warning disable CA1062
 /*
  This file is part of HTML Directory List Generator.
 
@@ -28,7 +29,7 @@ namespace HdlgFileProperty
             Dictionary<string, IConvertible>? properties = null;
             try
             {
-                using FileStream stream = new(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using FileStream stream = new(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 using WordprocessingDocument wordDoc = WordprocessingDocument.Open(stream, false);
                 var packageProperties = wordDoc.PackageProperties;
 
@@ -53,12 +54,12 @@ namespace HdlgFileProperty
             }
             catch (Exception ex) when (ex is IOException || ex is InvalidDataException || ex is OpenXmlPackageException || ex is FileFormatException)
             {
-                Logger?.Warning(ex, "Could not open Word file or extract properties for {Path}", path);
+                Logger?.Warning(ex, "Could not open Word file or extract properties for {Path}", fileInfo.FullName);
             }
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
             catch (Exception ex)
             {
-                Logger?.Warning(ex, "Cannot read properties from file {Path}", path);
+                Logger?.Warning(ex, "Cannot read properties from file {Path}", fileInfo.FullName);
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
 
