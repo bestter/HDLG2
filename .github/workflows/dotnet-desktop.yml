@@ -77,7 +77,7 @@ jobs:
       run: dotnet test ${{ env.Solution_Name }} --configuration ${{ matrix.configuration }} --no-build
 
     - name: Publish the application
-      run: dotnet publish "HDLG winforms/HDLG winforms.csproj" --configuration ${{ matrix.configuration }} --no-build --output publish_output
+      run: dotnet publish "HDLG winforms/HDLG winforms.csproj" --configuration ${{ matrix.configuration }} --output publish_output
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
