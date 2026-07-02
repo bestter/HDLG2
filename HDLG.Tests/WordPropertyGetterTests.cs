@@ -30,7 +30,7 @@ namespace HDLG.Tests
             var getter = new WordPropertyGetter();
 
             // Act
-            var properties = getter.GetFileProperties("test_word.docx");
+            var properties = getter.GetFileProperties(new FileInfo("test_word.docx"));
 
             // Assert
             properties.Should().ContainKey("Title");
@@ -49,7 +49,7 @@ namespace HDLG.Tests
             var getter = new WordPropertyGetter();
 
             // Act
-            var properties = getter.GetFileProperties("test_word_empty.docx");
+            var properties = getter.GetFileProperties(new FileInfo("test_word_empty.docx"));
 
             // Assert
             properties.Should().BeEmpty();
@@ -63,7 +63,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("nonexistent_word.docx");
+            var properties = getter.GetFileProperties(new FileInfo("nonexistent_word.docx"));
 
             // Assert
             properties.Should().BeEmpty();
@@ -78,7 +78,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("test_word_invalid.docx");
+            var properties = getter.GetFileProperties(new FileInfo("test_word_invalid.docx"));
 
             // Assert
             properties.Should().BeEmpty();
