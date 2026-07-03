@@ -82,7 +82,7 @@ namespace HDLG_winforms
 				|| string.Equals( resolvedPath, _resolvedRootDirectory, StringComparison.OrdinalIgnoreCase );
 		}
 
-		private void TreeView1_BeforeExpand (object sender, TreeViewCancelEventArgs e)
+		private async void TreeView1_BeforeExpand (object sender, TreeViewCancelEventArgs e)
 		{
 			if (e.Node == null || e.Node.Tag is not NodeInfo info || !info.IsDirectory)
 				return;
@@ -101,27 +101,51 @@ namespace HDLG_winforms
 						return;
 					}
 
-					var dirInfo = new DirectoryInfo( info.Path );
+					// Performance optimization: Offload expensive I/O directory enumeration to a background thread
+					// to prevent blocking the WinForms UI thread, significantly improving perceived performance
+					// and preventing layout freezes during folder expansion.
+					var (dirInfos, fileInfos) = await Task.Run(() =>
+					{
+						var dirInfo = new DirectoryInfo( info.Path );
 
+						var dirs = new List<DirectoryInfo>( );
+						var files = new List<FileInfo>( );
+
+						foreach (var fsInfo in dirInfo.EnumerateFileSystemInfos( ))
+						{
+							if (fsInfo is DirectoryInfo dir)
+							{
+								if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;
+								dirs.Add( dir );
+							}
+							else if (fsInfo is FileInfo file)
+							{
+								files.Add( file );
+							}
+						}
+
+						return (dirs, files);
+					}).ConfigureAwait(true);
+
+					// Safe WinForms practice: construct TreeNodes on the UI thread after I/O is complete
 					var dirNodes = new List<TreeNode>( );
 					var fileNodes = new List<TreeNode>( );
 
-					foreach (var fsInfo in dirInfo.EnumerateFileSystemInfos( ))
+					for (int i = 0; i < dirInfos.Count; i++)
 					{
-						if (fsInfo is DirectoryInfo dir)
-						{
-							if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;
-							var node = new TreeNode( dir.Name );
-							node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
-							node.Nodes.Add( new TreeNode( "Loading..." ) );
-							dirNodes.Add( node );
-						}
-						else if (fsInfo is FileInfo file)
-						{
-							var node = new TreeNode( file.Name );
-							node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
-							fileNodes.Add( node );
-						}
+						var dir = dirInfos[i];
+						var node = new TreeNode( dir.Name );
+						node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
+						node.Nodes.Add( new TreeNode( "Loading..." ) );
+						dirNodes.Add( node );
+					}
+
+					for (int i = 0; i < fileInfos.Count; i++)
+					{
+						var file = fileInfos[i];
+						var node = new TreeNode( file.Name );
+						node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
+						fileNodes.Add( node );
 					}
 
                     e.Node.TreeView?.BeginUpdate();

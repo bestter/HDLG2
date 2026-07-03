@@ -117,3 +117,7 @@
 ## 2026-06-25 - Avoid FileInfo instantiation in IsSupportedFile and GetFileProperties
 **Learning:** During property extraction, passing string paths to `IFilePropertyGetter.IsSupportedFile` and `GetFileProperties` causes redundant `FileInfo` instantiations within the getters (e.g. to check `.Length` or `.Exists`), triggering unnecessary OS stat calls. When processing thousands of files, this creates significant I/O and CPU overhead. Additionally, when using Moq to match `FileInfo` objects in tests, `f.FullName` returns absolute paths, which will fail to match relative paths like `"test.jpg"` used in unit tests.
 **Action:** Update interfaces and getters to accept the existing `FileInfo` object yielded by the directory enumerator. Update test mocks to use `f.Name == path` when verifying relative paths against `FileInfo` arguments.
+
+## 2024-07-03 - Prevent UI Thread Blocking for TreeView Expand
+**Learning:** Performing directory enumeration synchronously in WinForms `TreeView.BeforeExpand` events causes the application UI to freeze completely, especially when dealing with large nested directories or slow network drives.
+**Action:** Always wrap heavy I/O operations (like `dirInfo.EnumerateFileSystemInfos()`) inside `await Task.Run(...)` in a UI event handler, change the handler to `async void`, and append `.ConfigureAwait(true)` to ensure that the continuation logic (such as populating the UI control) resumes smoothly on the main UI thread without causing layout thrashing or unresponsiveness.
