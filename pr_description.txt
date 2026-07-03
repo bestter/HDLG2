@@ -1,8 +1,7 @@
-💡 **What:**
-In `DirectoryBrowser.cs`, I replaced all calls to the static wrapper methods `DirectoriesCount( directory )` and `FilesCount( directory )` with their direct underlying property counterparts `directory.TotalDirectories` and `directory.TotalFiles`. I subsequently deleted those wrapper methods entirely.
+💡 What: Refactored the `TreeView1_BeforeExpand` event handler in `BrowserForm.cs` to use `async void` and offload synchronous directory enumeration (`dirInfo.EnumerateFileSystemInfos()`) to a background thread using `await Task.Run(...)`. Constructing the `TreeNode` elements is then done safely on the main thread after awaiting the task with `.ConfigureAwait(true)`.
 
-🎯 **Why:**
-The wrapper methods `DirectoriesCount` and `FilesCount` did nothing except return the `directory.TotalDirectories` and `directory.TotalFiles` properties. While this seems trivial, C# method invocation overhead can slightly pile up, especially when traversing and serializing large, deeply nested directory hierarchies containing thousands of nodes. Accessing these cached metrics directly ensures zero unnecessary wrapper calls are pushed onto the stack.
+🎯 Why: Synchronous disk I/O in UI event handlers blocks the WinForms message pump. When expanding a directory with many files or one located on a slow network share, the entire application would freeze, causing layout thrashing and a poor user experience.
 
-📊 **Measured Improvement:**
-Since this is a straightforward static logic change substituting two direct property lookups, performance testing inside my Ubuntu testbench framework revealed it was slightly structurally faster inside deep benchmarks, although precise microbenchmarking results were difficult to strictly quantify given typical IO bounds when dealing with file systems; however, the instruction load and IL generation size strictly decrease.
+📊 Impact: Significantly improves UI responsiveness. The application will no longer freeze or show the "Not Responding" state during deep folder expansions in the Explorer view. Memory overhead is strictly contained by keeping object creation local to the `Task`.
+
+🔬 Measurement: Compile and run the application. Browse to a large directory (e.g., `C:\Windows\System32` or a slow network drive) via the internal UI Explorer (`btnStartUi_Click`). Click to expand a heavily populated folder. The tree node will display "Loading..." while the background thread fetches files without freezing the application UI, and the node will populate instantly once complete.
