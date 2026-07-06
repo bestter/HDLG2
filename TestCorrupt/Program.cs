@@ -9,7 +9,7 @@ class Program {
             var info = Image.Identify("nonexistent.jpg");
             Console.WriteLine("Identified!");
         } catch (Exception e) {
-            Console.WriteLine(e.GetType().Name);
+            Console.WriteLine(e);
         }
 
         File.WriteAllText("test_text.jpg", "hello world");
@@ -17,7 +17,7 @@ class Program {
             var info = Image.Identify("test_text.jpg");
             Console.WriteLine("Identified!");
         } catch (Exception e) {
-            Console.WriteLine(e.GetType().Name);
+            Console.WriteLine(e);
         }
 
         using (var image = new Image<Rgba32>(100, 50))
@@ -32,7 +32,7 @@ class Program {
             var info = Image.Identify("test_corrupted.jpg");
             Console.WriteLine("Identified!");
         } catch (Exception e) {
-            Console.WriteLine(e.GetType().Name);
+            Console.WriteLine(e);
         }
     }
 }
