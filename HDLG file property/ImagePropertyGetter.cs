@@ -28,23 +28,24 @@ namespace HdlgFileProperty
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(string path)
+        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo)
         {
+            if (fileInfo == null) return IFilePropertyGetter.EmptyProperties;
             Dictionary<string, IConvertible>? properties = null;
             try
             {
-                var fileLength = new FileInfo(path).Length;
+                var fileLength = fileInfo.Length;
                 if (fileLength > FilePropertyLimits.MaxFileSizeBytes)
                 {
                     Logger?.Warning(
                         "File exceeds maximum allowed size ({MaxFileSizeBytes} bytes, actual {ActualFileSizeBytes} bytes), skipping image property extraction: {FilePath}",
                         FilePropertyLimits.MaxFileSizeBytes,
                         fileLength,
-                        path);
+                        fileInfo.FullName);
                     return IFilePropertyGetter.EmptyProperties;
                 }
 
-                var imageInfo = SixLabors.ImageSharp.Image.Identify(IdentifyOptions, path);
+                var imageInfo = SixLabors.ImageSharp.Image.Identify(IdentifyOptions, fileInfo.FullName);
                 if (imageInfo != null)
                 {
                     if (imageInfo.Width > FilePropertyLimits.MaxImageDimension || imageInfo.Height > FilePropertyLimits.MaxImageDimension)
@@ -54,7 +55,7 @@ namespace HdlgFileProperty
                             imageInfo.Width,
                             imageInfo.Height,
                             FilePropertyLimits.MaxImageDimension,
-                            path);
+                            fileInfo.FullName);
                         return IFilePropertyGetter.EmptyProperties;
                     }
 
@@ -79,17 +80,17 @@ namespace HdlgFileProperty
             catch (UnknownImageFormatException e)
             {
                 // The stream does not have a valid image format.
-                Logger?.Warning(e, "Unsupported image format for file: {FilePath}", path);
+                Logger?.Warning(e, "Unsupported image format for file: {FilePath}", fileInfo.FullName);
             }
             catch (InvalidImageContentException e)
             {
                 // The image content is corrupted or invalid.
-                Logger?.Warning(e, "Invalid image content for file: {FilePath}", path);
+                Logger?.Warning(e, "Invalid image content for file: {FilePath}", fileInfo.FullName);
             }
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
             catch (Exception e)
             {
-                Logger?.Warning(e, "Cannot read properties from file: {FilePath}", path);
+                Logger?.Warning(e, "Cannot read properties from file: {FilePath}", fileInfo.FullName);
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
             return (IReadOnlyDictionary<string, IConvertible>?)properties ?? IFilePropertyGetter.EmptyProperties;
@@ -128,12 +129,12 @@ namespace HdlgFileProperty
         /// <summary>
         /// Is this file is supported
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="fileInfo"></param>
         /// <returns></returns>
-        public bool IsSupportedFile(string path)
+        public bool IsSupportedFile(FileInfo fileInfo)
         {
-            if (string.IsNullOrWhiteSpace(path)) return false;
-            var extension = Path.GetExtension(path.AsSpan());
+            if (fileInfo == null || string.IsNullOrWhiteSpace(fileInfo.FullName)) return false;
+            var extension = Path.GetExtension(fileInfo.FullName.AsSpan());
             return !extension.IsEmpty && _supportedImageExtensions.GetAlternateLookup<ReadOnlySpan<char>>().Contains(extension);
         }
     }

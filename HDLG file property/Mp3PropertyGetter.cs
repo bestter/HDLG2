@@ -21,13 +21,14 @@ namespace HdlgFileProperty
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(string path)
+        public IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo)
         {
-            Logger?.Verbose("In {Class}.{Method}: {Path}", nameof(Mp3PropertyGetter), nameof(GetFileProperties), path);
+            if (fileInfo == null) return IFilePropertyGetter.EmptyProperties;
+            Logger?.Verbose("In {Class}.{Method}: {Path}", nameof(Mp3PropertyGetter), nameof(GetFileProperties), fileInfo.FullName);
             Dictionary<string, IConvertible>? properties = null;
             try
             {
-                using TagLib.File f = TagLib.File.Create(path);
+                using TagLib.File f = TagLib.File.Create(fileInfo.FullName);
                 if (!f.PossiblyCorrupt)
                 {
                     if (!f.Tag.IsEmpty)
@@ -64,25 +65,25 @@ namespace HdlgFileProperty
                 else
                 {
                     // Performance optimization: Avoid eager string.Join allocation, let Serilog format the collection
-                    Logger?.Warning("File {Path} might be corrupted because {CorruptionReasons}", path, f.CorruptionReasons);
+                    Logger?.Warning("File {Path} might be corrupted because {CorruptionReasons}", fileInfo.FullName, f.CorruptionReasons);
                 }
             }
             catch (IOException ioe)
             {
-                Logger?.Error(ioe, "Cannot read file {Path}", path);
+                Logger?.Error(ioe, "Cannot read file {Path}", fileInfo.FullName);
             }
             catch (TagLib.UnsupportedFormatException ufe)
             {
-                Logger?.Warning(ufe, "File {Path} is not supported", path);
+                Logger?.Warning(ufe, "File {Path} is not supported", fileInfo.FullName);
             }
             catch (TagLib.CorruptFileException cfe)
             {
-                Logger?.Warning(cfe, "File {Path} is corrupted", path);
+                Logger?.Warning(cfe, "File {Path} is corrupted", fileInfo.FullName);
             }
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
             catch (Exception e)
             {
-                Logger?.Warning(e, "Cannot read properties from file {Path}", path);
+                Logger?.Warning(e, "Cannot read properties from file {Path}", fileInfo.FullName);
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
             return (IReadOnlyDictionary<string, IConvertible>?)properties ?? IFilePropertyGetter.EmptyProperties;
@@ -94,9 +95,10 @@ namespace HdlgFileProperty
             ".AA", ".AAX", ".AAC", ".AIFF", ".APE", ".DSF", ".FLAC", ".M4A", ".M4B", ".MP3", ".MPC", ".MPP", ".OGG", ".OGA", ".WAV", ".WMA", ".WV", ".WEBM"
         };
 
-        public bool IsSupportedFile(string path)
+        public bool IsSupportedFile(FileInfo fileInfo)
         {
-            var extension = Path.GetExtension(path.AsSpan());
+            if (fileInfo == null || string.IsNullOrWhiteSpace(fileInfo.FullName)) return false;
+            var extension = Path.GetExtension(fileInfo.FullName.AsSpan());
             // Optimization: _supportedExtensions uses StringComparer.OrdinalIgnoreCase,
             // so ToUpperInvariant() is an unnecessary allocation.
             return !extension.IsEmpty && _supportedExtensions.GetAlternateLookup<ReadOnlySpan<char>>().Contains(extension);

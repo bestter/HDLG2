@@ -48,7 +48,7 @@ namespace HDLG.Tests
             var getter = new ImagePropertyGetter();
 
             // Act
-            var properties = getter.GetFileProperties("test_valid_exif.jpg");
+            var properties = getter.GetFileProperties(new FileInfo("test_valid_exif.jpg"));
 
             // Assert
             properties.Should().ContainKey("Width");
@@ -66,7 +66,7 @@ namespace HDLG.Tests
             var getter = new ImagePropertyGetter();
 
             // Act
-            var properties = getter.GetFileProperties("test_valid_no_exif.jpg");
+            var properties = getter.GetFileProperties(new FileInfo("test_valid_no_exif.jpg"));
 
             // Assert
             properties.Should().ContainKey("Width");
@@ -83,7 +83,7 @@ namespace HDLG.Tests
             var getter = new ImagePropertyGetter();
 
             // Act
-            var properties = getter.GetFileProperties("test.png");
+            var properties = getter.GetFileProperties(new FileInfo("test.png"));
 
             // Assert
             properties.Should().ContainKey("Width");
@@ -100,7 +100,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("test_invalid.jpg");
+            var properties = getter.GetFileProperties(new FileInfo("test_invalid.jpg"));
 
             // Assert
             properties.Should().BeEmpty();
@@ -115,7 +115,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("test_corrupted.jpg");
+            var properties = getter.GetFileProperties(new FileInfo("test_corrupted.jpg"));
 
             // Assert
             properties.Should().BeEmpty();
@@ -130,7 +130,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("nonexistent_image.jpg");
+            var properties = getter.GetFileProperties(new FileInfo("nonexistent_image.jpg"));
 
             // Assert
             properties.Should().BeEmpty();
@@ -157,7 +157,7 @@ namespace HDLG.Tests
             var getter = new ImagePropertyGetter();
 
             // Act
-            var result = getter.IsSupportedFile(path);
+            var result = getter.IsSupportedFile(string.IsNullOrWhiteSpace(path) ? null! : new FileInfo(path));
 
             // Assert
             result.Should().Be(expected);

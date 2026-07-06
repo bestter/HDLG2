@@ -30,7 +30,7 @@ namespace HDLG.Tests
             var getter = new PdfPropertyGetter();
 
             // Act
-            var properties = getter.GetFileProperties("test.pdf");
+            var properties = getter.GetFileProperties(new FileInfo("test.pdf"));
 
             // Assert
             properties.Should().ContainKey("Title");
@@ -44,7 +44,7 @@ namespace HDLG.Tests
             var getter = new PdfPropertyGetter();
 
             // Act
-            var properties = getter.GetFileProperties("test_empty_title.pdf");
+            var properties = getter.GetFileProperties(new FileInfo("test_empty_title.pdf"));
 
             // Assert
             properties.Should().NotContainKey("Title");
@@ -59,7 +59,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("nonexistent.pdf");
+            var properties = getter.GetFileProperties(new FileInfo("nonexistent.pdf"));
 
             // Assert
             properties.Should().BeEmpty();
@@ -74,7 +74,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("test_invalid.pdf");
+            var properties = getter.GetFileProperties(new FileInfo("test_invalid.pdf"));
 
             // Assert
             properties.Should().BeEmpty();
@@ -89,7 +89,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("test_encrypted.pdf");
+            var properties = getter.GetFileProperties(new FileInfo("test_encrypted.pdf"));
 
             // Assert
             properties.Should().BeEmpty();
@@ -105,7 +105,7 @@ namespace HDLG.Tests
             var getter = new PdfPropertyGetter();
 
             // Act
-            var result = getter.IsSupportedFile(path);
+            var result = getter.IsSupportedFile(string.IsNullOrWhiteSpace(path) ? null! : new FileInfo(path));
 
             // Assert
             result.Should().Be(expected);

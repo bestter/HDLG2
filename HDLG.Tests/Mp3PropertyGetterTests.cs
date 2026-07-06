@@ -70,7 +70,7 @@ namespace HDLG.Tests
             try
             {
                 // Act
-                var properties = getter.GetFileProperties(testFile);
+                var properties = getter.GetFileProperties(new FileInfo(testFile));
 
                 // Assert
                 properties.Should().ContainKey("Title");
@@ -120,7 +120,7 @@ namespace HDLG.Tests
             var getter = new Mp3PropertyGetter();
 
             // Act
-            var result = getter.IsSupportedFile(path);
+            var result = getter.IsSupportedFile(string.IsNullOrWhiteSpace(path) ? null! : new FileInfo(path));
 
             // Assert
             result.Should().Be(expected);
@@ -145,7 +145,7 @@ namespace HDLG.Tests
             try
             {
                 // Act
-                var properties = getter.GetFileProperties(testFile);
+                var properties = getter.GetFileProperties(new FileInfo(testFile));
 
                 // Assert
                 properties.Should().ContainKey("Title");
@@ -172,7 +172,7 @@ namespace HDLG.Tests
             getter.AddLogger(loggerMock.Object);
 
             // Act
-            var properties = getter.GetFileProperties("nonexistent.mp3");
+            var properties = getter.GetFileProperties(new FileInfo("nonexistent.mp3"));
 
             // Assert
             loggerMock.Verify(l => l.Error(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Cannot read file")), It.IsAny<string>()), Times.Once);
@@ -191,7 +191,7 @@ namespace HDLG.Tests
             try
             {
                 // Act
-                var properties = getter.GetFileProperties(invalidFile);
+                var properties = getter.GetFileProperties(string.IsNullOrWhiteSpace(invalidFile) ? null! : new FileInfo(invalidFile));
 
                 // Assert
                 loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("is corrupted") || s.Contains("is not supported") || s.Contains("Cannot read properties from file")), It.IsAny<string>()), Times.Once);
