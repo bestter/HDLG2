@@ -1,1 +1,1 @@
-🛡️ Sentinel: Medium Fix Insecure Process.Start without user confirmation
+🛡️ Sentinel: High Fix Unrestricted Process Execution in credit.cs
