@@ -86,6 +86,49 @@ namespace HDLG.Tests
         }
 
         [Fact]
+        public async Task Browse_WithDeepRecursion_DiscoversAllLevels()
+        {
+            // Arrange
+            int maxDepth = 10;
+            string currentPath = baseDirectoryPath;
+
+            // Create a deeply nested structure: Base -> Depth1 -> Depth2 ... -> Depth10
+            for (int i = 1; i <= maxDepth; i++)
+            {
+                System.IO.File.WriteAllText(Path.Combine(currentPath, $"file_{i}.txt"), $"content {i}");
+                currentPath = Path.Combine(currentPath, $"Depth{i}");
+                System.IO.Directory.CreateDirectory(currentPath);
+            }
+            // Add a file in the deepest directory
+            System.IO.File.WriteAllText(Path.Combine(currentPath, $"file_{maxDepth + 1}.txt"), "deepest content");
+
+            var hdlgDirectory = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+
+            // Act
+            await hdlgDirectory.BrowseAsync(propertyBrowser);
+
+            // Assert
+            hdlgDirectory.TotalDirectories.Should().Be(maxDepth);
+            hdlgDirectory.TotalFiles.Should().Be(maxDepth + 1);
+
+            // Verify the structure manually by traversing down
+            var currentHdlgDir = hdlgDirectory;
+            for (int i = 1; i <= maxDepth; i++)
+            {
+                currentHdlgDir.FilesCount.Should().Be(1);
+                currentHdlgDir.Files[0].Name.Should().Be($"file_{i}.txt");
+                currentHdlgDir.DirectoriesCount.Should().Be(1);
+                currentHdlgDir.Directories[0].Name.Should().Be($"Depth{i}");
+
+                currentHdlgDir = currentHdlgDir.Directories[0];
+            }
+
+            currentHdlgDir.FilesCount.Should().Be(1);
+            currentHdlgDir.Files[0].Name.Should().Be($"file_{maxDepth + 1}.txt");
+            currentHdlgDir.DirectoriesCount.Should().Be(0);
+        }
+
+        [Fact]
         public async Task Browse_WithSubdirectories_DiscoversAllFilesAndSubdirectories()
         {
             // Arrange
