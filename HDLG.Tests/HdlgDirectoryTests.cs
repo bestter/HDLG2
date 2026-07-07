@@ -86,6 +86,49 @@ namespace HDLG.Tests
         }
 
         [Fact]
+        public async Task Browse_WithDeepRecursion_DiscoversAllLevels()
+        {
+            // Arrange
+            int maxDepth = 10;
+            string currentPath = baseDirectoryPath;
+
+            // Create a deeply nested structure: Base -> Depth1 -> Depth2 ... -> Depth10
+            for (int i = 1; i <= maxDepth; i++)
+            {
+                System.IO.File.WriteAllText(Path.Combine(currentPath, $"file_{i}.txt"), $"content {i}");
+                currentPath = Path.Combine(currentPath, $"Depth{i}");
+                System.IO.Directory.CreateDirectory(currentPath);
+            }
+            // Add a file in the deepest directory
+            System.IO.File.WriteAllText(Path.Combine(currentPath, $"file_{maxDepth + 1}.txt"), "deepest content");
+
+            var hdlgDirectory = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+
+            // Act
+            await hdlgDirectory.BrowseAsync(propertyBrowser);
+
+            // Assert
+            hdlgDirectory.TotalDirectories.Should().Be(maxDepth);
+            hdlgDirectory.TotalFiles.Should().Be(maxDepth + 1);
+
+            // Verify the structure manually by traversing down
+            var currentHdlgDir = hdlgDirectory;
+            for (int i = 1; i <= maxDepth; i++)
+            {
+                currentHdlgDir.FilesCount.Should().Be(1);
+                currentHdlgDir.Files[0].Name.Should().Be($"file_{i}.txt");
+                currentHdlgDir.DirectoriesCount.Should().Be(1);
+                currentHdlgDir.Directories[0].Name.Should().Be($"Depth{i}");
+
+                currentHdlgDir = currentHdlgDir.Directories[0];
+            }
+
+            currentHdlgDir.FilesCount.Should().Be(1);
+            currentHdlgDir.Files[0].Name.Should().Be($"file_{maxDepth + 1}.txt");
+            currentHdlgDir.DirectoriesCount.Should().Be(0);
+        }
+
+        [Fact]
         public async Task Browse_WithSubdirectories_DiscoversAllFilesAndSubdirectories()
         {
             // Arrange
@@ -128,6 +171,165 @@ namespace HDLG.Tests
             dir1.Equals(dir2).Should().BeTrue();
             (dir1 == dir2).Should().BeTrue();
         }
+        [Fact]
+        public void EqualityOperator_NullLeft_ReturnsFalse()
+        {
+            var dir = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+#pragma warning disable CS8625
+            (((HdlgDirectory?)null) == dir).Should().BeFalse();
+#pragma warning restore CS8625
+        }
+
+        [Fact]
+        public void EqualityOperator_NullRight_ReturnsFalse()
+        {
+            var dir = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+#pragma warning disable CS8625
+            (dir == ((HdlgDirectory?)null)).Should().BeFalse();
+#pragma warning restore CS8625
+        }
+
+        [Fact]
+        public void EqualityOperator_BothNull_ReturnsTrue()
+        {
+#pragma warning disable CS8625
+            (((HdlgDirectory?)null) == ((HdlgDirectory?)null)).Should().BeTrue();
+#pragma warning restore CS8625
+        }
+
+        [Fact]
+        public void InequalityOperator_NullLeft_ReturnsTrue()
+        {
+            var dir = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+#pragma warning disable CS8625
+            (((HdlgDirectory?)null) != dir).Should().BeTrue();
+#pragma warning restore CS8625
+        }
+
+        [Fact]
+        public void InequalityOperator_NullRight_ReturnsTrue()
+        {
+            var dir = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+#pragma warning disable CS8625
+            (dir != ((HdlgDirectory?)null)).Should().BeTrue();
+#pragma warning restore CS8625
+        }
+
+        [Fact]
+        public void InequalityOperator_BothNull_ReturnsFalse()
+        {
+#pragma warning disable CS8625
+            (((HdlgDirectory?)null) != ((HdlgDirectory?)null)).Should().BeFalse();
+#pragma warning restore CS8625
+        }
+
+        [Fact]
+        public void LessThanOperator_NullLeft_ReturnsTrue()
+        {
+            var dir = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+#pragma warning disable CS8625
+            (((HdlgDirectory?)null) < dir).Should().BeTrue();
+#pragma warning restore CS8625
+        }
+
+        [Fact]
+        public void LessThanOperator_NullRight_ReturnsFalse()
+        {
+            var dir = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+#pragma warning disable CS8625
+            (dir < ((HdlgDirectory?)null)).Should().BeFalse();
+#pragma warning restore CS8625
+        }
+
+        [Fact]
+        public void LessThanOperator_BothNull_ReturnsFalse()
+        {
+#pragma warning disable CS8625
+            (((HdlgDirectory?)null) < ((HdlgDirectory?)null)).Should().BeFalse();
+#pragma warning restore CS8625
+        }
+
+        [Fact]
+        public void LessThanOrEqualOperator_NullLeft_ReturnsTrue()
+        {
+            var dir = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+#pragma warning disable CS8625
+            (((HdlgDirectory?)null) <= dir).Should().BeTrue();
+#pragma warning restore CS8625
+        }
+
+        [Fact]
+        public void LessThanOrEqualOperator_NullRight_ReturnsFalse()
+        {
+            var dir = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+#pragma warning disable CS8625
+            (dir <= ((HdlgDirectory?)null)).Should().BeFalse();
+#pragma warning restore CS8625
+        }
+
+        [Fact]
+        public void LessThanOrEqualOperator_BothNull_ReturnsTrue()
+        {
+#pragma warning disable CS8625
+            (((HdlgDirectory?)null) <= ((HdlgDirectory?)null)).Should().BeTrue();
+#pragma warning restore CS8625
+        }
+
+        [Fact]
+        public void GreaterThanOperator_NullLeft_ReturnsFalse()
+        {
+            var dir = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+#pragma warning disable CS8625
+            (((HdlgDirectory?)null) > dir).Should().BeFalse();
+#pragma warning restore CS8625
+        }
+
+        [Fact]
+        public void GreaterThanOperator_NullRight_ReturnsTrue()
+        {
+            var dir = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+#pragma warning disable CS8625
+            (dir > ((HdlgDirectory?)null)).Should().BeTrue();
+#pragma warning restore CS8625
+        }
+
+        [Fact]
+        public void GreaterThanOperator_BothNull_ReturnsFalse()
+        {
+#pragma warning disable CS8625
+            (((HdlgDirectory?)null) > ((HdlgDirectory?)null)).Should().BeFalse();
+#pragma warning restore CS8625
+        }
+
+        [Fact]
+        public void GreaterThanOrEqualOperator_NullLeft_ReturnsFalse()
+        {
+            var dir = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+#pragma warning disable CS8625
+            (((HdlgDirectory?)null) >= dir).Should().BeFalse();
+#pragma warning restore CS8625
+        }
+
+        [Fact]
+        public void GreaterThanOrEqualOperator_NullRight_ReturnsTrue()
+        {
+            var dir = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+#pragma warning disable CS8625
+            (dir >= ((HdlgDirectory?)null)).Should().BeTrue();
+#pragma warning restore CS8625
+        }
+
+        [Fact]
+        public void GreaterThanOrEqualOperator_BothNull_ReturnsTrue()
+        {
+#pragma warning disable CS8625
+            (((HdlgDirectory?)null) >= ((HdlgDirectory?)null)).Should().BeTrue();
+#pragma warning restore CS8625
+        }
+
+
+
+
 
         [Fact]
         public async Task Browse_UnauthorizedAccessException_LogsWarning()
