@@ -1,0 +1,7 @@
+💡 What: Refactored the `TreeView1_BeforeExpand` event handler in `BrowserForm.cs` to use `async void` and offload synchronous directory enumeration (`dirInfo.EnumerateFileSystemInfos()`) to a background thread using `await Task.Run(...)`. Constructing the `TreeNode` elements is then done safely on the main thread after awaiting the task with `.ConfigureAwait(true)`.
+
+🎯 Why: Synchronous disk I/O in UI event handlers blocks the WinForms message pump. When expanding a directory with many files or one located on a slow network share, the entire application would freeze, causing layout thrashing and a poor user experience.
+
+📊 Impact: Significantly improves UI responsiveness. The application will no longer freeze or show the "Not Responding" state during deep folder expansions in the Explorer view. Memory overhead is strictly contained by keeping object creation local to the `Task`.
+
+🔬 Measurement: Compile and run the application. Browse to a large directory (e.g., `C:\Windows\System32` or a slow network drive) via the internal UI Explorer (`btnStartUi_Click`). Click to expand a heavily populated folder. The tree node will display "Loading..." while the background thread fetches files without freezing the application UI, and the node will populate instantly once complete.

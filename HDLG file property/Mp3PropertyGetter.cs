@@ -1,3 +1,4 @@
+#pragma warning disable CA1062
 /*
  This file is part of HTML Directory List Generator.
 
@@ -23,7 +24,7 @@ namespace HdlgFileProperty
 
         public IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo)
         {
-            if (fileInfo == null) return IFilePropertyGetter.EmptyProperties;
+            ArgumentNullException.ThrowIfNull(fileInfo);
             Logger?.Verbose("In {Class}.{Method}: {Path}", nameof(Mp3PropertyGetter), nameof(GetFileProperties), fileInfo.FullName);
             Dictionary<string, IConvertible>? properties = null;
             try
@@ -97,8 +98,9 @@ namespace HdlgFileProperty
 
         public bool IsSupportedFile(FileInfo fileInfo)
         {
-            if (fileInfo == null || string.IsNullOrWhiteSpace(fileInfo.FullName)) return false;
-            var extension = Path.GetExtension(fileInfo.FullName.AsSpan());
+            if (fileInfo == null) return false;
+            string path = fileInfo.FullName;
+            var extension = Path.GetExtension(path.AsSpan());
             // Optimization: _supportedExtensions uses StringComparer.OrdinalIgnoreCase,
             // so ToUpperInvariant() is an unnecessary allocation.
             return !extension.IsEmpty && _supportedExtensions.GetAlternateLookup<ReadOnlySpan<char>>().Contains(extension);

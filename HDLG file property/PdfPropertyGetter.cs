@@ -1,3 +1,4 @@
+#pragma warning disable CA1062
 /*
  This file is part of HTML Directory List Generator.
 
@@ -23,7 +24,7 @@ namespace HdlgFileProperty
 
         public IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo)
         {
-            if (fileInfo == null) return IFilePropertyGetter.EmptyProperties;
+            ArgumentNullException.ThrowIfNull(fileInfo);
             Dictionary<string, IConvertible>? properties = null;
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
             try
@@ -60,8 +61,10 @@ namespace HdlgFileProperty
 
         public bool IsSupportedFile(FileInfo fileInfo)
         {
-            if (fileInfo == null || string.IsNullOrWhiteSpace(fileInfo.FullName)) return false;
-            return fileInfo.FullName.AsSpan().EndsWith(".pdf", StringComparison.OrdinalIgnoreCase);
+            if (fileInfo == null) return false;
+            string path = fileInfo.FullName;
+            ArgumentException.ThrowIfNullOrWhiteSpace(path);
+            return path.AsSpan().EndsWith(".pdf", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

@@ -1,3 +1,4 @@
+#pragma warning disable CA1062
 /*
  This file is part of HTML Directory List Generator.
 
@@ -30,7 +31,7 @@ namespace HdlgFileProperty
 
         public IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo)
         {
-            if (fileInfo == null) return IFilePropertyGetter.EmptyProperties;
+            ArgumentNullException.ThrowIfNull(fileInfo);
             Dictionary<string, IConvertible>? properties = null;
             try
             {
@@ -129,12 +130,14 @@ namespace HdlgFileProperty
         /// <summary>
         /// Is this file is supported
         /// </summary>
-        /// <param name="fileInfo"></param>
+        /// <param name="path"></param>
         /// <returns></returns>
         public bool IsSupportedFile(FileInfo fileInfo)
         {
-            if (fileInfo == null || string.IsNullOrWhiteSpace(fileInfo.FullName)) return false;
-            var extension = Path.GetExtension(fileInfo.FullName.AsSpan());
+            if (fileInfo == null) return false;
+            string path = fileInfo.FullName;
+            if (string.IsNullOrWhiteSpace(path)) return false;
+            var extension = Path.GetExtension(path.AsSpan());
             return !extension.IsEmpty && _supportedImageExtensions.GetAlternateLookup<ReadOnlySpan<char>>().Contains(extension);
         }
     }

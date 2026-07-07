@@ -95,7 +95,7 @@ namespace HDLG.Tests
             var getter = new WordPropertyGetter();
 
             // Act
-            var result = getter.IsSupportedFile(string.IsNullOrWhiteSpace(path) ? null! : new FileInfo(path));
+            var result = getter.IsSupportedFile(new FileInfo(path));
 
             // Assert
             result.Should().Be(expected);
