@@ -1,1 +1,0 @@
-🛡️ Sentinel: Medium Fix Insecure Process.Start without user confirmation

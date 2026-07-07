@@ -25,21 +25,21 @@ namespace HDLG.Tests
         [Fact]
         public void OpenWithDefaultProgram_NullPath_ThrowsArgumentException()
         {
-            var act = () => MainWindow.OpenWithDefaultProgram(null!, _ => { }, null, _ => true);
+            var act = () => MainWindow.OpenWithDefaultProgram(null!, _ => { }, _ => true);
             act.Should().Throw<ArgumentException>();
         }
 
         [Fact]
         public void OpenWithDefaultProgram_EmptyPath_ThrowsArgumentException()
         {
-            var act = () => MainWindow.OpenWithDefaultProgram("", _ => { }, null, _ => true);
+            var act = () => MainWindow.OpenWithDefaultProgram("", _ => { }, _ => true);
             act.Should().Throw<ArgumentException>();
         }
 
         [Fact]
         public void OpenWithDefaultProgram_WhitespacePath_ThrowsArgumentException()
         {
-            var act = () => MainWindow.OpenWithDefaultProgram("   ", _ => { }, null, _ => true);
+            var act = () => MainWindow.OpenWithDefaultProgram("   ", _ => { }, _ => true);
             act.Should().Throw<ArgumentException>();
         }
 
@@ -47,7 +47,7 @@ namespace HDLG.Tests
         public void OpenWithDefaultProgram_NonExistentFile_ThrowsFileNotFoundException()
         {
             var nonExistentPath = System.IO.Path.Combine(tempDir, "nonexistent.txt");
-            var act = () => MainWindow.OpenWithDefaultProgram(nonExistentPath, _ => { }, null, _ => true);
+            var act = () => MainWindow.OpenWithDefaultProgram(nonExistentPath, _ => { }, _ => true);
             act.Should().Throw<FileNotFoundException>();
         }
 
@@ -118,7 +118,7 @@ namespace HDLG.Tests
             var dangerousFile = System.IO.Path.Combine(tempDir, $"malicious{extension}");
             System.IO.File.WriteAllText(dangerousFile, "dangerous content");
 
-            var act = () => MainWindow.OpenWithDefaultProgram(dangerousFile, _ => { }, null, _ => true);
+            var act = () => MainWindow.OpenWithDefaultProgram(dangerousFile, _ => { }, _ => true);
             act.Should().Throw<InvalidOperationException>()
                 .WithMessage("*not allowed for security reasons*");
         }
@@ -143,7 +143,7 @@ namespace HDLG.Tests
 
             try
             {
-                MainWindow.OpenWithDefaultProgram(safeFile, _ => { }, null, _ => true);
+                MainWindow.OpenWithDefaultProgram(safeFile, _ => { }, _ => true);
             }
             catch (InvalidOperationException)
             {
@@ -163,34 +163,12 @@ namespace HDLG.Tests
             var unknownFile = System.IO.Path.Combine(tempDir, "unknown.xyz123");
             System.IO.File.WriteAllText(unknownFile, "unknown content");
 
-            var act = () => MainWindow.OpenWithDefaultProgram(unknownFile, _ => {}, null, _ => true);
+            var act = () => MainWindow.OpenWithDefaultProgram(unknownFile, _ => {}, _ => true);
             act.Should().Throw<InvalidOperationException>()
                 .WithMessage("*not allowed for security reasons*");
         }
 
-        [Fact]
-        public void OpenWithDefaultProgram_UserDeclinesPrompt_DoesNotExecute()
-        {
-            var unknownFile = System.IO.Path.Combine(tempDir, "unknown.txt");
-            System.IO.File.WriteAllText(unknownFile, "unknown content");
 
-            bool executed = false;
-            MainWindow.OpenWithDefaultProgram(unknownFile, _ => { executed = true; }, null, _ => false);
-
-            executed.Should().BeFalse();
-        }
-
-        [Fact]
-        public void OpenWithDefaultProgram_UserAcceptsPrompt_Executes()
-        {
-            var unknownFile = System.IO.Path.Combine(tempDir, "unknown.txt");
-            System.IO.File.WriteAllText(unknownFile, "unknown content");
-
-            bool executed = false;
-            MainWindow.OpenWithDefaultProgram(unknownFile, _ => { executed = true; }, null, _ => true);
-
-            executed.Should().BeTrue();
-        }
 
         [Fact]
         public void OpenWithDefaultProgram_FileChangedDuringPrompt_ThrowsInvalidOperationException()
@@ -202,7 +180,6 @@ namespace HDLG.Tests
             var act = () => MainWindow.OpenWithDefaultProgram(
                 safeFile,
                 _ => { executed = true; },
-                null,
                 _ =>
                 {
                     System.IO.File.WriteAllText(safeFile, "tampered content");
@@ -224,7 +201,6 @@ namespace HDLG.Tests
             var act = () => MainWindow.OpenWithDefaultProgram(
                 safeFile,
                 _ => { executed = true; },
-                null,
                 _ =>
                 {
                     System.IO.File.Delete(safeFile);
@@ -245,7 +221,6 @@ namespace HDLG.Tests
             var act = () => MainWindow.OpenWithDefaultProgram(
                 safeFile,
                 _ => { executed = true; },
-                null,
                 _ => true,
                 (_, afterUserConfirmation) => afterUserConfirmation ? ".exe" : ".txt");
 
@@ -254,24 +229,6 @@ namespace HDLG.Tests
             executed.Should().BeFalse();
         }
 
-        [Fact]
-        public void OpenWithDefaultProgram_AcceptedUnknownExtensionChangesDuringPrompt_ThrowsInvalidOperationException()
-        {
-            var unknownFile = System.IO.Path.Combine(tempDir, "custom.abc");
-            System.IO.File.WriteAllText(unknownFile, "content");
-
-            bool executed = false;
-            var act = () => MainWindow.OpenWithDefaultProgram(
-                unknownFile,
-                _ => { executed = true; },
-                _ => true,
-                _ => true,
-                (_, afterUserConfirmation) => afterUserConfirmation ? ".xyz123" : ".abc");
-
-            act.Should().Throw<InvalidOperationException>()
-                .WithMessage("*not allowed for security reasons*");
-            executed.Should().BeFalse();
-        }
 
         [Fact]
         public void OpenWithDefaultProgram_FileUnchangedAfterPrompt_Executes()
@@ -280,7 +237,7 @@ namespace HDLG.Tests
             System.IO.File.WriteAllText(safeFile, "stable content");
 
             bool executed = false;
-            MainWindow.OpenWithDefaultProgram(safeFile, _ => { executed = true; }, null, _ => true);
+            MainWindow.OpenWithDefaultProgram(safeFile, _ => { executed = true; }, _ => true);
 
             executed.Should().BeTrue();
         }
