@@ -1,6 +1,0 @@
-🧪 Add missing test for GetFileProperty when no getters match
-
-🎯 What: Added test to ensure FilePropertyBrowser.GetFileProperty correctly handles the case where no property getters support the given file path.
-📊 Coverage: Added the `GetFileProperty_NoGettersSupportPath_ReturnsNull` test which verifies `GetFileProperty` returns `null` when all mocked getters return false for `IsSupportedFile`.
-✨ Result: Improved coverage for `FilePropertyBrowser.cs` by handling unsupported file type scenarios correctly without crashing or leaking memory.
-⚡ Bolt: Eliminate ToArray() allocation in TreeView expansion
