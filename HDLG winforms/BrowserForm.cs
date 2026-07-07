@@ -128,8 +128,9 @@ namespace HDLG_winforms
 					}).ConfigureAwait(true);
 
 					// Safe WinForms practice: construct TreeNodes on the UI thread after I/O is complete
-					var dirNodes = new List<TreeNode>( );
-					var fileNodes = new List<TreeNode>( );
+					// Performance optimization: allocate fixed-size arrays instead of List<T> to avoid ToArray() allocation overhead.
+					var dirNodes = new TreeNode[dirInfos.Count];
+					var fileNodes = new TreeNode[fileInfos.Count];
 
 					for (int i = 0; i < dirInfos.Count; i++)
 					{
@@ -137,7 +138,7 @@ namespace HDLG_winforms
 						var node = new TreeNode( dir.Name );
 						node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
 						node.Nodes.Add( new TreeNode( "Loading..." ) );
-						dirNodes.Add( node );
+						dirNodes[i] = node;
 					}
 
 					for (int i = 0; i < fileInfos.Count; i++)
@@ -145,12 +146,12 @@ namespace HDLG_winforms
 						var file = fileInfos[i];
 						var node = new TreeNode( file.Name );
 						node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
-						fileNodes.Add( node );
+						fileNodes[i] = node;
 					}
 
                     e.Node.TreeView?.BeginUpdate();
-                    e.Node.Nodes.AddRange(dirNodes.ToArray());
-                    e.Node.Nodes.AddRange(fileNodes.ToArray());
+                    e.Node.Nodes.AddRange(dirNodes);
+                    e.Node.Nodes.AddRange(fileNodes);
                     e.Node.TreeView?.EndUpdate();
                 }
                 catch (UnauthorizedAccessException ex)
