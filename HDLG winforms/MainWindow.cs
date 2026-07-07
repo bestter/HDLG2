@@ -265,9 +265,6 @@ toolStripStatusLabelTotalTime.Visible = false;
 						WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
 					};
 					fileopener.Start( );
-				}, ext => {
-					DialogResult res = MessageBox.Show( $"The file extension '{ext}' is not in the safe allowlist.\n\nAre you sure you want to open this file?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
-					return res == DialogResult.Yes;
 				}, fullPath => {
 					DialogResult res = MessageBox.Show( $"You are about to open the following file:\n\n{fullPath}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
 					return res == DialogResult.Yes;
@@ -314,14 +311,14 @@ toolStripStatusLabelTotalTime.Visible = false;
 			};
 		}
 
-		private static void EnsureExtensionAllowed (string extension, bool unknownExtensionAccepted)
+		private static void EnsureExtensionAllowed (string extension)
 		{
 			if (DangerousExtensions.Contains( extension ))
 			{
 				throw new InvalidOperationException( $"Opening files with extension '{extension}' is not allowed for security reasons." );
 			}
 
-			if (!SafeExtensions.Contains( extension ) && !unknownExtensionAccepted)
+			if (!SafeExtensions.Contains( extension ))
 			{
 				throw new InvalidOperationException( $"Opening files with unknown extension '{extension}' is not allowed for security reasons." );
 			}
@@ -342,7 +339,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		public static void OpenWithDefaultProgram (string path, Action<string> processStarter, Func<string, bool>? promptUnknownExtension = null, Func<string, bool>? promptUser = null, Func<string, bool, string>? resolveExtension = null)
+		public static void OpenWithDefaultProgram (string path, Action<string> processStarter, Func<string, bool>? promptUser = null, Func<string, bool, string>? resolveExtension = null)
 		{
 			ArgumentNullException.ThrowIfNull( processStarter );
 			ArgumentException.ThrowIfNullOrWhiteSpace( path );
@@ -355,7 +352,6 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 
 			string extension = ResolveExtension( fullPath, afterUserConfirmation: false, resolveExtension );
-			bool unknownExtensionAccepted = false;
 
 			if (DangerousExtensions.Contains( extension ))
 			{
@@ -364,16 +360,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 
 			if (!SafeExtensions.Contains( extension ))
 			{
-				if (promptUnknownExtension == null)
-				{
-					throw new InvalidOperationException( $"Opening files with unknown extension '{extension}' is not allowed for security reasons." );
-				}
-				else if (!promptUnknownExtension( extension ))
-				{
-					return;
-				}
-
-				unknownExtensionAccepted = true;
+				throw new InvalidOperationException( $"Opening files with unknown extension '{extension}' is not allowed for security reasons." );
 			}
 
 			FileOpenSnapshot snapshotBeforePrompt = CaptureFileSnapshot( fullPath );
@@ -391,12 +378,8 @@ toolStripStatusLabelTotalTime.Visible = false;
 
 			// Re-validate after user confirmation to mitigate TOCTOU (file swap while the dialog is open).
 			string extensionAfterConfirmation = ResolveExtension( fullPath, afterUserConfirmation: true, resolveExtension );
-			if (!string.Equals( extension, extensionAfterConfirmation, StringComparison.OrdinalIgnoreCase ))
-			{
-				unknownExtensionAccepted = false;
-			}
 
-			EnsureExtensionAllowed( extensionAfterConfirmation, unknownExtensionAccepted );
+			EnsureExtensionAllowed( extensionAfterConfirmation );
 			EnsureFileSnapshotUnchanged( fullPath, snapshotBeforePrompt );
 
 			processStarter( fullPath );
