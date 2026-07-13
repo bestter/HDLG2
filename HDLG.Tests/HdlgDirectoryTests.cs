@@ -332,6 +332,62 @@ namespace HDLG.Tests
 
 
         [Fact]
+        public async Task Browse_WithoutSubdirectories_UnauthorizedAccessException_LogsWarning()
+        {
+            // Arrange
+            var restrictedDirPath = Path.Combine(baseDirectoryPath, "RestrictedDirNoSub");
+            System.IO.Directory.CreateDirectory(restrictedDirPath);
+
+            try
+            {
+                if (OperatingSystem.IsWindows())
+                {
+                    var di = new DirectoryInfo(restrictedDirPath);
+                    var ds = di.GetAccessControl();
+                    ds.AddAccessRule(new System.Security.AccessControl.FileSystemAccessRule(
+                        Environment.UserName,
+                        System.Security.AccessControl.FileSystemRights.ReadData,
+                        System.Security.AccessControl.AccessControlType.Deny));
+                    di.SetAccessControl(ds);
+                }
+                else
+                {
+                    System.IO.File.SetUnixFileMode(restrictedDirPath, System.IO.UnixFileMode.None);
+                }
+
+                var hdlgDirectory = new HdlgDirectory(restrictedDirPath, true, false, loggerMock.Object);
+
+                // Act
+                await hdlgDirectory.BrowseAsync(propertyBrowser);
+
+                // Assert
+                loggerMock.Verify(
+                    l => l.Warning(
+                        It.IsAny<UnauthorizedAccessException>(),
+                        "Access denied to directory: {Path}",
+                        restrictedDirPath),
+                    Times.Once);
+            }
+            finally
+            {
+                if (OperatingSystem.IsWindows())
+                {
+                    var di = new DirectoryInfo(restrictedDirPath);
+                    var ds = di.GetAccessControl();
+                    ds.RemoveAccessRule(new System.Security.AccessControl.FileSystemAccessRule(
+                        Environment.UserName,
+                        System.Security.AccessControl.FileSystemRights.ReadData,
+                        System.Security.AccessControl.AccessControlType.Deny));
+                    di.SetAccessControl(ds);
+                }
+                else
+                {
+                    System.IO.File.SetUnixFileMode(restrictedDirPath, System.IO.UnixFileMode.UserRead | System.IO.UnixFileMode.UserWrite | System.IO.UnixFileMode.UserExecute);
+                }
+            }
+        }
+
+        [Fact]
         public async Task Browse_UnauthorizedAccessException_LogsWarning()
         {
             // Arrange
