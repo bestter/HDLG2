@@ -1,5 +1,0 @@
-⚡ Bolt: Batch WinForms ListView Item additions
-
-💡 What: Refactored `BrowserForm.cs` to use `ListView.Items.AddRange(ListViewItem[])` instead of calling `ListView.Items.Add(ListViewItem)` repeatedly inside loops. Extracted item creation to a static helper method.
-🎯 Why: Adding items sequentially to a `ListView` control causes overhead from internal collections management even when wrapped in `BeginUpdate`/`EndUpdate`. Batching the addition operations using an array reduces bounds checks, resizing overhead, and structural notifications, which is a highly recommended WinForms best practice for fast UI population.
-📊 Measured Improvement: Due to environment limitations on the agent (running .NET Core WinForms on Linux where the visual target `Microsoft.WindowsDesktop.App` cannot be instantiated or fully profiled), a live benchmark could not be collected. However, caching property results into arrays before passing to `AddRange` is a universally accepted WinForms optimization that reliably reduces large UI list population time by eliminating sequential .Add() overhead.
