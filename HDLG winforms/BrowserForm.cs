@@ -23,10 +23,12 @@ namespace HDLG_winforms
 		private readonly string _resolvedRootDirectoryWithSeparator;
 		private readonly FilePropertyBrowser propertyBrowser;
 		private readonly ILogger logger;
+		private readonly Action<string>? _showError;
 
-		public BrowserForm (string rootDirectory, FilePropertyBrowser propertyBrowser, ILogger logger)
+		public BrowserForm (string rootDirectory, FilePropertyBrowser propertyBrowser, ILogger logger, Action<string>? showError = null)
 		{
 			InitializeComponent( );
+			_showError = showError;
 			Icon = AppBranding.LoadApplicationIcon();
 			AppUiBootstrap.RemoveFormBranding(this);
 			this.rootDirectory = rootDirectory;
@@ -54,7 +56,8 @@ namespace HDLG_winforms
 			catch (IOException ex)
 			{
 				logger.Error(ex, "IO Error loading root directory in BrowserForm");
-                MessageBox.Show(this, "An IO error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				if (_showError != null) _showError("An IO error occurred while loading the directory.");
+				else MessageBox.Show(this, "An IO error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 			catch (Exception ex)
 			{
