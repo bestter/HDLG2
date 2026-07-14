@@ -237,8 +237,7 @@ namespace HDLG_winforms
 					}
 				}
 			}
-			await writer.WriteEndElementAsync( ).ConfigureAwait( false );
-			await writer.WriteEndElementAsync( ).ConfigureAwait( false );
+			await writer.WriteEndElementAsync( ).ConfigureAwait( false );			
 		}
 
 		private static string SanitizeXmlString (string? xml)
@@ -607,8 +606,8 @@ namespace HDLG_winforms
 					await writer.WriteLineAsync( spacer + "\t\t</li>" ).ConfigureAwait( false );
 				}
 			}
-
 			await writer.WriteLineAsync( spacer + "\t</ol>" ).ConfigureAwait( false );
+			
 			await writer.WriteLineAsync( spacer + "</div>" ).ConfigureAwait( false );
 		}
 
