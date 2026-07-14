@@ -112,3 +112,13 @@
 **Vulnerability:** Generated HTML exports of local directories lacked a `Referrer-Policy` header. If a user clicks an external link in the report (like the "Root directory icons" credit link), or if an external resource is loaded, the browser might send the full local file path (e.g., `file:///C:/Users/name/Documents/export.html`) in the HTTP `Referer` header to the external site, causing an information disclosure.
 **Learning:** Local file pathways must be protected from leakage to external domains when generating HTML files meant to be opened locally.
 **Prevention:** Always add `<meta name="referrer" content="no-referrer">` to HTML head sections generated for local offline viewing.
+
+## 2024-07-28 - Implement Fail Securely Principle for Background Threads
+**Vulnerability:** The application was vulnerable to continuing execution in an undefined or corrupted state because the global background exception handler (`CurrentDomain_UnhandledException` in `Program.cs`) caught fatal exceptions, logged them, but did not terminate the application.
+**Learning:** When unhandled exceptions occur on background threads, the application memory state may be corrupted. Allowing it to continue running violates the "fail securely" principle and can lead to unexpected behaviors, data corruption, or security bypasses.
+**Prevention:** In global error handlers for background threads (`AppDomain.CurrentDomain.UnhandledException`), always securely terminate the process (e.g., using `Environment.Exit(1)`) after logging the error and notifying the user.
+
+## 2024-05-25 - [Fail-Open Background Thread Exception]
+**Vulnerability:** The application caught `AppDomain.CurrentDomain.UnhandledException` for background threads but merely logged the error and displayed a MessageBox without calling `Environment.Exit`, allowing the process to continue running in a corrupted state.
+**Learning:** If a critical background exception occurs, the application state is likely corrupted. Allowing the process to continue running violates the 'Fail Securely' principle and could lead to unpredictable security or logic failures down the line.
+**Prevention:** In global error handlers for background threads, always enforce the 'Fail Securely' principle by gracefully but forcefully terminating the process (e.g., using `Environment.Exit(1)`).
