@@ -107,49 +107,60 @@ namespace HDLG_winforms
 					// Performance optimization: Offload expensive I/O directory enumeration to a background thread
 					// to prevent blocking the WinForms UI thread, significantly improving perceived performance
 					// and preventing layout freezes during folder expansion.
-					var (dirInfos, fileInfos) = await Task.Run(() =>
+					// Use GetFileSystemInfos() instead of EnumerateFileSystemInfos() to avoid intermediate List<T> allocations
+					// Because we need the data on the UI thread without allocations, we fetch the array here.
+					// Note: While GetFileSystemInfos creates an array, it is more efficient than populating two List<T> instances
+					// due to avoiding List capacity resizing and allowing exact allocation of the TreeNode array.
+					var fsInfos = await Task.Run(() =>
 					{
 						var dirInfo = new DirectoryInfo( info.Path );
-
-						var dirs = new List<DirectoryInfo>( );
-						var files = new List<FileInfo>( );
-
-						foreach (var fsInfo in dirInfo.EnumerateFileSystemInfos( ))
-						{
-							if (fsInfo is DirectoryInfo dir)
-							{
-								if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;
-								dirs.Add( dir );
-							}
-							else if (fsInfo is FileInfo file)
-							{
-								files.Add( file );
-							}
-						}
-
-						return (dirs, files);
+						return dirInfo.GetFileSystemInfos();
 					}).ConfigureAwait(true);
 
 					// Safe WinForms practice: construct TreeNodes on the UI thread after I/O is complete
-					// Performance optimization: allocate fixed-size arrays instead of List<T> to avoid ToArray() allocation overhead.
-					var dirNodes = new TreeNode[dirInfos.Count];
-					var fileNodes = new TreeNode[fileInfos.Count];
+					// Performance optimization: Count elements first to allocate exact-size arrays,
+					// avoiding List<T> growth allocations and ToArray() overhead.
+					int dirCount = 0;
+					int fileCount = 0;
 
-					for (int i = 0; i < dirInfos.Count; i++)
+					for (int i = 0; i < fsInfos.Length; i++)
 					{
-						var dir = dirInfos[i];
-						var node = new TreeNode( dir.Name );
-						node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
-						node.Nodes.Add( new TreeNode( "Loading..." ) );
-						dirNodes[i] = node;
+						var fsInfo = fsInfos[i];
+						if (fsInfo is DirectoryInfo dir)
+						{
+							if ((dir.Attributes & FileAttributes.ReparsePoint) == 0)
+								dirCount++;
+						}
+						else if (fsInfo is FileInfo)
+						{
+							fileCount++;
+						}
 					}
 
-					for (int i = 0; i < fileInfos.Count; i++)
+					var dirNodes = new TreeNode[dirCount];
+					var fileNodes = new TreeNode[fileCount];
+
+					int dirIndex = 0;
+					int fileIndex = 0;
+
+					for (int i = 0; i < fsInfos.Length; i++)
 					{
-						var file = fileInfos[i];
-						var node = new TreeNode( file.Name );
-						node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
-						fileNodes[i] = node;
+						var fsInfo = fsInfos[i];
+						if (fsInfo is DirectoryInfo dir)
+						{
+							if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;
+
+							var node = new TreeNode( dir.Name );
+							node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
+							node.Nodes.Add( new TreeNode( "Loading..." ) );
+							dirNodes[dirIndex++] = node;
+						}
+						else if (fsInfo is FileInfo file)
+						{
+							var node = new TreeNode( file.Name );
+							node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
+							fileNodes[fileIndex++] = node;
+						}
 					}
 
                     e.Node.TreeView?.BeginUpdate();
