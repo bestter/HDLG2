@@ -121,3 +121,7 @@
 ## 2024-07-03 - Prevent UI Thread Blocking for TreeView Expand
 **Learning:** Performing directory enumeration synchronously in WinForms `TreeView.BeforeExpand` events causes the application UI to freeze completely, especially when dealing with large nested directories or slow network drives.
 **Action:** Always wrap heavy I/O operations (like `dirInfo.EnumerateFileSystemInfos()`) inside `await Task.Run(...)` in a UI event handler, change the handler to `async void`, and append `.ConfigureAwait(true)` to ensure that the continuation logic (such as populating the UI control) resumes smoothly on the main UI thread without causing layout thrashing or unresponsiveness.
+
+## 2026-07-06 - Flatten nested conditionally loaded dictionary iterations
+**Learning:** Using heavy conditional nesting block wrapper (e.g. `if (property.Value != null && ...){ }`) inside `foreach` loops over dictionaries forces structural indentations and complex block allocations inside loops like XML or HTML output generation.
+**Action:** When a method conditionally serializes or processes properties based on a loop, organically flatten the code structure inside the loop by checking invalid or null entries first and using an early continuation (`continue`), and use an early return if the properties collection is entirely null or empty before entering the loop. This minimizes nesting depth and improves parsing path efficiency.
