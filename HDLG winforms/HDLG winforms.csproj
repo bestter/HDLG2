@@ -59,6 +59,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="HDLG.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="hdlg.css" />
   </ItemGroup>
 
