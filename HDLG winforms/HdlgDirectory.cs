@@ -84,6 +84,8 @@ namespace HDLG_winforms
 			{
 				try
 				{
+					// Performance optimization: Iterate via enumerator directly to avoid GetFileSystemInfos() array allocation bloat
+					// and List<T> capacity over-allocation which can cause severe memory bloat on large directories.
 					foreach (var info in directoryInfo.EnumerateFileSystemInfos( ))
 					{
 						if (info is DirectoryInfo d)
@@ -118,6 +120,8 @@ namespace HDLG_winforms
 			{
 				try
 				{
+					// Performance optimization: Iterate via enumerator directly to avoid GetFiles() array allocation bloat
+					// and List<T> capacity over-allocation which can cause severe memory bloat on large directories.
 					foreach (var f in directoryInfo.EnumerateFiles( ))
 					{
 						var properties = await propertyBrowser.GetFilePropertyAsync( f ).ConfigureAwait(false);
