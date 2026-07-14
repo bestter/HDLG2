@@ -147,12 +147,13 @@ toolStripStatusLabelTotalTime.Visible = false;
 				toolStripStatusLabelException.Text = "An IO error occurred";
 				Logger.Error( ex, "IO Error in {MethodName}", nameof( BtnStart_Click ) );
 			}
+#pragma warning disable CA1031 // Do not catch general exception types
 			catch (Exception ex)
 			{
 				toolStripStatusLabelException.Text = "An error occurred";
 				Logger.Error( ex, "Error in {MethodName}", nameof( BtnStart_Click ) );
-				throw;
 			}
+#pragma warning restore CA1031 // Do not catch general exception types
 			finally
 			{
 				btnStartXml.Enabled = true;
@@ -451,12 +452,13 @@ toolStripStatusLabelTotalTime.Visible = false;
 				toolStripStatusLabelException.Text = "An IO error occurred";
 				Logger.Error( ex, "IO Error in {MethodName}", nameof( BtnStartHtml_Click ) );
 			}
+#pragma warning disable CA1031 // Do not catch general exception types
 			catch (Exception ex)
 			{
 				toolStripStatusLabelException.Text = "An error occurred";
 				Logger.Error( ex, "Error in {MethodName}", nameof( BtnStartHtml_Click ) );
-				throw;
 			}
+#pragma warning restore CA1031 // Do not catch general exception types
 			finally
 			{
 				btnStartXml.Enabled = true;
@@ -538,12 +540,13 @@ toolStripStatusLabelTotalTime.Visible = false;
 				Logger.Error( ex, "IO Error opening UI Explorer" );
 				MessageBox.Show( this, "An IO error occurred", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
+#pragma warning disable CA1031 // Do not catch general exception types
 			catch (Exception ex)
 			{
 				toolStripStatusLabelException.Text = "An error occurred";
 				Logger.Error( ex, "Error opening UI Explorer" );
-				throw;
 			}
+#pragma warning restore CA1031 // Do not catch general exception types
 			finally
 			{
 				UseWaitCursor = false;
