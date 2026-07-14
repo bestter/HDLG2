@@ -219,13 +219,15 @@ namespace HDLG_winforms
 				listViewProperties.BeginUpdate();
 				try
 				{
-					AddPropertyToListView( "Name", fileInfo.Name );
-					AddPropertyToListView( "Path", fileInfo.FullName );
-					AddPropertyToListView( "Extension", fileInfo.Extension );
-					AddPropertyToListView( "Size (bytes)", fileInfo.Length.ToString( CultureInfo.CurrentCulture ) );
-					AddPropertyToListView( "Creation Time", fileInfo.CreationTime.ToString( "g", CultureInfo.CurrentCulture ) );
-					AddPropertyToListView( "Last Access Time", fileInfo.LastAccessTime.ToString( "g", CultureInfo.CurrentCulture ) );
-					AddPropertyToListView( "Last Write Time", fileInfo.LastWriteTime.ToString( "g", CultureInfo.CurrentCulture ) );
+					var items = new ListViewItem[7];
+					items[0] = CreateListViewItem( "Name", fileInfo.Name );
+					items[1] = CreateListViewItem( "Path", fileInfo.FullName );
+					items[2] = CreateListViewItem( "Extension", fileInfo.Extension );
+					items[3] = CreateListViewItem( "Size (bytes)", fileInfo.Length.ToString( CultureInfo.CurrentCulture ) );
+					items[4] = CreateListViewItem( "Creation Time", fileInfo.CreationTime.ToString( "g", CultureInfo.CurrentCulture ) );
+					items[5] = CreateListViewItem( "Last Access Time", fileInfo.LastAccessTime.ToString( "g", CultureInfo.CurrentCulture ) );
+					items[6] = CreateListViewItem( "Last Write Time", fileInfo.LastWriteTime.ToString( "g", CultureInfo.CurrentCulture ) );
+					listViewProperties.Items.AddRange( items );
 				}
 				finally
 				{
@@ -248,17 +250,23 @@ namespace HDLG_winforms
                         // the foreach loop to use the struct-based enumerator, preventing interface boxing allocations.
                         if (props is Dictionary<string, IConvertible> propsDict)
                         {
+                            var items = new ListViewItem[propsDict.Count];
+                            int i = 0;
                             foreach (var kvp in propsDict)
                             {
-                                AddPropertyToListView(kvp.Key, kvp.Value?.ToString() ?? "");
+                                items[i++] = CreateListViewItem(kvp.Key, kvp.Value?.ToString() ?? "");
                             }
+                            listViewProperties.Items.AddRange(items);
                         }
                         else
                         {
+                            var items = new ListViewItem[props.Count];
+                            int i = 0;
                             foreach (var kvp in props)
                             {
-                                AddPropertyToListView(kvp.Key, kvp.Value?.ToString() ?? "");
+                                items[i++] = CreateListViewItem(kvp.Key, kvp.Value?.ToString() ?? "");
                             }
+                            listViewProperties.Items.AddRange(items);
                         }
                     }
                     finally
@@ -310,11 +318,16 @@ namespace HDLG_winforms
             }
         }
 
-		private void AddPropertyToListView (string name, string value)
+		private static ListViewItem CreateListViewItem (string name, string value)
 		{
 			var item = new ListViewItem( name );
 			item.SubItems.Add( value );
-			listViewProperties.Items.Add( item );
+			return item;
+		}
+
+		private void AddPropertyToListView (string name, string value)
+		{
+			listViewProperties.Items.Add( CreateListViewItem( name, value ) );
 		}
 
 		private void BtnOpenFile_Click (object sender, EventArgs e)

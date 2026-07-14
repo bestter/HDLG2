@@ -1,10 +1,5 @@
-⚡ Optimize HTML encoding in DirectoryBrowser
+⚡ Bolt: Batch WinForms ListView Item additions
 
-💡 What:
-Introduced a `Dictionary<string, string>` cache in `DirectoryBrowser` to store the HTML-encoded strings of file property keys (e.g., 'Width', 'Height', 'CameraModel'). When `SaveHtmlAsync` is called and properties are looped over, it will now check the cache first before performing `WebUtility.HtmlEncode`.
-
-🎯 Why:
-File property keys are highly repetitive within a directory. Calling `WebUtility.HtmlEncode` inside nested loops for each file and every property incurs unnecessary CPU cycles and memory allocations for generating new strings. Caching the encoded strings prevents redundant work and improves the HTML report generation performance.
-
-📊 Measured Improvement:
-A benchmark comparing the original approach (encoding on every iteration) vs. the cached approach showed an execution time improvement of ~4% per operation (`~204.0us` vs `~195.6us`), confirming the net positive performance impact while producing identical HTML output.
+💡 What: Refactored `BrowserForm.cs` to use `ListView.Items.AddRange(ListViewItem[])` instead of calling `ListView.Items.Add(ListViewItem)` repeatedly inside loops. Extracted item creation to a static helper method.
+🎯 Why: Adding items sequentially to a `ListView` control causes overhead from internal collections management even when wrapped in `BeginUpdate`/`EndUpdate`. Batching the addition operations using an array reduces bounds checks, resizing overhead, and structural notifications, which is a highly recommended WinForms best practice for fast UI population.
+📊 Measured Improvement: Due to environment limitations on the agent (running .NET Core WinForms on Linux where the visual target `Microsoft.WindowsDesktop.App` cannot be instantiated or fully profiled), a live benchmark could not be collected. However, caching property results into arrays before passing to `AddRange` is a universally accepted WinForms optimization that reliably reduces large UI list population time by eliminating sequential .Add() overhead.
