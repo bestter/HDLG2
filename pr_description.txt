@@ -1,0 +1,3 @@
+🎯 **What:** The `PerformanceCount` struct lacked test coverage. Added `InternalsVisibleTo` to the main project and explicit unit tests to the `HDLG.Tests` project.
+📊 **Coverage:** Tested the static `Empty` instance (ensuring all properties are `TimeSpan.MinValue`) and normal field assignments (`BrowseTime`, `SaveTime`, `TotalTime`).
+✨ **Result:** Ensured the correct behavior and default states of the struct, improving overall test coverage and code reliability.

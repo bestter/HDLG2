@@ -171,7 +171,6 @@ namespace HDLG_winforms
 			await writer.WriteElementStringAsync( null, "Size", null, file.Size.ToString( CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
 			await writer.WriteElementStringAsync( null, "CreationTime", null, file.CreationTime.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
 
-
 			if (file.Properties == null || file.Properties.Count == 0)
 			{
 				await writer.WriteEndElementAsync( ).ConfigureAwait( false );
@@ -238,9 +237,7 @@ namespace HDLG_winforms
 					}
 				}
 			}
-			await writer.WriteEndElementAsync( ).ConfigureAwait( false );
-
-			await writer.WriteEndElementAsync( ).ConfigureAwait( false );
+			await writer.WriteEndElementAsync( ).ConfigureAwait( false );			
 		}
 
 		private static string SanitizeXmlString (string? xml)
@@ -527,7 +524,7 @@ namespace HDLG_winforms
 			await writer.WriteLineAsync( spacer + "<div class=\"file\">" ).ConfigureAwait( false );
 
 			string encodedName = WebUtility.HtmlEncode( file.Name );
-			string encodedPath = WebUtility.HtmlEncode( file.Path );
+			string encodedPath = Uri.EscapeDataString( file.Path );
 			await writer.WriteLineAsync( $"{spacer}\t<a href=\"file:///{encodedPath}\" download=\"{encodedName}\" referrerpolicy=\"strict-origin\">{encodedName}</a>" ).ConfigureAwait( false );
 
 			await writer.WriteLineAsync( $"{spacer}\t<div class=\"file-meta\">" ).ConfigureAwait( false );
@@ -610,7 +607,7 @@ namespace HDLG_winforms
 				}
 			}
 			await writer.WriteLineAsync( spacer + "\t</ol>" ).ConfigureAwait( false );
-
+			
 			await writer.WriteLineAsync( spacer + "</div>" ).ConfigureAwait( false );
 		}
 
