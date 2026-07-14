@@ -147,12 +147,13 @@ toolStripStatusLabelTotalTime.Visible = false;
 				toolStripStatusLabelException.Text = "An IO error occurred";
 				Logger.Error( ex, "IO Error in {MethodName}", nameof( BtnStart_Click ) );
 			}
+#pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
 			catch (Exception ex)
 			{
-				toolStripStatusLabelException.Text = "An error occurred";
+				toolStripStatusLabelException.Text = "An unexpected error occurred";
 				Logger.Error( ex, "Error in {MethodName}", nameof( BtnStart_Click ) );
-				throw;
 			}
+#pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
 			finally
 			{
 				btnStartXml.Enabled = true;
@@ -451,12 +452,13 @@ toolStripStatusLabelTotalTime.Visible = false;
 				toolStripStatusLabelException.Text = "An IO error occurred";
 				Logger.Error( ex, "IO Error in {MethodName}", nameof( BtnStartHtml_Click ) );
 			}
+#pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
 			catch (Exception ex)
 			{
-				toolStripStatusLabelException.Text = "An error occurred";
+				toolStripStatusLabelException.Text = "An unexpected error occurred";
 				Logger.Error( ex, "Error in {MethodName}", nameof( BtnStartHtml_Click ) );
-				throw;
 			}
+#pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
 			finally
 			{
 				btnStartXml.Enabled = true;
@@ -538,12 +540,14 @@ toolStripStatusLabelTotalTime.Visible = false;
 				Logger.Error( ex, "IO Error opening UI Explorer" );
 				MessageBox.Show( this, "An IO error occurred", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
+#pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
 			catch (Exception ex)
 			{
-				toolStripStatusLabelException.Text = "An error occurred";
+				toolStripStatusLabelException.Text = "An unexpected error occurred";
 				Logger.Error( ex, "Error opening UI Explorer" );
-				throw;
+				MessageBox.Show( this, "An unexpected error occurred", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
+#pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
 			finally
 			{
 				UseWaitCursor = false;

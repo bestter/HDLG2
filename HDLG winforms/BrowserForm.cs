@@ -53,17 +53,29 @@ namespace HDLG_winforms
                 treeView1.Nodes.Add(rootNode);
                 rootNode.Expand();
             }
+			catch (UnauthorizedAccessException ex)
+			{
+				logger.Warning(ex, "Access denied to root directory in BrowserForm");
+				MessageBox.Show(this, "Error: Access Denied", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+			catch (System.Security.SecurityException ex)
+			{
+				logger.Warning(ex, "Security exception accessing root directory in BrowserForm");
+				MessageBox.Show(this, "Error: Access Denied", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
 			catch (IOException ex)
 			{
 				logger.Error(ex, "IO Error loading root directory in BrowserForm");
 				if (_showError != null) _showError("An IO error occurred while loading the directory.");
 				else MessageBox.Show(this, "An IO error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+#pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
 			catch (Exception ex)
 			{
 				logger.Error(ex, "Error loading root directory in BrowserForm");
-				throw;
+                MessageBox.Show(this, "An unexpected error occurred.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+#pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
         }
 
 		private class NodeInfo
@@ -183,11 +195,13 @@ namespace HDLG_winforms
 					logger.Error(ex, "IO Error loading directory: {Path}", info.Path);
                     e.Node.Nodes.Add(new TreeNode("IO Error"));
                 }
+#pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
 				catch (Exception ex)
 				{
 					logger.Error(ex, "Error loading directory: {Path}", info.Path);
-					throw;
+                    e.Node.Nodes.Add(new TreeNode("Error"));
                 }
+#pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
                 finally
                 {
                     Cursor = Cursors.Default;
@@ -315,14 +329,16 @@ namespace HDLG_winforms
                     AddPropertyToListView("Error", "An IO error occurred.");
                 }
             }
+#pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
 			catch (Exception ex)
 			{
                 if (treeView1.SelectedNode == e.Node)
                 {
 				    logger.Error(ex, "Error reading properties for file: {Path}", info.Path);
-				    throw;
+                    AddPropertyToListView("Error", "An unexpected error occurred.");
                 }
             }
+#pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
             finally
             {
                 if (treeView1.SelectedNode == e.Node)
