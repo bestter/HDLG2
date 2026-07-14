@@ -100,7 +100,7 @@ namespace HDLG_winforms
 
 			// Souvent, pour les erreurs de thread d'arrière-plan, il est plus sûr de fermer l'application
 			// car l'état de la mémoire peut être corrompu.
-			// Application.Exit();
+			Environment.Exit(1);
 		}
 
 		// Fonction utilitaire pour éviter de répéter le code de la boîte de dialogue
