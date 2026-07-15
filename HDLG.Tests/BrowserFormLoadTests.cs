@@ -97,7 +97,8 @@ namespace HDLG.Tests
 						Thread.Sleep(20);
 					}
 
-					rootNode.Nodes.Count.Should().BeGreaterThan(0);
+					// Exactly one error node: merge artifacts previously duplicated error UI entries.
+					rootNode.Nodes.Count.Should().Be(1);
 					rootNode.Nodes[0].Text.Should().Be("IO Error");
 					errorLogged.Should().BeTrue("IOException during expand should be logged");
 				}
