@@ -237,7 +237,9 @@ namespace HDLG_winforms
 					}
 				}
 			}
-			await writer.WriteEndElementAsync( ).ConfigureAwait( false );			
+			// Close ExtentedProperties, then File (both opened above when properties are present).
+			await writer.WriteEndElementAsync( ).ConfigureAwait( false );
+			await writer.WriteEndElementAsync( ).ConfigureAwait( false );
 		}
 
 		private static string SanitizeXmlString (string? xml)
@@ -571,43 +573,42 @@ namespace HDLG_winforms
 						await writer.WriteLineAsync( $"{spacer}\t\t\t<span>{WebUtility.HtmlEncode( value )}</span>" ).ConfigureAwait( false );
 					}
 
-					await writer.WriteLineAsync( spacer + "\t\t</li>" ).ConfigureAwait( false );
+						await writer.WriteLineAsync( spacer + "\t\t</li>" ).ConfigureAwait( false );
+					}
 				}
-			}
-			else
-			{
-				foreach (var property in file.Properties)
+				else
 				{
-					if (string.IsNullOrWhiteSpace( property.Key ) || property.Value == null) continue;
+					foreach (var property in file.Properties)
+					{
+						if (string.IsNullOrWhiteSpace( property.Key ) || property.Value == null) continue;
 
-					if (!_encodedPropertyKeys.TryGetValue(property.Key, out string? encodedKey))
-					{
-						encodedKey = WebUtility.HtmlEncode(property.Key);
-						_encodedPropertyKeys[property.Key] = encodedKey;
-					}
-					await writer.WriteLineAsync( spacer + "\t\t<li class=\"extentedProperty\">" ).ConfigureAwait( false );
-					await writer.WriteLineAsync( $"{spacer}\t\t\t<span>{encodedKey}</span>" ).ConfigureAwait( false );
+						if (!_encodedPropertyKeys.TryGetValue(property.Key, out string? encodedKey))
+						{
+							encodedKey = WebUtility.HtmlEncode(property.Key);
+							_encodedPropertyKeys[property.Key] = encodedKey;
+						}
+						await writer.WriteLineAsync( spacer + "\t\t<li class=\"extentedProperty\">" ).ConfigureAwait( false );
+						await writer.WriteLineAsync( $"{spacer}\t\t\t<span>{encodedKey}</span>" ).ConfigureAwait( false );
 
-					if (property.Value is DateTime dtValue)
-					{
-						await writer.WriteLineAsync( $"{spacer}\t\t\t<span>{dtValue.ToString( "F", CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
-					}
-					else if (property.Value is sbyte or byte or short or ushort or int or uint or long or ulong or float or double or decimal)
-					{
-						var value = property.Value.ToString( CultureInfo.CurrentCulture );
-						await writer.WriteLineAsync( $"{spacer}\t\t\t<span>{value}</span>" ).ConfigureAwait( false );
-					}
-					else
-					{
-						var value = property.Value.ToString( CultureInfo.CurrentCulture );
-						await writer.WriteLineAsync( $"{spacer}\t\t\t<span>{WebUtility.HtmlEncode( value )}</span>" ).ConfigureAwait( false );
-					}
+						if (property.Value is DateTime dtValue)
+						{
+							await writer.WriteLineAsync( $"{spacer}\t\t\t<span>{dtValue.ToString( "F", CultureInfo.CurrentCulture )}</span>" ).ConfigureAwait( false );
+						}
+						else if (property.Value is sbyte or byte or short or ushort or int or uint or long or ulong or float or double or decimal)
+						{
+							var value = property.Value.ToString( CultureInfo.CurrentCulture );
+							await writer.WriteLineAsync( $"{spacer}\t\t\t<span>{value}</span>" ).ConfigureAwait( false );
+						}
+						else
+						{
+							var value = property.Value.ToString( CultureInfo.CurrentCulture );
+							await writer.WriteLineAsync( $"{spacer}\t\t\t<span>{WebUtility.HtmlEncode( value )}</span>" ).ConfigureAwait( false );
+						}
 
-					await writer.WriteLineAsync( spacer + "\t\t</li>" ).ConfigureAwait( false );
+						await writer.WriteLineAsync( spacer + "\t\t</li>" ).ConfigureAwait( false );
+					}
 				}
-			}
 			await writer.WriteLineAsync( spacer + "\t</ol>" ).ConfigureAwait( false );
-			
 			await writer.WriteLineAsync( spacer + "</div>" ).ConfigureAwait( false );
 		}
 
