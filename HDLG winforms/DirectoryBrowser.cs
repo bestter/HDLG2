@@ -237,7 +237,9 @@ namespace HDLG_winforms
 					}
 				}
 			}
-			await writer.WriteEndElementAsync( ).ConfigureAwait( false );			
+			// Close ExtentedProperties, then File (both opened above when properties are present).
+			await writer.WriteEndElementAsync( ).ConfigureAwait( false );
+			await writer.WriteEndElementAsync( ).ConfigureAwait( false );
 		}
 
 		private static string SanitizeXmlString (string? xml)
