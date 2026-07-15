@@ -62,6 +62,7 @@ namespace HDLG_winforms
 
 			if (BrowseSubdirectory)
 			{
+				// Reverted back to EnumerateDirectories to avoid severe memory bloat and array allocation
 				foreach (var d in directoryInfo.EnumerateDirectories( ))
 				{
 					directories.Add( new Directory( d.FullName, false, true, log ) );
@@ -69,6 +70,7 @@ namespace HDLG_winforms
 				directories.Sort( );
 			}
 
+			// Reverted back to EnumerateFiles to avoid severe memory bloat and array allocation
 			foreach (var f in directoryInfo.EnumerateFiles( ))
 			{
 				var properties = await propertyBrowser.GetFilePropertyAsync( f ).ConfigureAwait(false);
@@ -77,8 +79,9 @@ namespace HDLG_winforms
 			}
 			files.Sort( );
 
-			foreach (Directory d in directories)
+			for (int i = 0; i < directories.Count; i++)
 			{
+				Directory d = directories[i];
 				await d.BrowseAsync( propertyBrowser ).ConfigureAwait(false);
 			}
 		}
