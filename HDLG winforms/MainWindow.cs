@@ -287,19 +287,21 @@ toolStripStatusLabelTotalTime.Visible = false;
 			public DateTime LastWriteTimeUtc { get; init; }
 		}
 
-		private static string GetNormalizedExtension (string fullPath)
+		private static ReadOnlySpan<char> GetNormalizedExtensionSpan (ReadOnlySpan<char> fullPath)
 		{
-			return System.IO.Path.GetExtension( fullPath.TrimEnd( ' ', '.' ) );
+			return System.IO.Path.GetExtension( fullPath.TrimEnd( " .".AsSpan() ) );
 		}
 
-		private static string ResolveExtension (string fullPath, bool afterUserConfirmation, Func<string, bool, string>? resolveExtension)
+		private static ReadOnlySpan<char> ResolveExtensionSpan (string fullPath, bool afterUserConfirmation, Func<string, bool, string>? resolveExtension, out string? allocatedExtension)
 		{
 			if (resolveExtension != null)
 			{
-				return resolveExtension( fullPath, afterUserConfirmation );
+				allocatedExtension = resolveExtension( fullPath, afterUserConfirmation );
+				return allocatedExtension.AsSpan();
 			}
 
-			return GetNormalizedExtension( fullPath );
+			allocatedExtension = null;
+			return GetNormalizedExtensionSpan( fullPath.AsSpan() );
 		}
 
 		private static FileOpenSnapshot CaptureFileSnapshot (string fullPath)
@@ -312,16 +314,16 @@ toolStripStatusLabelTotalTime.Visible = false;
 			};
 		}
 
-		private static void EnsureExtensionAllowed (string extension)
+		private static void EnsureExtensionAllowed (ReadOnlySpan<char> extension)
 		{
-			if (DangerousExtensions.Contains( extension ))
+			if (DangerousExtensions.GetAlternateLookup<ReadOnlySpan<char>>().Contains( extension ))
 			{
-				throw new InvalidOperationException( $"Opening files with extension '{extension}' is not allowed for security reasons." );
+				throw new InvalidOperationException( $"Opening files with extension '{extension.ToString()}' is not allowed for security reasons." );
 			}
 
-			if (!SafeExtensions.Contains( extension ))
+			if (!SafeExtensions.GetAlternateLookup<ReadOnlySpan<char>>().Contains( extension ))
 			{
-				throw new InvalidOperationException( $"Opening files with unknown extension '{extension}' is not allowed for security reasons." );
+				throw new InvalidOperationException( $"Opening files with unknown extension '{extension.ToString()}' is not allowed for security reasons." );
 			}
 		}
 
@@ -352,16 +354,16 @@ toolStripStatusLabelTotalTime.Visible = false;
 				throw new FileNotFoundException( "The specified file was not found.", fullPath );
 			}
 
-			string extension = ResolveExtension( fullPath, afterUserConfirmation: false, resolveExtension );
+			ReadOnlySpan<char> extensionSpan = ResolveExtensionSpan( fullPath, afterUserConfirmation: false, resolveExtension, out string? allocatedExt1 );
 
-			if (DangerousExtensions.Contains( extension ))
+			if (DangerousExtensions.GetAlternateLookup<ReadOnlySpan<char>>().Contains( extensionSpan ))
 			{
-				throw new InvalidOperationException( $"Opening files with extension '{extension}' is not allowed for security reasons." );
+				throw new InvalidOperationException( $"Opening files with extension '{extensionSpan.ToString()}' is not allowed for security reasons." );
 			}
 
-			if (!SafeExtensions.Contains( extension ))
+			if (!SafeExtensions.GetAlternateLookup<ReadOnlySpan<char>>().Contains( extensionSpan ))
 			{
-				throw new InvalidOperationException( $"Opening files with unknown extension '{extension}' is not allowed for security reasons." );
+				throw new InvalidOperationException( $"Opening files with unknown extension '{extensionSpan.ToString()}' is not allowed for security reasons." );
 			}
 
 			FileOpenSnapshot snapshotBeforePrompt = CaptureFileSnapshot( fullPath );
@@ -378,7 +380,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 
 			// Re-validate after user confirmation to mitigate TOCTOU (file swap while the dialog is open).
-			string extensionAfterConfirmation = ResolveExtension( fullPath, afterUserConfirmation: true, resolveExtension );
+			ReadOnlySpan<char> extensionAfterConfirmation = ResolveExtensionSpan( fullPath, afterUserConfirmation: true, resolveExtension, out string? allocatedExt2 );
 
 			EnsureExtensionAllowed( extensionAfterConfirmation );
 			EnsureFileSnapshotUnchanged( fullPath, snapshotBeforePrompt );
