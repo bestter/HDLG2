@@ -545,6 +545,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			{
 				toolStripStatusLabelException.Text = "An unexpected error occurred";
 				Logger.Error( ex, "Error opening UI Explorer" );
+				MessageBox.Show( this, "An unexpected error occurred", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 #pragma warning restore CA1031 // Do not catch general exception types
 			finally

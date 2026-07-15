@@ -199,9 +199,8 @@ namespace HDLG_winforms
 				catch (Exception ex)
 				{
 					logger.Error(ex, "Error loading directory: {Path}", info.Path);
-                    e.Node.Nodes.Add(new TreeNode("Error"));
-                    e.Node.Nodes.Add(new TreeNode("Error"));
-                }
+					e.Node.Nodes.Add(new TreeNode("Error"));
+				}
 #pragma warning restore CA1031 // Do not catch general exception types
                 finally
                 {
@@ -333,13 +332,12 @@ namespace HDLG_winforms
 #pragma warning disable CA1031 // Do not catch general exception types
 			catch (Exception ex)
 			{
-                if (treeView1.SelectedNode == e.Node)
-                {
-				    logger.Error(ex, "Error reading properties for file: {Path}", info.Path);
-                    AddPropertyToListView("Error", "An unexpected error occurred.");
-                    AddPropertyToListView("Error", "An unexpected error occurred.");
-                }
-            }
+				if (treeView1.SelectedNode == e.Node)
+				{
+					logger.Error(ex, "Error reading properties for file: {Path}", info.Path);
+					AddPropertyToListView("Error", "An unexpected error occurred.");
+				}
+			}
 #pragma warning restore CA1031 // Do not catch general exception types
             finally
             {
