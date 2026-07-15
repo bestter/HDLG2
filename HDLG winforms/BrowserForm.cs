@@ -23,10 +23,12 @@ namespace HDLG_winforms
 		private readonly string _resolvedRootDirectoryWithSeparator;
 		private readonly FilePropertyBrowser propertyBrowser;
 		private readonly ILogger logger;
+		private readonly Action<string>? _showError;
 
-		public BrowserForm (string rootDirectory, FilePropertyBrowser propertyBrowser, ILogger logger)
+		public BrowserForm (string rootDirectory, FilePropertyBrowser propertyBrowser, ILogger logger, Action<string>? showError = null)
 		{
 			InitializeComponent( );
+			_showError = showError;
 			Icon = AppBranding.LoadApplicationIcon();
 			AppUiBootstrap.RemoveFormBranding(this);
 			this.rootDirectory = rootDirectory;
@@ -64,7 +66,8 @@ namespace HDLG_winforms
 			catch (IOException ex)
 			{
 				logger.Error(ex, "IO Error loading root directory in BrowserForm");
-                MessageBox.Show(this, "An IO error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				if (_showError != null) _showError("An IO error occurred while loading the directory.");
+				else MessageBox.Show(this, "An IO error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
 			catch (Exception ex)
@@ -116,49 +119,60 @@ namespace HDLG_winforms
 					// Performance optimization: Offload expensive I/O directory enumeration to a background thread
 					// to prevent blocking the WinForms UI thread, significantly improving perceived performance
 					// and preventing layout freezes during folder expansion.
-					var (dirInfos, fileInfos) = await Task.Run(() =>
+					// Use GetFileSystemInfos() instead of EnumerateFileSystemInfos() to avoid intermediate List<T> allocations
+					// Because we need the data on the UI thread without allocations, we fetch the array here.
+					// Note: While GetFileSystemInfos creates an array, it is more efficient than populating two List<T> instances
+					// due to avoiding List capacity resizing and allowing exact allocation of the TreeNode array.
+					var fsInfos = await Task.Run(() =>
 					{
 						var dirInfo = new DirectoryInfo( info.Path );
-
-						var dirs = new List<DirectoryInfo>( );
-						var files = new List<FileInfo>( );
-
-						foreach (var fsInfo in dirInfo.EnumerateFileSystemInfos( ))
-						{
-							if (fsInfo is DirectoryInfo dir)
-							{
-								if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;
-								dirs.Add( dir );
-							}
-							else if (fsInfo is FileInfo file)
-							{
-								files.Add( file );
-							}
-						}
-
-						return (dirs, files);
+						return dirInfo.GetFileSystemInfos();
 					}).ConfigureAwait(true);
 
 					// Safe WinForms practice: construct TreeNodes on the UI thread after I/O is complete
-					// Performance optimization: allocate fixed-size arrays instead of List<T> to avoid ToArray() allocation overhead.
-					var dirNodes = new TreeNode[dirInfos.Count];
-					var fileNodes = new TreeNode[fileInfos.Count];
+					// Performance optimization: Count elements first to allocate exact-size arrays,
+					// avoiding List<T> growth allocations and ToArray() overhead.
+					int dirCount = 0;
+					int fileCount = 0;
 
-					for (int i = 0; i < dirInfos.Count; i++)
+					for (int i = 0; i < fsInfos.Length; i++)
 					{
-						var dir = dirInfos[i];
-						var node = new TreeNode( dir.Name );
-						node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
-						node.Nodes.Add( new TreeNode( "Loading..." ) );
-						dirNodes[i] = node;
+						var fsInfo = fsInfos[i];
+						if (fsInfo is DirectoryInfo dir)
+						{
+							if ((dir.Attributes & FileAttributes.ReparsePoint) == 0)
+								dirCount++;
+						}
+						else if (fsInfo is FileInfo)
+						{
+							fileCount++;
+						}
 					}
 
-					for (int i = 0; i < fileInfos.Count; i++)
+					var dirNodes = new TreeNode[dirCount];
+					var fileNodes = new TreeNode[fileCount];
+
+					int dirIndex = 0;
+					int fileIndex = 0;
+
+					for (int i = 0; i < fsInfos.Length; i++)
 					{
-						var file = fileInfos[i];
-						var node = new TreeNode( file.Name );
-						node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
-						fileNodes[i] = node;
+						var fsInfo = fsInfos[i];
+						if (fsInfo is DirectoryInfo dir)
+						{
+							if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;
+
+							var node = new TreeNode( dir.Name );
+							node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
+							node.Nodes.Add( new TreeNode( "Loading..." ) );
+							dirNodes[dirIndex++] = node;
+						}
+						else if (fsInfo is FileInfo file)
+						{
+							var node = new TreeNode( file.Name );
+							node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
+							fileNodes[fileIndex++] = node;
+						}
 					}
 
                     e.Node.TreeView?.BeginUpdate();
@@ -185,6 +199,7 @@ namespace HDLG_winforms
 				catch (Exception ex)
 				{
 					logger.Error(ex, "Error loading directory: {Path}", info.Path);
+                    e.Node.Nodes.Add(new TreeNode("Error"));
                     e.Node.Nodes.Add(new TreeNode("Error"));
                 }
 #pragma warning restore CA1031 // Do not catch general exception types
@@ -233,13 +248,15 @@ namespace HDLG_winforms
 				listViewProperties.BeginUpdate();
 				try
 				{
-					AddPropertyToListView( "Name", fileInfo.Name );
-					AddPropertyToListView( "Path", fileInfo.FullName );
-					AddPropertyToListView( "Extension", fileInfo.Extension );
-					AddPropertyToListView( "Size (bytes)", fileInfo.Length.ToString( CultureInfo.CurrentCulture ) );
-					AddPropertyToListView( "Creation Time", fileInfo.CreationTime.ToString( "g", CultureInfo.CurrentCulture ) );
-					AddPropertyToListView( "Last Access Time", fileInfo.LastAccessTime.ToString( "g", CultureInfo.CurrentCulture ) );
-					AddPropertyToListView( "Last Write Time", fileInfo.LastWriteTime.ToString( "g", CultureInfo.CurrentCulture ) );
+					var items = new ListViewItem[7];
+					items[0] = CreateListViewItem( "Name", fileInfo.Name );
+					items[1] = CreateListViewItem( "Path", fileInfo.FullName );
+					items[2] = CreateListViewItem( "Extension", fileInfo.Extension );
+					items[3] = CreateListViewItem( "Size (bytes)", fileInfo.Length.ToString( CultureInfo.CurrentCulture ) );
+					items[4] = CreateListViewItem( "Creation Time", fileInfo.CreationTime.ToString( "g", CultureInfo.CurrentCulture ) );
+					items[5] = CreateListViewItem( "Last Access Time", fileInfo.LastAccessTime.ToString( "g", CultureInfo.CurrentCulture ) );
+					items[6] = CreateListViewItem( "Last Write Time", fileInfo.LastWriteTime.ToString( "g", CultureInfo.CurrentCulture ) );
+					listViewProperties.Items.AddRange( items );
 				}
 				finally
 				{
@@ -262,17 +279,23 @@ namespace HDLG_winforms
                         // the foreach loop to use the struct-based enumerator, preventing interface boxing allocations.
                         if (props is Dictionary<string, IConvertible> propsDict)
                         {
+                            var items = new ListViewItem[propsDict.Count];
+                            int i = 0;
                             foreach (var kvp in propsDict)
                             {
-                                AddPropertyToListView(kvp.Key, kvp.Value?.ToString() ?? "");
+                                items[i++] = CreateListViewItem(kvp.Key, kvp.Value?.ToString() ?? "");
                             }
+                            listViewProperties.Items.AddRange(items);
                         }
                         else
                         {
+                            var items = new ListViewItem[props.Count];
+                            int i = 0;
                             foreach (var kvp in props)
                             {
-                                AddPropertyToListView(kvp.Key, kvp.Value?.ToString() ?? "");
+                                items[i++] = CreateListViewItem(kvp.Key, kvp.Value?.ToString() ?? "");
                             }
+                            listViewProperties.Items.AddRange(items);
                         }
                     }
                     finally
@@ -314,6 +337,7 @@ namespace HDLG_winforms
                 {
 				    logger.Error(ex, "Error reading properties for file: {Path}", info.Path);
                     AddPropertyToListView("Error", "An unexpected error occurred.");
+                    AddPropertyToListView("Error", "An unexpected error occurred.");
                 }
             }
 #pragma warning restore CA1031 // Do not catch general exception types
@@ -326,11 +350,16 @@ namespace HDLG_winforms
             }
         }
 
-		private void AddPropertyToListView (string name, string value)
+		private static ListViewItem CreateListViewItem (string name, string value)
 		{
 			var item = new ListViewItem( name );
 			item.SubItems.Add( value );
-			listViewProperties.Items.Add( item );
+			return item;
+		}
+
+		private void AddPropertyToListView (string name, string value)
+		{
+			listViewProperties.Items.Add( CreateListViewItem( name, value ) );
 		}
 
 		private void BtnOpenFile_Click (object sender, EventArgs e)

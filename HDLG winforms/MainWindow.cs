@@ -150,7 +150,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 #pragma warning disable CA1031 // Do not catch general exception types
 			catch (Exception ex)
 			{
-				toolStripStatusLabelException.Text = "An error occurred";
+				toolStripStatusLabelException.Text = "An unexpected error occurred";
 				Logger.Error( ex, "Error in {MethodName}", nameof( BtnStart_Click ) );
 			}
 #pragma warning restore CA1031 // Do not catch general exception types
@@ -455,7 +455,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 #pragma warning disable CA1031 // Do not catch general exception types
 			catch (Exception ex)
 			{
-				toolStripStatusLabelException.Text = "An error occurred";
+				toolStripStatusLabelException.Text = "An unexpected error occurred";
 				Logger.Error( ex, "Error in {MethodName}", nameof( BtnStartHtml_Click ) );
 			}
 #pragma warning restore CA1031 // Do not catch general exception types
@@ -543,7 +543,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 #pragma warning disable CA1031 // Do not catch general exception types
 			catch (Exception ex)
 			{
-				toolStripStatusLabelException.Text = "An error occurred";
+				toolStripStatusLabelException.Text = "An unexpected error occurred";
 				Logger.Error( ex, "Error opening UI Explorer" );
 			}
 #pragma warning restore CA1031 // Do not catch general exception types

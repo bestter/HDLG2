@@ -1,7 +1,9 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using FluentAssertions;
 using HDLG_winforms;
 using Moq;
@@ -117,6 +119,56 @@ namespace HDLG.Tests
 
                 // Should sanitize value by removing the invalid XML character (\x0B)
                 xmlContent.Should().Contain("<InvalidVal>TestText</InvalidVal>");
+            }
+            finally
+            {
+                if (System.IO.File.Exists(xmlPath))
+                    System.IO.File.Delete(xmlPath);
+            }
+        }
+
+        [Fact]
+        public async Task SaveAsXMLAsync_FilesWithProperties_AreSiblingsNotNested()
+        {
+            // Arrange: one file with extended properties, one without — both must be sibling <File> nodes.
+            System.IO.File.WriteAllText(Path.Combine(baseDirectoryPath, "with_props.txt"), "a");
+            System.IO.File.WriteAllText(Path.Combine(baseDirectoryPath, "without_props.txt"), "b");
+
+            var properties = new System.Collections.Generic.Dictionary<string, IConvertible>
+            {
+                { "Author", "Bob" }
+            };
+
+            var browserMock = new Mock<HdlgFileProperty.FilePropertyBrowser>(loggerMock.Object, Array.Empty<HdlgFileProperty.IFilePropertyGetter>());
+            browserMock
+                .Setup(b => b.GetFilePropertyAsync(It.IsAny<FileInfo>()))
+                .ReturnsAsync((FileInfo fi) => fi.Name == "with_props.txt" ? properties : null);
+
+            var dir = new HdlgDirectory(baseDirectoryPath, true, false, loggerMock.Object);
+            await dir.BrowseAsync(browserMock.Object);
+
+            var xmlPath = Path.Combine(Path.GetTempPath(), "test_xml_structure_" + Guid.NewGuid().ToString() + ".xml");
+            try
+            {
+                // Act
+                await directoryBrowser.SaveAsXMLAsync(xmlPath, dir);
+
+                // Assert
+                var doc = XDocument.Load(xmlPath);
+                var files = doc.Descendants("File").ToList();
+
+                files.Should().HaveCountGreaterThanOrEqualTo(2);
+                foreach (var file in files)
+                {
+                    file.Parent.Should().NotBeNull();
+                    file.Parent!.Name.LocalName.Should().Be("Files",
+                        "each <File> must close properly so siblings are not nested inside another <File>");
+                }
+                files.Count(f => f.Element("ExtentedProperties") != null).Should().Be(1);
+
+                var withProps = files.Single(f => (string?)f.Element("Name") == "with_props.txt");
+                withProps.Element("ExtentedProperties").Should().NotBeNull();
+                ((string?)withProps.Element("ExtentedProperties")!.Element("Author")).Should().Be("Bob");
             }
             finally
             {

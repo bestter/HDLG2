@@ -113,6 +113,21 @@
 **Learning:** Local file pathways must be protected from leakage to external domains when generating HTML files meant to be opened locally.
 **Prevention:** Always add `<meta name="referrer" content="no-referrer">` to HTML head sections generated for local offline viewing.
 
+## 2024-07-28 - Implement Fail Securely Principle for Background Threads
+**Vulnerability:** The application was vulnerable to continuing execution in an undefined or corrupted state because the global background exception handler (`CurrentDomain_UnhandledException` in `Program.cs`) caught fatal exceptions, logged them, but did not terminate the application.
+**Learning:** When unhandled exceptions occur on background threads, the application memory state may be corrupted. Allowing it to continue running violates the "fail securely" principle and can lead to unexpected behaviors, data corruption, or security bypasses.
+**Prevention:** In global error handlers for background threads (`AppDomain.CurrentDomain.UnhandledException`), always securely terminate the process (e.g., using `Environment.Exit(1)`) after logging the error and notifying the user.
+
+## 2024-05-25 - [Fail-Open Background Thread Exception]
+**Vulnerability:** The application caught `AppDomain.CurrentDomain.UnhandledException` for background threads but merely logged the error and displayed a MessageBox without calling `Environment.Exit`, allowing the process to continue running in a corrupted state.
+**Learning:** If a critical background exception occurs, the application state is likely corrupted. Allowing the process to continue running violates the 'Fail Securely' principle and could lead to unpredictable security or logic failures down the line.
+**Prevention:** In global error handlers for background threads, always enforce the 'Fail Securely' principle by gracefully but forcefully terminating the process (e.g., using `Environment.Exit(1)`).
+
+## 2026-06-08 - UI Information Disclosure via Generic Catch Blocks
+**Vulnerability:** The application was vulnerable to Information Disclosure because unhandled generic exceptions in `BrowserForm.cs` and `MainWindow.cs` were re-thrown (`throw;`) inside local generic `catch (Exception ex)` blocks. This allowed unexpected errors to bubble up to the global Windows Forms exception handler, which by default displays the full stack trace and internal path details to the user, violating CWE-209.
+**Learning:** While catching generic exceptions (`Exception`) locally is generally discouraged (triggering CA1031), completely removing them or blindly re-throwing them (`throw;`) in a UI application can cause the application to crash or expose sensitive internal stack traces to the user via default OS/Framework dialogs.
+**Prevention:** To prevent information disclosure (CWE-209) in UI applications, catch specific exceptions (like `UnauthorizedAccessException`) to provide safe error messages. For unexpected errors, use local generic `catch (Exception ex)` blocks to log the full exception securely and provide a safe generic UI message (e.g., "An unexpected error occurred"), rather than re-throwing. Use `#pragma warning disable CA1031` to explicitly acknowledge this safe handling pattern.
+
 ## 2026-06-25 - [Prevent UI Thread Crash via throw]
 **Vulnerability:** Found `throw;` statements used inside generic `catch (Exception ex)` blocks within WinForms event handlers (like `BtnStartHtml_Click` in `MainWindow.cs` and `BrowserForm_Load` in `BrowserForm.cs`).
 **Learning:** In WinForms applications, throwing unhandled exceptions from UI event handlers or asynchronous background tasks can bypass local cleanup code (like `finally` blocks meant to reset wait cursors) and abruptly crash the entire application unless caught by a global thread exception handler, leading to Denial of Service or unintended state exposure.
