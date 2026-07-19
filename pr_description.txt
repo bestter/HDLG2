@@ -1,3 +1,5 @@
-🎯 **What:** The `PerformanceCount` struct lacked test coverage. Added `InternalsVisibleTo` to the main project and explicit unit tests to the `HDLG.Tests` project.
-📊 **Coverage:** Tested the static `Empty` instance (ensuring all properties are `TimeSpan.MinValue`) and normal field assignments (`BrowseTime`, `SaveTime`, `TotalTime`).
-✨ **Result:** Ensured the correct behavior and default states of the struct, improving overall test coverage and code reliability.
+**Severity**: ENHANCEMENT
+**Vulnerability**: The application was attempting to set `X-Content-Type-Options: nosniff` via a `<meta http-equiv="...">` tag in the generated HTML exports. However, modern browsers strictly ignore this security directive when placed in a meta tag—it must be sent as an HTTP response header to be effective.
+**Impact**: Having this tag provided a false sense of security (security theater) against MIME-sniffing, as the browser would not actually enforce the policy from a meta tag.
+**Fix**: Removed the ineffective `<meta http-equiv="X-Content-Type-Options" content="nosniff">` tag from `HDLG winforms/DirectoryBrowser.cs` to prevent security theater, and documented this behavior in the Sentinel journal.
+**Verification**: Verified that the HTML export code compiles successfully without the tag.
