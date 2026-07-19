@@ -133,6 +133,11 @@
 **Learning:** In WinForms applications, throwing unhandled exceptions from UI event handlers or asynchronous background tasks can bypass local cleanup code (like `finally` blocks meant to reset wait cursors) and abruptly crash the entire application unless caught by a global thread exception handler, leading to Denial of Service or unintended state exposure.
 **Prevention:** To prevent information disclosure (CWE-209) in UI applications, explicitly catch specific exceptions (like `UnauthorizedAccessException`) to provide safe error messages. When using local generic `catch (Exception ex)` blocks to maintain UI state or perform local logging, do not re-throw (`throw;`) unhandled exceptions if it bypasses cleanup or exposes raw stack traces. Instead, log the full exception securely, provide a safe generic UI message, and suppress the CA1031 warning using `#pragma warning disable CA1031`.
 
+## 2026-06-25 - [Ineffective X-Content-Type-Options Meta Tag]
+**Vulnerability:** The application was attempting to set the `X-Content-Type-Options` security header via an HTML `<meta http-equiv="...">` tag in the generated HTML exports. This is ineffective security theater, as modern browsers strictly ignore this directive when it is not sent as an actual HTTP response header.
+**Learning:** Security directives like `X-Content-Type-Options` or `X-Frame-Options` cannot be applied via HTML `<meta>` tags and must be sent as HTTP response headers. Using them in `<meta>` tags provides a false sense of security.
+**Prevention:** Do not attempt to set `X-Content-Type-Options` via HTML `<meta>` tags. Remove such tags to avoid security theater and rely on proper server configurations or other mechanisms if the file is served over HTTP.
+
 ## 2026-06-25 - [Ineffective Security Theater: X-Content-Type-Options Meta Tag]
 **Vulnerability:** The application attempted to set `X-Content-Type-Options: nosniff` via a `<meta http-equiv="...">` tag in the generated HTML exports, but modern browsers strictly ignore this security directive when placed in a meta tag.
 **Learning:** Security directives like `X-Content-Type-Options` or `X-Frame-Options` must be sent as actual HTTP response headers. Using them in `<meta>` tags is ineffective "security theater" and provides no real protection.

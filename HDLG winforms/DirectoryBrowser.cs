@@ -35,7 +35,6 @@ namespace HDLG_winforms
 			return spacers;
 		}
 
-
 		private readonly ILogger log;
 
 		/// <summary>
