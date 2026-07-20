@@ -13,6 +13,7 @@
     <!-- This allows referencing the project without blowing up the compiler on Linux for WinForms -->
     <!-- Suppress xUnit1051 (CancellationToken best practice) in tests; the async file I/O calls inside test methods do not require cancellation for correctness. -->
     <NoWarn>$(NoWarn);xUnit1051</NoWarn>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
