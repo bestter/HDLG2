@@ -351,6 +351,34 @@ namespace HDLG.Tests
             properties["Year"].Should().Be(0u);
         }
 
+
+        [Fact]
+        public void Mp3PropertyGetter_GetFileProperties_CorruptFile_LogsWarningAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+            var corruptFile = "test_corrupt_empty.mp3";
+            System.IO.File.WriteAllBytes(corruptFile, Array.Empty<byte>());
+
+            try
+            {
+                // Act
+                var properties = getter.GetFileProperties(new FileInfo(corruptFile));
+
+                // Assert
+                loggerMock.Verify(l => l.Warning(It.IsAny<TagLib.CorruptFileException>(), It.Is<string>(s => s.Contains("is corrupted")), It.IsAny<string>()), Times.Once);
+                properties.Should().BeEmpty();
+            }
+            finally
+            {
+                if (System.IO.File.Exists(corruptFile))
+                {
+                    System.IO.File.Delete(corruptFile);
+                }
+            }
+        }
+
         [Fact]
         public void Mp3PropertyGetter_GetFileProperties_FileNotFound_LogsErrorAndReturnsEmpty()
         {
