@@ -1,0 +1,4 @@
+💡 What: Converted the `TotalNumberOfFiles` auto-property in `FilePropertyBrowser` to a private field `_totalNumberOfFiles`. Added a performance comment explaining the change.
+🎯 Why: In C#, auto-properties (even private ones) generate hidden `get_` and `set_` methods. `TotalNumberOfFiles` is incremented on every single file processed during a directory scan (via `GetFilePropertyAsync`), causing millions of unnecessary method invocations during deep recursive scans of large directories.
+📊 Impact: Eliminates method invocation overhead (call-site setup, `call` instruction, return sequence) for every file processed during a scan, making the hot-path faster.
+🔬 Measurement: Run a CPU profiler (like dotTrace) during a large directory scan. The generated `set_TotalNumberOfFiles` method will no longer exist in the execution tree.
