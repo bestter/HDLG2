@@ -27,6 +27,67 @@ namespace HDLG.Tests
 		}
 
 		[Fact]
+		public void CreateApplicationIcon_ReturnsIcon()
+		{
+			using var icon = AppLogoRenderer.CreateApplicationIcon();
+
+			icon.Should().NotBeNull();
+			icon.Width.Should().BeGreaterThan(0);
+			icon.Height.Should().BeGreaterThan(0);
+
+			// Verify we can access different sizes
+			using var icon16 = new Icon(icon, new Size(16, 16));
+			icon16.Width.Should().Be(16);
+			icon16.Height.Should().Be(16);
+
+			using var icon256 = new Icon(icon, new Size(256, 256));
+			icon256.Width.Should().Be(256);
+			icon256.Height.Should().Be(256);
+		}
+
+		[Theory]
+		[InlineData(16)]
+		[InlineData(32)]
+		[InlineData(256)]
+		public void RenderIcon_ProducesBitmapOfRequestedSize(int size)
+		{
+			using var bitmap = AppLogoRenderer.RenderIcon(size);
+
+			bitmap.Should().NotBeNull();
+			bitmap.Width.Should().Be(size);
+			bitmap.Height.Should().Be(size);
+			bitmap.PixelFormat.Should().Be(System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+		}
+
+		[Fact]
+		public void RenderIcon_ThrowsForInvalidSize()
+		{
+			Action act = () => AppLogoRenderer.RenderIcon(0);
+			act.Should().Throw<ArgumentOutOfRangeException>();
+		}
+
+		[Fact]
+		public void RenderWordmark_ProducesBitmapOfRequestedSize()
+		{
+			using var bitmap = AppLogoRenderer.RenderWordmark(320, 160);
+
+			bitmap.Should().NotBeNull();
+			bitmap.Width.Should().Be(320);
+			bitmap.Height.Should().Be(160);
+		}
+
+		[Theory]
+		[InlineData(0, 100)]
+		[InlineData(100, 0)]
+		[InlineData(-1, 100)]
+		public void RenderWordmark_ThrowsForInvalidDimensions(int width, int height)
+		{
+			Action act = () => AppLogoRenderer.RenderWordmark(width, height);
+			act.Should().Throw<ArgumentOutOfRangeException>();
+		}
+
+
+		[Fact]
 		public void ExportPackagedLogoAssets_WhenRequested()
 		{
 			if (!string.Equals(Environment.GetEnvironmentVariable("HDLG_EXPORT_LOGO"), "1", StringComparison.Ordinal))

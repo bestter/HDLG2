@@ -1,5 +1,3 @@
-**Severity**: ENHANCEMENT
-**Vulnerability**: The application was attempting to set `X-Content-Type-Options: nosniff` via a `<meta http-equiv="...">` tag in the generated HTML exports. However, modern browsers strictly ignore this security directive when placed in a meta tag—it must be sent as an HTTP response header to be effective.
-**Impact**: Having this tag provided a false sense of security (security theater) against MIME-sniffing, as the browser would not actually enforce the policy from a meta tag.
-**Fix**: Removed the ineffective `<meta http-equiv="X-Content-Type-Options" content="nosniff">` tag from `HDLG winforms/DirectoryBrowser.cs` to prevent security theater, and documented this behavior in the Sentinel journal.
-**Verification**: Verified that the HTML export code compiles successfully without the tag.
+🎯 **What:** The `CreateApplicationIcon` and `RenderIcon` methods in `AppLogoRenderer` lacked test coverage.
+📊 **Coverage:** Added tests to verify that `CreateApplicationIcon` generates a valid multi-size icon and that `RenderIcon` properly creates bitmaps of the requested dimensions. Edge cases like invalid size exceptions were also covered.
+✨ **Result:** Improved test reliability and coverage for the application branding and logo rendering logic.
