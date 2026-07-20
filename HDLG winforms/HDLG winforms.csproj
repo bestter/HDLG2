@@ -96,8 +96,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Krypton.Toolkit" Version="105.26.7.201" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
+    <PackageReference Include="Krypton.Toolkit" Version="105.26.4.110" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
   </ItemGroup>
 
