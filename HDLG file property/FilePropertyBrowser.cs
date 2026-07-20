@@ -219,7 +219,7 @@ namespace HdlgFileProperty
 						avg.ToString("G", CultureInfo.CurrentCulture));
 				}
 			}
-			logger.Information("Total number of files {TotalNumberOfFiles}", _totalNumberOfFiles);
+			logger.Information("Total number of files {TotalNumberOfFiles}", TotalNumberOfFiles);
 		}
 	}
 }
