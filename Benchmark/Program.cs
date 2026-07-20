@@ -31,7 +31,7 @@ namespace Benchmark
 
             // Warmup
             var warmupDir = new HdlgDirectory(testDir, true, true, Log.Logger);
-            warmupDir.Browse(propertyBrowser);
+            warmupDir.BrowseAsync(propertyBrowser).GetAwaiter().GetResult();
 
             int iterations = 10;
             long totalMs = 0;
@@ -40,7 +40,7 @@ namespace Benchmark
             {
                 var dir = new HdlgDirectory(testDir, true, true, Log.Logger);
                 var sw = Stopwatch.StartNew();
-                dir.Browse(propertyBrowser);
+                dir.BrowseAsync(propertyBrowser).GetAwaiter().GetResult();
                 sw.Stop();
                 totalMs += sw.ElapsedMilliseconds;
                 Console.WriteLine($"Iteration {i}: {sw.ElapsedMilliseconds} ms (Dirs: {dir.TotalDirectories}, Files: {dir.TotalFiles})");
