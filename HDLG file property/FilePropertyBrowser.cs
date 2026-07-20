@@ -22,7 +22,8 @@ namespace HdlgFileProperty
 
 		private readonly TimeSpan propertyExtractionTimeout;
 
-		private long TotalNumberOfFiles { get; set; }
+		// Performance optimization: Avoid property getter/setter overhead for internal tracking field
+		private long _totalNumberOfFiles;
 
 		public FilePropertyBrowser(Serilog.ILogger logger, params IFilePropertyGetter[] imagePropertyGetters)
 			: this(logger, FilePropertyLimits.MaxFileSizeBytes, FilePropertyLimits.PropertyExtractionTimeout, imagePropertyGetters)
@@ -44,7 +45,7 @@ namespace HdlgFileProperty
 			this.maxFileSizeBytes = maxFileSizeBytes;
 			this.propertyExtractionTimeout = propertyExtractionTimeout;
 			filePropertyGetters = new FilePropertyGetterStatistic[imagePropertyGetters.Length];
-			TotalNumberOfFiles = 0;
+			_totalNumberOfFiles = 0;
 
 			for (int i = 0; i < imagePropertyGetters.Length; i++)
 			{
@@ -64,7 +65,7 @@ namespace HdlgFileProperty
 		{
 			ArgumentNullException.ThrowIfNull(fileInfo);
 			string path = fileInfo.FullName;
-			TotalNumberOfFiles++;
+			_totalNumberOfFiles++;
 
 			IReadOnlyDictionary<string, IConvertible>? firstProperties = null;
 			Dictionary<string, IConvertible>? mergedProperties = null;
@@ -217,7 +218,7 @@ namespace HdlgFileProperty
 						avg.ToString("G", CultureInfo.CurrentCulture));
 				}
 			}
-			logger.Information("Total number of files {TotalNumberOfFiles}", TotalNumberOfFiles);
+			logger.Information("Total number of files {TotalNumberOfFiles}", _totalNumberOfFiles);
 		}
 	}
 }
