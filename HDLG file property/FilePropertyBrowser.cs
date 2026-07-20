@@ -9,6 +9,7 @@ You should have received a copy of the GNU General Public License along with HTM
  */
 
 using System.Globalization;
+using System.Threading;
 
 namespace HdlgFileProperty
 {
@@ -22,8 +23,8 @@ namespace HdlgFileProperty
 
 		private readonly TimeSpan propertyExtractionTimeout;
 
-		// Performance optimization: Avoid property getter/setter overhead for internal tracking field
-		private long _totalNumberOfFiles;
+		private long totalNumberOfFiles;
+		public long TotalNumberOfFiles => Interlocked.Read(ref totalNumberOfFiles);
 
 		public FilePropertyBrowser(Serilog.ILogger logger, params IFilePropertyGetter[] imagePropertyGetters)
 			: this(logger, FilePropertyLimits.MaxFileSizeBytes, FilePropertyLimits.PropertyExtractionTimeout, imagePropertyGetters)
@@ -45,7 +46,7 @@ namespace HdlgFileProperty
 			this.maxFileSizeBytes = maxFileSizeBytes;
 			this.propertyExtractionTimeout = propertyExtractionTimeout;
 			filePropertyGetters = new FilePropertyGetterStatistic[imagePropertyGetters.Length];
-			_totalNumberOfFiles = 0;
+			totalNumberOfFiles = 0;
 
 			for (int i = 0; i < imagePropertyGetters.Length; i++)
 			{
@@ -65,7 +66,7 @@ namespace HdlgFileProperty
 		{
 			ArgumentNullException.ThrowIfNull(fileInfo);
 			string path = fileInfo.FullName;
-			_totalNumberOfFiles++;
+			Interlocked.Increment(ref totalNumberOfFiles);
 
 			IReadOnlyDictionary<string, IConvertible>? firstProperties = null;
 			Dictionary<string, IConvertible>? mergedProperties = null;
@@ -218,7 +219,7 @@ namespace HdlgFileProperty
 						avg.ToString("G", CultureInfo.CurrentCulture));
 				}
 			}
-			logger.Information("Total number of files {TotalNumberOfFiles}", _totalNumberOfFiles);
+			logger.Information("Total number of files {TotalNumberOfFiles}", TotalNumberOfFiles);
 		}
 	}
 }
