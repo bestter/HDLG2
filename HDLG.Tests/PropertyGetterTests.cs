@@ -188,7 +188,7 @@ namespace HDLG.Tests
 
 
         [Fact]
-        public void ImagePropertyGetter_GetFileProperties_InvalidFileFormat_LogsWarningAndReturnsEmpty()
+        public void ImagePropertyGetter_GetFileProperties_UnknownImageFormatException_LogsWarningAndReturnsEmpty()
         {
             // Arrange
             var getter = new ImagePropertyGetter();
@@ -199,11 +199,11 @@ namespace HDLG.Tests
 
             // Assert
             properties.Should().BeEmpty();
-            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Unsupported image format") || s.Contains("Cannot read properties")), It.IsAny<string>()), Times.Once);
+            loggerMock.Verify(l => l.Warning<string>(It.IsAny<SixLabors.ImageSharp.UnknownImageFormatException>(), "Unsupported image format for file: {FilePath}", It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
-        public void ImagePropertyGetter_GetFileProperties_CorruptedImageContent_LogsWarningAndReturnsEmpty()
+        public void ImagePropertyGetter_GetFileProperties_InvalidImageContentException_LogsWarningAndReturnsEmpty()
         {
             // Arrange
             var getter = new ImagePropertyGetter();
@@ -214,7 +214,7 @@ namespace HDLG.Tests
 
             // Assert
             properties.Should().BeEmpty();
-            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Invalid image content") || s.Contains("Unsupported image format") || s.Contains("Cannot read properties")), It.IsAny<string>()), Times.Once);
+            loggerMock.Verify(l => l.Warning<string>(It.IsAny<SixLabors.ImageSharp.InvalidImageContentException>(), "Invalid image content for file: {FilePath}", It.IsAny<string>()), Times.Once);
         }
 
 
@@ -301,20 +301,7 @@ namespace HDLG.Tests
             }
         }
 
-        [Fact]
-        public void ImagePropertyGetter_GetFileProperties_CorruptedImage_LogsWarningAndReturnsEmpty()
-        {
-            // Arrange
-            var getter = new ImagePropertyGetter();
-            getter.AddLogger(loggerMock.Object);
 
-            // Act
-            var properties = getter.GetFileProperties(new FileInfo("test_corrupted.jpg"));
-
-            // Assert
-            properties.Should().BeEmpty();
-            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Invalid image content")), It.IsAny<string>()), Times.Once);
-        }
         [Theory]
         [InlineData("test.mp3", true)]
         [InlineData("test.flac", true)]

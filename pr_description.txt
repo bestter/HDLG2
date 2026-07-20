@@ -1,5 +1,10 @@
-**Severity**: ENHANCEMENT
-**Vulnerability**: The application was attempting to set `X-Content-Type-Options: nosniff` via a `<meta http-equiv="...">` tag in the generated HTML exports. However, modern browsers strictly ignore this security directive when placed in a meta tag—it must be sent as an HTTP response header to be effective.
-**Impact**: Having this tag provided a false sense of security (security theater) against MIME-sniffing, as the browser would not actually enforce the policy from a meta tag.
-**Fix**: Removed the ineffective `<meta http-equiv="X-Content-Type-Options" content="nosniff">` tag from `HDLG winforms/DirectoryBrowser.cs` to prevent security theater, and documented this behavior in the Sentinel journal.
-**Verification**: Verified that the HTML export code compiles successfully without the tag.
+🎯 **What:**
+The `ImagePropertyGetter.GetFileProperties` method explicitly catches `SixLabors.ImageSharp.UnknownImageFormatException` and `SixLabors.ImageSharp.InvalidImageContentException`. The previous tests were too generic, relying on catching any general `Exception` to verify logging behavior, leaving a gap in validating that these specific exceptions were handled as intended.
+
+📊 **Coverage:**
+- Replaced generic invalid/corrupt image tests with precise tests for `UnknownImageFormatException` and `InvalidImageContentException`.
+- Verified that the `Serilog.ILogger` receives the exact exception types through explicit generic type matching (`It.IsAny<SixLabors.ImageSharp.UnknownImageFormatException>()` and `It.IsAny<SixLabors.ImageSharp.InvalidImageContentException>()`).
+- Removed duplicated generic tests that asserted redundant behaviors.
+
+✨ **Result:**
+Increased testing reliability and strictness. The test suite now explicitly guarantees that `ImagePropertyGetter` correctly processes and logs specific ImageSharp exceptions, ensuring that unsupported formats and corrupted content are gracefully logged instead of throwing unhandled exceptions.
