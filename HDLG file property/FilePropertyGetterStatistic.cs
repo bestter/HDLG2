@@ -17,32 +17,29 @@ namespace HdlgFileProperty
         public FilePropertyGetterStatistic(IFilePropertyGetter filePropertyGetter)
         {
             FilePropertyGetter = filePropertyGetter ?? throw new ArgumentNullException(nameof(filePropertyGetter));
-            Stopwatch = new Stopwatch();
+
         }
 
         public IFilePropertyGetter FilePropertyGetter { get; private set; }
 
-        private Stopwatch Stopwatch { get; set; }
+        private long _totalExecutionTimeTicks;
 
-        public long TotalFiles { get; private set; }
+        private long _totalFiles;
+        public long TotalFiles => System.Threading.Interlocked.Read(ref _totalFiles);
 
-        public void StartTimer()
+        public void AddExecutionTime(TimeSpan timeSpan)
         {
-            Stopwatch.Start();
-        }
-        public void StopTimer()
-        {
-            Stopwatch.Stop();
+            System.Threading.Interlocked.Add(ref _totalExecutionTimeTicks, timeSpan.Ticks);
         }
 
         public TimeSpan GetTotalExecutionTime()
         {
-            return Stopwatch.Elapsed.Duration();
+            return TimeSpan.FromTicks(System.Threading.Interlocked.Read(ref _totalExecutionTimeTicks));
         }
 
         public void IncrementFile()
         {
-            TotalFiles++;
+            System.Threading.Interlocked.Increment(ref _totalFiles);
         }
     }
 }

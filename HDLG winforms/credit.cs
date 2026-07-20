@@ -17,10 +17,10 @@ namespace HDLG_winforms
 		public Credit ()
 		{
 			InitializeComponent( );
-			Icon = AppBranding.LoadApplicationIcon();
-			pictureBox1.BackColor = Color.FromArgb(248, 250, 252);
-			pictureBox1.Image = AppBranding.LoadLogoImage();
-			AppUiBootstrap.RemoveFormBranding(this);
+			Icon = AppBranding.LoadApplicationIcon( );
+			pictureBox1.BackColor = Color.FromArgb( 248, 250, 252 );
+			pictureBox1.Image = AppBranding.LoadLogoImage( );
+			AppUiBootstrap.RemoveFormBranding( this );
 		}
 
 		private void Credit_Load (object sender, EventArgs e)
@@ -30,38 +30,38 @@ namespace HDLG_winforms
 
 		}
 
-		private static void OpenUrlSafe(string url)
+		private static void OpenUrlSafe (string url)
 		{
-			if (string.IsNullOrWhiteSpace(url) ||
-				(!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
-				 !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) ||
-				!Uri.IsWellFormedUriString(url, UriKind.Absolute))
+			if (string.IsNullOrWhiteSpace( url ) ||
+				(!url.StartsWith( "http://", StringComparison.OrdinalIgnoreCase ) &&
+				 !url.StartsWith( "https://", StringComparison.OrdinalIgnoreCase )) ||
+				!Uri.IsWellFormedUriString( url, UriKind.Absolute ))
 			{
-				throw new InvalidOperationException($"Opening URLs with scheme other than http/https is not allowed for security reasons. URL: {url}");
+				throw new InvalidOperationException( $"Opening URLs with scheme other than http/https is not allowed for security reasons. URL: {url}" );
 			}
 
-			if (Uri.TryCreate(url, UriKind.Absolute, out Uri? uriResult))
+			if (Uri.TryCreate( url, UriKind.Absolute, out Uri? uriResult ))
 			{
-				DialogResult res = MessageBox.Show($"You are about to open an external website:\n\n{url}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+				DialogResult res = MessageBox.Show( $"You are about to open an external website:\n\n{url}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
 				if (res != DialogResult.Yes) return;
 
-				ProcessStartInfo psInfo = new()
+				ProcessStartInfo psInfo = new( )
 				{
 					FileName = uriResult.AbsoluteUri,
 					UseShellExecute = true,
-					WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.System)
+					WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
 				};
-				Process.Start(psInfo);
+				Process.Start( psInfo );
 			}
 			else
 			{
-				throw new InvalidOperationException($"Opening URLs with scheme other than http/https is not allowed for security reasons. URL: {url}");
+				throw new InvalidOperationException( $"Opening URLs with scheme other than http/https is not allowed for security reasons. URL: {url}" );
 			}
 		}
 
 		private void labelGPL_LinkClicked (object sender, EventArgs e)
 		{
-			OpenUrlSafe("https://www.gnu.org/licenses/gpl-3.0.en.html");
+			OpenUrlSafe( "https://www.gnu.org/licenses/gpl-3.0.en.html" );
 		}
 
 

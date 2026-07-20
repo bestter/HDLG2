@@ -19,7 +19,7 @@ using System.Reflection;
 
 namespace HDLG_winforms
 {
-	[System.Diagnostics.CodeAnalysis.SuppressMessage("Localization", "CA1303:Do not pass literals as localized parameters")]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage( "Localization", "CA1303:Do not pass literals as localized parameters" )]
 	public partial class MainWindow : KryptonForm
 	{
 		#region PropertyGetter
@@ -44,8 +44,8 @@ namespace HDLG_winforms
 		public MainWindow (ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter, PdfPropertyGetter pdfPropertyGetter, Mp3PropertyGetter mp3PropertyGetter, ILogger logger)
 		{
 			InitializeComponent( );
-			Icon = AppBranding.LoadApplicationIcon();
-			AppUiBootstrap.RemoveFormBranding(this);
+			Icon = AppBranding.LoadApplicationIcon( );
+			AppUiBootstrap.RemoveFormBranding( this );
 			ImagePropertyGetter = imagePropertyGetter;
 			WordPropertyGetter = wordPropertyGetter;
 			ExcelPropertyGetter = excelPropertyGetter;
@@ -183,7 +183,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 				Stopwatch stopwatch = Stopwatch.StartNew( );
 
 				Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
-				await directory.BrowseAsync( propertyBrowser ).ConfigureAwait(false);
+				await directory.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
 				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.BrowseAsync ), directory.Name );
 				TimeSpan browseTime = stopwatch.Elapsed;
 				propertyBrowser.LogGetterStatistics( );
@@ -266,7 +266,8 @@ toolStripStatusLabelTotalTime.Visible = false;
 						WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
 					};
 					fileopener.Start( );
-				}, fullPath => {
+				}, fullPath =>
+				{
 					DialogResult res = MessageBox.Show( $"You are about to open the following file:\n\n{fullPath}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
 					return res == DialogResult.Yes;
 				} );
@@ -289,7 +290,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 
 		private static ReadOnlySpan<char> GetNormalizedExtensionSpan (ReadOnlySpan<char> fullPath)
 		{
-			return System.IO.Path.GetExtension( fullPath.TrimEnd( " .".AsSpan() ) );
+			return System.IO.Path.GetExtension( fullPath.TrimEnd( " .".AsSpan( ) ) );
 		}
 
 		private static ReadOnlySpan<char> ResolveExtensionSpan (string fullPath, bool afterUserConfirmation, Func<string, bool, string>? resolveExtension, out string? allocatedExtension)
@@ -297,11 +298,11 @@ toolStripStatusLabelTotalTime.Visible = false;
 			if (resolveExtension != null)
 			{
 				allocatedExtension = resolveExtension( fullPath, afterUserConfirmation );
-				return allocatedExtension.AsSpan();
+				return allocatedExtension.AsSpan( );
 			}
 
 			allocatedExtension = null;
-			return GetNormalizedExtensionSpan( fullPath.AsSpan() );
+			return GetNormalizedExtensionSpan( fullPath.AsSpan( ) );
 		}
 
 		private static FileOpenSnapshot CaptureFileSnapshot (string fullPath)
@@ -316,14 +317,14 @@ toolStripStatusLabelTotalTime.Visible = false;
 
 		private static void EnsureExtensionAllowed (ReadOnlySpan<char> extension)
 		{
-			if (DangerousExtensions.GetAlternateLookup<ReadOnlySpan<char>>().Contains( extension ))
+			if (DangerousExtensions.GetAlternateLookup<ReadOnlySpan<char>>( ).Contains( extension ))
 			{
-				throw new InvalidOperationException( $"Opening files with extension '{extension.ToString()}' is not allowed for security reasons." );
+				throw new InvalidOperationException( $"Opening files with extension '{extension.ToString( )}' is not allowed for security reasons." );
 			}
 
-			if (!SafeExtensions.GetAlternateLookup<ReadOnlySpan<char>>().Contains( extension ))
+			if (!SafeExtensions.GetAlternateLookup<ReadOnlySpan<char>>( ).Contains( extension ))
 			{
-				throw new InvalidOperationException( $"Opening files with unknown extension '{extension.ToString()}' is not allowed for security reasons." );
+				throw new InvalidOperationException( $"Opening files with unknown extension '{extension.ToString( )}' is not allowed for security reasons." );
 			}
 		}
 
@@ -356,14 +357,14 @@ toolStripStatusLabelTotalTime.Visible = false;
 
 			ReadOnlySpan<char> extensionSpan = ResolveExtensionSpan( fullPath, afterUserConfirmation: false, resolveExtension, out string? allocatedExt1 );
 
-			if (DangerousExtensions.GetAlternateLookup<ReadOnlySpan<char>>().Contains( extensionSpan ))
+			if (DangerousExtensions.GetAlternateLookup<ReadOnlySpan<char>>( ).Contains( extensionSpan ))
 			{
-				throw new InvalidOperationException( $"Opening files with extension '{extensionSpan.ToString()}' is not allowed for security reasons." );
+				throw new InvalidOperationException( $"Opening files with extension '{extensionSpan.ToString( )}' is not allowed for security reasons." );
 			}
 
-			if (!SafeExtensions.GetAlternateLookup<ReadOnlySpan<char>>().Contains( extensionSpan ))
+			if (!SafeExtensions.GetAlternateLookup<ReadOnlySpan<char>>( ).Contains( extensionSpan ))
 			{
-				throw new InvalidOperationException( $"Opening files with unknown extension '{extensionSpan.ToString()}' is not allowed for security reasons." );
+				throw new InvalidOperationException( $"Opening files with unknown extension '{extensionSpan.ToString( )}' is not allowed for security reasons." );
 			}
 
 			FileOpenSnapshot snapshotBeforePrompt = CaptureFileSnapshot( fullPath );
@@ -479,7 +480,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
 				Stopwatch stopwatch = Stopwatch.StartNew( );
 				Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
-				await directory.BrowseAsync( propertyBrowser ).ConfigureAwait(false);
+				await directory.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
 				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.BrowseAsync ), directory.Name );
 				TimeSpan browseTime = stopwatch.Elapsed;
 				propertyBrowser.LogGetterStatistics( );

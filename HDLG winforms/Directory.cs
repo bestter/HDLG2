@@ -73,7 +73,7 @@ namespace HDLG_winforms
 			// Reverted back to EnumerateFiles to avoid severe memory bloat and array allocation
 			foreach (var f in directoryInfo.EnumerateFiles( ))
 			{
-				var properties = await propertyBrowser.GetFilePropertyAsync( f ).ConfigureAwait(false);
+				var properties = await propertyBrowser.GetFilePropertyAsync( f ).ConfigureAwait( false );
 				var file = new File( f.FullName, properties ?? System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>.Empty );
 				files.Add( file );
 			}
@@ -81,8 +81,8 @@ namespace HDLG_winforms
 
 			for (int i = 0; i < directories.Count; i++)
 			{
-				Directory d = directories[i];
-				await d.BrowseAsync( propertyBrowser ).ConfigureAwait(false);
+				Directory d = directories [i];
+				await d.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
 			}
 		}
 
