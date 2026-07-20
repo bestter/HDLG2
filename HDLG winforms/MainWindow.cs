@@ -260,9 +260,9 @@ toolStripStatusLabelTotalTime.Visible = false;
 				OpenWithDefaultProgram( path, p =>
 				{
 					using Process fileopener = new( );
-					fileopener.StartInfo = new ProcessStartInfo( p )
+					fileopener.StartInfo = new ProcessStartInfo( "explorer.exe", $"\"{p}\"" )
 					{
-						UseShellExecute = true,
+						UseShellExecute = false,
 						WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
 					};
 					fileopener.Start( );
