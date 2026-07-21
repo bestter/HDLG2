@@ -24,23 +24,23 @@ namespace HdlgFileProperty
 		private readonly TimeSpan propertyExtractionTimeout;
 
 		private long totalNumberOfFiles;
-		public long TotalNumberOfFiles => Interlocked.Read(ref totalNumberOfFiles);
+		public long TotalNumberOfFiles => Interlocked.Read( ref totalNumberOfFiles );
 
-		public FilePropertyBrowser(Serilog.ILogger logger, params IFilePropertyGetter[] imagePropertyGetters)
-			: this(logger, FilePropertyLimits.MaxFileSizeBytes, FilePropertyLimits.PropertyExtractionTimeout, imagePropertyGetters)
+		public FilePropertyBrowser (Serilog.ILogger logger, params IFilePropertyGetter[] imagePropertyGetters)
+			: this( logger, FilePropertyLimits.MaxFileSizeBytes, FilePropertyLimits.PropertyExtractionTimeout, imagePropertyGetters )
 		{
 		}
 
-		public FilePropertyBrowser(
+		public FilePropertyBrowser (
 			Serilog.ILogger logger,
 			long maxFileSizeBytes,
 			TimeSpan propertyExtractionTimeout,
 			params IFilePropertyGetter[] imagePropertyGetters)
 		{
-			ArgumentNullException.ThrowIfNull(logger);
-			ArgumentNullException.ThrowIfNull(imagePropertyGetters);
-			ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxFileSizeBytes);
-			ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(propertyExtractionTimeout, TimeSpan.Zero);
+			ArgumentNullException.ThrowIfNull( logger );
+			ArgumentNullException.ThrowIfNull( imagePropertyGetters );
+			ArgumentOutOfRangeException.ThrowIfNegativeOrZero( maxFileSizeBytes );
+			ArgumentOutOfRangeException.ThrowIfLessThanOrEqual( propertyExtractionTimeout, TimeSpan.Zero );
 
 			this.logger = logger;
 			this.maxFileSizeBytes = maxFileSizeBytes;
@@ -50,23 +50,23 @@ namespace HdlgFileProperty
 
 			for (int i = 0; i < imagePropertyGetters.Length; i++)
 			{
-				var propertyGetter = imagePropertyGetters[i];
-				propertyGetter.AddLogger(logger);
-				filePropertyGetters[i] = new FilePropertyGetterStatistic(propertyGetter);
+				var propertyGetter = imagePropertyGetters [i];
+				propertyGetter.AddLogger( logger );
+				filePropertyGetters [i] = new FilePropertyGetterStatistic( propertyGetter );
 			}
 		}
 
-		public virtual Task<IReadOnlyDictionary<string, IConvertible>?> GetFilePropertyAsync(string path)
+		public virtual Task<IReadOnlyDictionary<string, IConvertible>?> GetFilePropertyAsync (string path)
 		{
-			ArgumentException.ThrowIfNullOrWhiteSpace(path);
-			return GetFilePropertyAsync(new FileInfo(path));
+			ArgumentException.ThrowIfNullOrWhiteSpace( path );
+			return GetFilePropertyAsync( new FileInfo( path ) );
 		}
 
-		public virtual async Task<IReadOnlyDictionary<string, IConvertible>?> GetFilePropertyAsync(FileInfo fileInfo)
+		public virtual async Task<IReadOnlyDictionary<string, IConvertible>?> GetFilePropertyAsync (FileInfo fileInfo)
 		{
-			ArgumentNullException.ThrowIfNull(fileInfo);
+			ArgumentNullException.ThrowIfNull( fileInfo );
 			string path = fileInfo.FullName;
-			Interlocked.Increment(ref totalNumberOfFiles);
+			Interlocked.Increment( ref totalNumberOfFiles );
 
 			IReadOnlyDictionary<string, IConvertible>? firstProperties = null;
 			Dictionary<string, IConvertible>? mergedProperties = null;
@@ -74,21 +74,24 @@ namespace HdlgFileProperty
 
 			for (int i = 0; i < filePropertyGetters.Length; i++)
 			{
-				var propertyGetters = filePropertyGetters[i];
-				if (propertyGetters.FilePropertyGetter.IsSupportedFile(fileInfo))
+				var propertyGetters = filePropertyGetters [i];
+				if (propertyGetters.FilePropertyGetter.IsSupportedFile( fileInfo ))
 				{
-					fileSizeAllowed ??= IsFileSizeWithinLimit(fileInfo);
+					fileSizeAllowed ??= IsFileSizeWithinLimit( fileInfo );
 					if (fileSizeAllowed == false)
 					{
 						continue;
 					}
 
-					propertyGetters.IncrementFile();
-					propertyGetters.StartTimer();
+					propertyGetters.IncrementFile( );
+					// Use a local Stopwatch: shared StartTimer/StopTimer is not thread-safe under concurrent extraction.
+					var sw = System.Diagnostics.Stopwatch.StartNew( );
 					var currentProperties = await GetFilePropertiesWithTimeoutAsync(
 						propertyGetters.FilePropertyGetter,
 						fileInfo,
-						propertyGetters.FilePropertyGetter.GetType()).ConfigureAwait(false);
+						propertyGetters.FilePropertyGetter.GetType( ) ).ConfigureAwait( false );
+					sw.Stop( );
+					propertyGetters.AddExecutionTime( sw.Elapsed );
 
 					// Performance optimization: Avoid allocating a dictionary enumerator when there are no properties
 					if (currentProperties.Count > 0)
@@ -103,20 +106,19 @@ namespace HdlgFileProperty
 							// Rare case: multiple getters returned properties, now we need to merge them
 							if (mergedProperties == null)
 							{
-								mergedProperties = new Dictionary<string, IConvertible>(firstProperties.Count + currentProperties.Count);
-								AddProperties(mergedProperties, firstProperties);
+								mergedProperties = new Dictionary<string, IConvertible>( firstProperties.Count + currentProperties.Count );
+								AddProperties( mergedProperties, firstProperties );
 							}
-							AddProperties(mergedProperties, currentProperties);
+							AddProperties( mergedProperties, currentProperties );
 						}
 					}
-					propertyGetters.StopTimer();
 				}
 			}
 
 			return mergedProperties ?? firstProperties;
 		}
 
-		private bool IsFileSizeWithinLimit(FileInfo fileInfo)
+		private bool IsFileSizeWithinLimit (FileInfo fileInfo)
 		{
 			try
 			{
@@ -132,40 +134,42 @@ namespace HdlgFileProperty
 						"File exceeds maximum allowed size ({MaxFileSizeBytes} bytes, actual {ActualFileSizeBytes} bytes), skipping property extraction: {FilePath}",
 						maxFileSizeBytes,
 						fileLength,
-						fileInfo.FullName);
+						fileInfo.FullName );
 					return false;
 				}
 			}
 			catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
 			{
-				logger.Warning(ex, "Cannot determine file size, skipping property extraction: {FilePath}", fileInfo.FullName);
+				logger.Warning( ex, "Cannot determine file size, skipping property extraction: {FilePath}", fileInfo.FullName );
 				return false;
 			}
 
 			return true;
 		}
 
-		private async Task<IReadOnlyDictionary<string, IConvertible>> GetFilePropertiesWithTimeoutAsync(
+		private async Task<IReadOnlyDictionary<string, IConvertible>> GetFilePropertiesWithTimeoutAsync (
 			IFilePropertyGetter getter,
 			FileInfo fileInfo,
 			Type getterType)
 		{
-			using var cts = new CancellationTokenSource(propertyExtractionTimeout);
-			var task = Task.Run(() => getter.GetFileProperties(fileInfo), cts.Token);
+			// Manual CTS: cancel only after WaitAsync times out. Linking an auto-timeout CTS to
+			// WaitAsync races with TimeoutException and often surfaces OperationCanceledException instead.
+			using var cts = new CancellationTokenSource( );
+			var task = Task.Run( () => getter.GetFileProperties( fileInfo ), cts.Token );
 
 			try
 			{
-				var result = await task.WaitAsync(propertyExtractionTimeout, cts.Token).ConfigureAwait(false);
+				var result = await task.WaitAsync( propertyExtractionTimeout ).ConfigureAwait( false );
 				return result;
 			}
 			catch (TimeoutException)
 			{
-				cts.Cancel();
+				cts.Cancel( );
 				logger.Warning(
 					"Property extraction timed out after {TimeoutSeconds}s for {PropertyGetterType}: {FilePath}",
 					propertyExtractionTimeout.TotalSeconds,
 					getterType,
-					fileInfo.FullName);
+					fileInfo.FullName );
 				return IFilePropertyGetter.EmptyProperties;
 			}
 			catch (OperationCanceledException)
@@ -173,53 +177,53 @@ namespace HdlgFileProperty
 				logger.Warning(
 					"Property extraction was canceled for {PropertyGetterType}: {FilePath}",
 					getterType,
-					fileInfo.FullName);
+					fileInfo.FullName );
 				return IFilePropertyGetter.EmptyProperties;
 			}
 			catch (Exception ex) when (ex is not OperationCanceledException)
 			{
 				logger.Warning(
-					ex.GetBaseException(),
+					ex.GetBaseException( ),
 					"Property extraction failed for {PropertyGetterType}: {FilePath}",
 					getterType,
-					fileInfo.FullName);
+					fileInfo.FullName );
 				return IFilePropertyGetter.EmptyProperties;
 			}
 		}
 
-		private static void AddProperties(Dictionary<string, IConvertible> target, IReadOnlyDictionary<string, IConvertible> source)
+		private static void AddProperties (Dictionary<string, IConvertible> target, IReadOnlyDictionary<string, IConvertible> source)
 		{
 			if (source is Dictionary<string, IConvertible> sourceDict)
 			{
 				foreach (var prop in sourceDict)
 				{
-					target.TryAdd(prop.Key, prop.Value);
+					target.TryAdd( prop.Key, prop.Value );
 				}
 			}
 			else
 			{
 				foreach (var prop in source)
 				{
-					target.TryAdd(prop.Key, prop.Value);
+					target.TryAdd( prop.Key, prop.Value );
 				}
 			}
 		}
 
-		public void LogGetterStatistics()
+		public void LogGetterStatistics ()
 		{
 			foreach (var propertyGetter in filePropertyGetters)
 			{
 				if (propertyGetter.TotalFiles > 0)
 				{
-					var avg = TimeSpan.FromTicks((long)Math.Ceiling(propertyGetter.GetTotalExecutionTime().Ticks / (double)propertyGetter.TotalFiles));
-					logger.Information("{PropertyGetterType} total runtime: {TotalExecutionTime}. Number of files: {TotalFiles}. Average: {AverageTime}",
-						propertyGetter.FilePropertyGetter.GetType(),
-						propertyGetter.GetTotalExecutionTime().ToString("G", CultureInfo.CurrentCulture),
+					var avg = TimeSpan.FromTicks( (long)Math.Ceiling( propertyGetter.GetTotalExecutionTime( ).Ticks / (double)propertyGetter.TotalFiles ) );
+					logger.Information( "{PropertyGetterType} total runtime: {TotalExecutionTime}. Number of files: {TotalFiles}. Average: {AverageTime}",
+						propertyGetter.FilePropertyGetter.GetType( ),
+						propertyGetter.GetTotalExecutionTime( ).ToString( "G", CultureInfo.CurrentCulture ),
 						propertyGetter.TotalFiles,
-						avg.ToString("G", CultureInfo.CurrentCulture));
+						avg.ToString( "G", CultureInfo.CurrentCulture ) );
 				}
 			}
-			logger.Information("Total number of files {TotalNumberOfFiles}", TotalNumberOfFiles);
+			logger.Information( "Total number of files {TotalNumberOfFiles}", TotalNumberOfFiles );
 		}
 	}
 }

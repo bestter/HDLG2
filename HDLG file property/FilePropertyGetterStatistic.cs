@@ -8,41 +8,35 @@ HTML Directory List Generator is distributed in the hope that it will be useful,
 You should have received a copy of the GNU General Public License along with HTML Directory List Generator. If not, see <https://www.gnu.org/licenses/>. 
  */
 
-using System.Diagnostics;
-
 namespace HdlgFileProperty
 {
-    internal class FilePropertyGetterStatistic
-    {
-        public FilePropertyGetterStatistic(IFilePropertyGetter filePropertyGetter)
-        {
-            FilePropertyGetter = filePropertyGetter ?? throw new ArgumentNullException(nameof(filePropertyGetter));
-            Stopwatch = new Stopwatch();
-        }
+	internal class FilePropertyGetterStatistic
+	{
+		public FilePropertyGetterStatistic (IFilePropertyGetter filePropertyGetter)
+		{
+			FilePropertyGetter = filePropertyGetter ?? throw new ArgumentNullException( nameof( filePropertyGetter ) );
+		}
 
-        public IFilePropertyGetter FilePropertyGetter { get; private set; }
+		public IFilePropertyGetter FilePropertyGetter { get; private set; }
 
-        private Stopwatch Stopwatch { get; set; }
+		private long _totalExecutionTimeTicks;
 
-        public long TotalFiles { get; private set; }
+		private long _totalFiles;
+		public long TotalFiles => System.Threading.Interlocked.Read( ref _totalFiles );
 
-        public void StartTimer()
-        {
-            Stopwatch.Start();
-        }
-        public void StopTimer()
-        {
-            Stopwatch.Stop();
-        }
+		public void AddExecutionTime (TimeSpan timeSpan)
+		{
+			System.Threading.Interlocked.Add( ref _totalExecutionTimeTicks, timeSpan.Ticks );
+		}
 
-        public TimeSpan GetTotalExecutionTime()
-        {
-            return Stopwatch.Elapsed.Duration();
-        }
+		public TimeSpan GetTotalExecutionTime ()
+		{
+			return TimeSpan.FromTicks( System.Threading.Interlocked.Read( ref _totalExecutionTimeTicks ) );
+		}
 
-        public void IncrementFile()
-        {
-            TotalFiles++;
-        }
-    }
+		public void IncrementFile ()
+		{
+			System.Threading.Interlocked.Increment( ref _totalFiles );
+		}
+	}
 }
