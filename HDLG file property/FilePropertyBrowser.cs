@@ -152,12 +152,14 @@ namespace HdlgFileProperty
 			FileInfo fileInfo,
 			Type getterType)
 		{
-			using var cts = new CancellationTokenSource( propertyExtractionTimeout );
+			// Manual CTS: cancel only after WaitAsync times out. Linking an auto-timeout CTS to
+			// WaitAsync races with TimeoutException and often surfaces OperationCanceledException instead.
+			using var cts = new CancellationTokenSource( );
 			var task = Task.Run( () => getter.GetFileProperties( fileInfo ), cts.Token );
 
 			try
 			{
-				var result = await task.WaitAsync( propertyExtractionTimeout, cts.Token ).ConfigureAwait( false );
+				var result = await task.WaitAsync( propertyExtractionTimeout ).ConfigureAwait( false );
 				return result;
 			}
 			catch (TimeoutException)
