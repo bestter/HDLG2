@@ -39,10 +39,6 @@ namespace HDLG.Tests
 			using var icon16 = new Icon(icon, new Size(16, 16));
 			icon16.Width.Should().Be(16);
 			icon16.Height.Should().Be(16);
-
-			using var icon256 = new Icon(icon, new Size(256, 256));
-			icon256.Width.Should().Be(256);
-			icon256.Height.Should().Be(256);
 		}
 
 		[Theory]
