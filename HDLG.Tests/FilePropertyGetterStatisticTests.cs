@@ -56,9 +56,10 @@ namespace HDLG.Tests
             var statistic = new FilePropertyGetterStatistic(mockGetter.Object);
 
             // Act
-            statistic.StartTimer();
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             System.Threading.Thread.Sleep(10); // Sleep briefly to ensure elapsed time > 0
-            statistic.StopTimer();
+            sw.Stop();
+            statistic.AddExecutionTime(sw.Elapsed);
 
             // Assert
             statistic.GetTotalExecutionTime().Should().BeGreaterThan(TimeSpan.Zero);

@@ -100,7 +100,7 @@ namespace HDLG_winforms
 						}
 						else if (info is FileInfo f)
 						{
-							var properties = await propertyBrowser.GetFilePropertyAsync( f ).ConfigureAwait(false);
+							var properties = await propertyBrowser.GetFilePropertyAsync( f ).ConfigureAwait( false );
 							var file = new HdlgFile( f, properties );
 							files.Add( file );
 						}
@@ -124,7 +124,7 @@ namespace HDLG_winforms
 					// and List<T> capacity over-allocation which can cause severe memory bloat on large directories.
 					foreach (var f in directoryInfo.EnumerateFiles( ))
 					{
-						var properties = await propertyBrowser.GetFilePropertyAsync( f ).ConfigureAwait(false);
+						var properties = await propertyBrowser.GetFilePropertyAsync( f ).ConfigureAwait( false );
 						var file = new HdlgFile( f, properties );
 						files.Add( file );
 					}
@@ -144,12 +144,18 @@ namespace HDLG_winforms
 			TotalDirectories = directories.Count;
 			TotalFiles = files.Count;
 
+			var tasks = new Task [directories.Count];
 			for (int i = 0; i < directories.Count; i++)
 			{
-				HdlgDirectory d = directories [i];
-				await d.BrowseAsync( propertyBrowser ).ConfigureAwait(false);
-				TotalDirectories += d.TotalDirectories;
-				TotalFiles += d.TotalFiles;
+				tasks [i] = directories [i].BrowseAsync( propertyBrowser );
+			}
+
+			await Task.WhenAll( tasks ).ConfigureAwait( false );
+
+			for (int i = 0; i < directories.Count; i++)
+			{
+				TotalDirectories += directories [i].TotalDirectories;
+				TotalFiles += directories [i].TotalFiles;
 			}
 		}
 

@@ -29,54 +29,54 @@ namespace HDLG_winforms
 		{
 			InitializeComponent( );
 			_showError = showError;
-			Icon = AppBranding.LoadApplicationIcon();
-			AppUiBootstrap.RemoveFormBranding(this);
+			Icon = AppBranding.LoadApplicationIcon( );
+			AppUiBootstrap.RemoveFormBranding( this );
 			this.rootDirectory = rootDirectory;
 			this.propertyBrowser = propertyBrowser;
 			this.logger = logger;
 
 			// Performance optimization: Cache resolved root directory strings to prevent redundant allocations and
 			// I/O operations in hot paths like IsPathWithinRoot when expanding tree nodes.
-			_resolvedRootDirectory = Path.GetFullPath(rootDirectory);
-			_resolvedRootDirectoryWithSeparator = _resolvedRootDirectory.EndsWith(Path.DirectorySeparatorChar)
+			_resolvedRootDirectory = Path.GetFullPath( rootDirectory );
+			_resolvedRootDirectoryWithSeparator = _resolvedRootDirectory.EndsWith( Path.DirectorySeparatorChar )
 				? _resolvedRootDirectory
 				: _resolvedRootDirectory + Path.DirectorySeparatorChar;
 		}
 
-        private void BrowserForm_Load(object sender, EventArgs e)
-        {
-            try
-            {
-                var rootNode = new TreeNode(rootDirectory);
-                rootNode.Tag = new NodeInfo { IsDirectory = true, Path = rootDirectory };
-                rootNode.Nodes.Add(new TreeNode("Loading..."));
-                treeView1.Nodes.Add(rootNode);
-                rootNode.Expand();
-            }
+		private void BrowserForm_Load (object sender, EventArgs e)
+		{
+			try
+			{
+				var rootNode = new TreeNode( rootDirectory );
+				rootNode.Tag = new NodeInfo { IsDirectory = true, Path = rootDirectory };
+				rootNode.Nodes.Add( new TreeNode( "Loading..." ) );
+				treeView1.Nodes.Add( rootNode );
+				rootNode.Expand( );
+			}
 			catch (UnauthorizedAccessException ex)
 			{
-				logger.Warning(ex, "Access denied loading root directory in BrowserForm");
-				MessageBox.Show(this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				logger.Warning( ex, "Access denied loading root directory in BrowserForm" );
+				MessageBox.Show( this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 			catch (SecurityException ex)
 			{
-				logger.Warning(ex, "Security exception loading root directory in BrowserForm");
-				MessageBox.Show(this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				logger.Warning( ex, "Security exception loading root directory in BrowserForm" );
+				MessageBox.Show( this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 			catch (IOException ex)
 			{
-				logger.Error(ex, "IO Error loading root directory in BrowserForm");
-				if (_showError != null) _showError("An IO error occurred while loading the directory.");
-				else MessageBox.Show(this, "An IO error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+				logger.Error( ex, "IO Error loading root directory in BrowserForm" );
+				if (_showError != null) _showError( "An IO error occurred while loading the directory." );
+				else MessageBox.Show( this, "An IO error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+			}
 #pragma warning disable CA1031 // Do not catch general exception types
 			catch (Exception ex)
 			{
-				logger.Error(ex, "Error loading root directory in BrowserForm");
-				MessageBox.Show(this, "An unexpected error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+				logger.Error( ex, "Error loading root directory in BrowserForm" );
+				MessageBox.Show( this, "An unexpected error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+			}
 #pragma warning restore CA1031 // Do not catch general exception types
-        }
+		}
 
 		private class NodeInfo
 		{
@@ -123,11 +123,11 @@ namespace HDLG_winforms
 					// Because we need the data on the UI thread without allocations, we fetch the array here.
 					// Note: While GetFileSystemInfos creates an array, it is more efficient than populating two List<T> instances
 					// due to avoiding List capacity resizing and allowing exact allocation of the TreeNode array.
-					var fsInfos = await Task.Run(() =>
+					var fsInfos = await Task.Run( () =>
 					{
 						var dirInfo = new DirectoryInfo( info.Path );
-						return dirInfo.GetFileSystemInfos();
-					}).ConfigureAwait(true);
+						return dirInfo.GetFileSystemInfos( );
+					} ).ConfigureAwait( true );
 
 					// Safe WinForms practice: construct TreeNodes on the UI thread after I/O is complete
 					// Performance optimization: Count elements first to allocate exact-size arrays,
@@ -137,7 +137,7 @@ namespace HDLG_winforms
 
 					for (int i = 0; i < fsInfos.Length; i++)
 					{
-						var fsInfo = fsInfos[i];
+						var fsInfo = fsInfos [i];
 						if (fsInfo is DirectoryInfo dir)
 						{
 							if ((dir.Attributes & FileAttributes.ReparsePoint) == 0)
@@ -149,15 +149,15 @@ namespace HDLG_winforms
 						}
 					}
 
-					var dirNodes = new TreeNode[dirCount];
-					var fileNodes = new TreeNode[fileCount];
+					var _dirNodes = new TreeNode [dirCount];
+					var _fileNodes = new TreeNode [fileCount];
 
 					int dirIndex = 0;
 					int fileIndex = 0;
 
 					for (int i = 0; i < fsInfos.Length; i++)
 					{
-						var fsInfo = fsInfos[i];
+						var fsInfo = fsInfos [i];
 						if (fsInfo is DirectoryInfo dir)
 						{
 							if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;
@@ -165,56 +165,56 @@ namespace HDLG_winforms
 							var node = new TreeNode( dir.Name );
 							node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
 							node.Nodes.Add( new TreeNode( "Loading..." ) );
-							dirNodes[dirIndex++] = node;
+							_dirNodes [dirIndex++] = node;
 						}
 						else if (fsInfo is FileInfo file)
 						{
 							var node = new TreeNode( file.Name );
 							node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
-							fileNodes[fileIndex++] = node;
+							_fileNodes [fileIndex++] = node;
 						}
 					}
 
-                    e.Node.TreeView?.BeginUpdate();
-                    e.Node.Nodes.AddRange(dirNodes);
-                    e.Node.Nodes.AddRange(fileNodes);
-                    e.Node.TreeView?.EndUpdate();
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    logger.Warning(ex, "Access denied to directory: {Path}", info.Path);
-                    e.Node.Nodes.Add(new TreeNode("Access Denied"));
-                }
-                catch (SecurityException ex)
-                {
-                    logger.Warning(ex, "Security exception accessing directory: {Path}", info.Path);
-                    e.Node.Nodes.Add(new TreeNode("Access Denied"));
-                }
+					e.Node.TreeView?.BeginUpdate( );
+					e.Node.Nodes.AddRange( _dirNodes );
+					e.Node.Nodes.AddRange( _fileNodes );
+					e.Node.TreeView?.EndUpdate( );
+				}
+				catch (UnauthorizedAccessException ex)
+				{
+					logger.Warning( ex, "Access denied to directory: {Path}", info.Path );
+					e.Node.Nodes.Add( new TreeNode( "Access Denied" ) );
+				}
+				catch (SecurityException ex)
+				{
+					logger.Warning( ex, "Security exception accessing directory: {Path}", info.Path );
+					e.Node.Nodes.Add( new TreeNode( "Access Denied" ) );
+				}
 				catch (IOException ex)
 				{
-					logger.Error(ex, "IO Error loading directory: {Path}", info.Path);
-                    e.Node.Nodes.Add(new TreeNode("IO Error"));
-                }
+					logger.Error( ex, "IO Error loading directory: {Path}", info.Path );
+					e.Node.Nodes.Add( new TreeNode( "IO Error" ) );
+				}
 #pragma warning disable CA1031 // Do not catch general exception types
 				catch (Exception ex)
 				{
-					logger.Error(ex, "Error loading directory: {Path}", info.Path);
-					e.Node.Nodes.Add(new TreeNode("Error"));
+					logger.Error( ex, "Error loading directory: {Path}", info.Path );
+					e.Node.Nodes.Add( new TreeNode( "Error" ) );
 				}
 #pragma warning restore CA1031 // Do not catch general exception types
-                finally
-                {
-                    Cursor = Cursors.Default;
-                }
-            }
-        }
+				finally
+				{
+					Cursor = Cursors.Default;
+				}
+			}
+		}
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Localization", "CA1303:Do not pass literals as localized parameters")]
-        private async void TreeView1_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-            Cursor = Cursors.Default;
-            listViewProperties.Items.Clear();
-            btnOpenFile.Enabled = false;
+		[System.Diagnostics.CodeAnalysis.SuppressMessage( "Localization", "CA1303:Do not pass literals as localized parameters" )]
+		private async void TreeView1_AfterSelect (object sender, TreeViewEventArgs e)
+		{
+			Cursor = Cursors.Default;
+			listViewProperties.Items.Clear( );
+			btnOpenFile.Enabled = false;
 
 			if (e.Node == null || e.Node.Tag is not NodeInfo info)
 			{
@@ -244,109 +244,109 @@ namespace HDLG_winforms
 
 				lblSelectedFileName.Values.Text = fileInfo.Name;
 
-				listViewProperties.BeginUpdate();
+				listViewProperties.BeginUpdate( );
 				try
 				{
-					var items = new ListViewItem[7];
-					items[0] = CreateListViewItem( "Name", fileInfo.Name );
-					items[1] = CreateListViewItem( "Path", fileInfo.FullName );
-					items[2] = CreateListViewItem( "Extension", fileInfo.Extension );
-					items[3] = CreateListViewItem( "Size (bytes)", fileInfo.Length.ToString( CultureInfo.CurrentCulture ) );
-					items[4] = CreateListViewItem( "Creation Time", fileInfo.CreationTime.ToString( "g", CultureInfo.CurrentCulture ) );
-					items[5] = CreateListViewItem( "Last Access Time", fileInfo.LastAccessTime.ToString( "g", CultureInfo.CurrentCulture ) );
-					items[6] = CreateListViewItem( "Last Write Time", fileInfo.LastWriteTime.ToString( "g", CultureInfo.CurrentCulture ) );
+					var items = new ListViewItem [7];
+					items [0] = CreateListViewItem( "Name", fileInfo.Name );
+					items [1] = CreateListViewItem( "Path", fileInfo.FullName );
+					items [2] = CreateListViewItem( "Extension", fileInfo.Extension );
+					items [3] = CreateListViewItem( "Size (bytes)", fileInfo.Length.ToString( CultureInfo.CurrentCulture ) );
+					items [4] = CreateListViewItem( "Creation Time", fileInfo.CreationTime.ToString( "g", CultureInfo.CurrentCulture ) );
+					items [5] = CreateListViewItem( "Last Access Time", fileInfo.LastAccessTime.ToString( "g", CultureInfo.CurrentCulture ) );
+					items [6] = CreateListViewItem( "Last Write Time", fileInfo.LastWriteTime.ToString( "g", CultureInfo.CurrentCulture ) );
 					listViewProperties.Items.AddRange( items );
 				}
 				finally
 				{
-					listViewProperties.EndUpdate();
+					listViewProperties.EndUpdate( );
 				}
 
-                var props = await propertyBrowser.GetFilePropertyAsync(fileInfo).ConfigureAwait(true);
+				var props = await propertyBrowser.GetFilePropertyAsync( fileInfo ).ConfigureAwait( true );
 
-                if (treeView1.SelectedNode != e.Node)
-                {
-                    return;
-                }
+				if (treeView1.SelectedNode != e.Node)
+				{
+					return;
+				}
 
-                if (props != null && props.Count > 0)
-                {
-                    listViewProperties.BeginUpdate();
-                    try
-                    {
-                        // Performance optimization: Type-check and cast IReadOnlyDictionary to Dictionary to allow
-                        // the foreach loop to use the struct-based enumerator, preventing interface boxing allocations.
-                        if (props is Dictionary<string, IConvertible> propsDict)
-                        {
-                            var items = new ListViewItem[propsDict.Count];
-                            int i = 0;
-                            foreach (var kvp in propsDict)
-                            {
-                                items[i++] = CreateListViewItem(kvp.Key, kvp.Value?.ToString() ?? "");
-                            }
-                            listViewProperties.Items.AddRange(items);
-                        }
-                        else
-                        {
-                            var items = new ListViewItem[props.Count];
-                            int i = 0;
-                            foreach (var kvp in props)
-                            {
-                                items[i++] = CreateListViewItem(kvp.Key, kvp.Value?.ToString() ?? "");
-                            }
-                            listViewProperties.Items.AddRange(items);
-                        }
-                    }
-                    finally
-                    {
-                        listViewProperties.EndUpdate();
-                    }
-                }
+				if (props != null && props.Count > 0)
+				{
+					listViewProperties.BeginUpdate( );
+					try
+					{
+						// Performance optimization: Type-check and cast IReadOnlyDictionary to Dictionary to allow
+						// the foreach loop to use the struct-based enumerator, preventing interface boxing allocations.
+						if (props is Dictionary<string, IConvertible> propsDict)
+						{
+							var items = new ListViewItem [propsDict.Count];
+							int i = 0;
+							foreach (var kvp in propsDict)
+							{
+								items [i++] = CreateListViewItem( kvp.Key, kvp.Value?.ToString( ) ?? "" );
+							}
+							listViewProperties.Items.AddRange( items );
+						}
+						else
+						{
+							var items = new ListViewItem [props.Count];
+							int i = 0;
+							foreach (var kvp in props)
+							{
+								items [i++] = CreateListViewItem( kvp.Key, kvp.Value?.ToString( ) ?? "" );
+							}
+							listViewProperties.Items.AddRange( items );
+						}
+					}
+					finally
+					{
+						listViewProperties.EndUpdate( );
+					}
+				}
 
-                btnOpenFile.Enabled = true;
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                if (treeView1.SelectedNode == e.Node)
-                {
-                    logger.Warning(ex, "Access denied reading properties for file: {Path}", info.Path);
-                    AddPropertyToListView("Error", "Access Denied");
-                }
-            }
-            catch (SecurityException ex)
-            {
-                if (treeView1.SelectedNode == e.Node)
-                {
-                    logger.Warning(ex, "Security exception reading properties for file: {Path}", info.Path);
-                    AddPropertyToListView("Error", "Access Denied");
-                }
-            }
+				btnOpenFile.Enabled = true;
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				if (treeView1.SelectedNode == e.Node)
+				{
+					logger.Warning( ex, "Access denied reading properties for file: {Path}", info.Path );
+					AddPropertyToListView( "Error", "Access Denied" );
+				}
+			}
+			catch (SecurityException ex)
+			{
+				if (treeView1.SelectedNode == e.Node)
+				{
+					logger.Warning( ex, "Security exception reading properties for file: {Path}", info.Path );
+					AddPropertyToListView( "Error", "Access Denied" );
+				}
+			}
 			catch (IOException ex)
 			{
-                if (treeView1.SelectedNode == e.Node)
-                {
-				    logger.Error(ex, "IO Error reading properties for file: {Path}", info.Path);
-                    AddPropertyToListView("Error", "An IO error occurred.");
-                }
-            }
+				if (treeView1.SelectedNode == e.Node)
+				{
+					logger.Error( ex, "IO Error reading properties for file: {Path}", info.Path );
+					AddPropertyToListView( "Error", "An IO error occurred." );
+				}
+			}
 #pragma warning disable CA1031 // Do not catch general exception types
 			catch (Exception ex)
 			{
 				if (treeView1.SelectedNode == e.Node)
 				{
-					logger.Error(ex, "Error reading properties for file: {Path}", info.Path);
-					AddPropertyToListView("Error", "An unexpected error occurred.");
+					logger.Error( ex, "Error reading properties for file: {Path}", info.Path );
+					AddPropertyToListView( "Error", "An unexpected error occurred." );
 				}
 			}
 #pragma warning restore CA1031 // Do not catch general exception types
-            finally
-            {
-                if (treeView1.SelectedNode == e.Node)
-                {
-                    Cursor = Cursors.Default;
-                }
-            }
-        }
+			finally
+			{
+				if (treeView1.SelectedNode == e.Node)
+				{
+					Cursor = Cursors.Default;
+				}
+			}
+		}
 
 		private static ListViewItem CreateListViewItem (string name, string value)
 		{

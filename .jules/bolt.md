@@ -139,3 +139,10 @@
 ## 2026-06-25 - Prevent string allocations in HashSet lookups
 **Learning:** Using `Path.GetExtension(string)` and passing strings to `.Contains()` on `HashSet<string>` collections initialized with case-insensitive comparers still allocates strings during the check if the original path requires manipulation or normalization (like `TrimEnd`).
 **Action:** Always refactor hot path string validations (like checking `DangerousExtensions`) to use `ReadOnlySpan<char>` and the `.GetAlternateLookup<ReadOnlySpan<char>>().Contains(extensionSpan)` method in .NET 9+ to eliminate these allocations entirely.
+## 2026-07-20 - Use Task.WhenAll for independent IO-bound directory traversal
+**Learning:** Awaiting recursive IO-bound tasks sequentially within a `for` loop (e.g. `await d.BrowseAsync(...)` inside `foreach(var d in directories)`) unnecessarily serializes exploration that could otherwise happen concurrently, dramatically increasing total execution time for wide directory trees.
+**Action:** When a method needs to traverse multiple independent subdirectories (or perform independent IO-bound operations), collect the tasks in an array and use `await Task.WhenAll(tasks)` before aggregating results synchronously. Additionally, always ensure that any shared reporting structures (such as progress counters or execution time accumulators) are made thread-safe using `Interlocked` operations when transitioning to concurrent task execution.
+
+## 2026-07-20 - Prevent CS0128 local variable scope duplication
+**Learning:** When making code edits that replace arrays or collections in hot paths, be careful of duplicate variable declarations causing CS0128 errors. While testing and editing across commits, duplicate variable declarations (e.g. `var dirNodes` declared twice in the same scope) can slip through.
+**Action:** When fixing CS0128 errors due to variable scoping, uniquely prefix the local variables with underscores (`_dirNodes`, `_fileNodes`) if avoiding the duplication completely requires extensive block restructuring, making sure to replace all subsequent references in that block correctly.
