@@ -9,6 +9,7 @@ You should have received a copy of the GNU General Public License along with HTM
  */
 
 using System.Globalization;
+using System.Threading;
 
 namespace HdlgFileProperty
 {
@@ -22,8 +23,8 @@ namespace HdlgFileProperty
 
         private readonly TimeSpan propertyExtractionTimeout;
 
-        private long _totalNumberOfFiles;
-        private long TotalNumberOfFiles => System.Threading.Interlocked.Read(ref _totalNumberOfFiles);
+		private long totalNumberOfFiles;
+		public long TotalNumberOfFiles => Interlocked.Read(ref totalNumberOfFiles);
 
         public FilePropertyBrowser(Serilog.ILogger logger, params IFilePropertyGetter[] imagePropertyGetters)
             : this(logger, FilePropertyLimits.MaxFileSizeBytes, FilePropertyLimits.PropertyExtractionTimeout, imagePropertyGetters)
@@ -41,11 +42,11 @@ namespace HdlgFileProperty
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxFileSizeBytes);
             ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(propertyExtractionTimeout, TimeSpan.Zero);
 
-            this.logger = logger;
-            this.maxFileSizeBytes = maxFileSizeBytes;
-            this.propertyExtractionTimeout = propertyExtractionTimeout;
-            filePropertyGetters = new FilePropertyGetterStatistic[imagePropertyGetters.Length];
-
+			this.logger = logger;
+			this.maxFileSizeBytes = maxFileSizeBytes;
+			this.propertyExtractionTimeout = propertyExtractionTimeout;
+			filePropertyGetters = new FilePropertyGetterStatistic[imagePropertyGetters.Length];
+			totalNumberOfFiles = 0;
 
             for (int i = 0; i < imagePropertyGetters.Length; i++)
             {
@@ -61,11 +62,11 @@ namespace HdlgFileProperty
             return GetFilePropertyAsync(new FileInfo(path));
         }
 
-        public virtual async Task<IReadOnlyDictionary<string, IConvertible>?> GetFilePropertyAsync(FileInfo fileInfo)
-        {
-            ArgumentNullException.ThrowIfNull(fileInfo);
-            string path = fileInfo.FullName;
-            System.Threading.Interlocked.Increment(ref _totalNumberOfFiles);
+		public virtual async Task<IReadOnlyDictionary<string, IConvertible>?> GetFilePropertyAsync(FileInfo fileInfo)
+		{
+			ArgumentNullException.ThrowIfNull(fileInfo);
+			string path = fileInfo.FullName;
+			Interlocked.Increment(ref totalNumberOfFiles);
 
             IReadOnlyDictionary<string, IConvertible>? firstProperties = null;
             Dictionary<string, IConvertible>? mergedProperties = null;

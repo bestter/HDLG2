@@ -175,6 +175,9 @@ namespace HDLG_winforms
 						}
 					}
 
+					var dirNodes = dirNodesList.ToArray();
+					var fileNodes = fileNodesList.ToArray();
+
 					e.Node.TreeView?.BeginUpdate( );
 					e.Node.Nodes.AddRange( dirNodes );
 					e.Node.Nodes.AddRange( fileNodes );

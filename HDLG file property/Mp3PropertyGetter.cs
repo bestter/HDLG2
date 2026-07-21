@@ -71,19 +71,23 @@ namespace HdlgFileProperty
             }
             catch (IOException ioe)
             {
+                // IO errors during property extraction are swallowed and ignored.
                 Logger?.Error(ioe, "Cannot read file {Path}", fileInfo.FullName);
             }
             catch (TagLib.UnsupportedFormatException ufe)
             {
+                // Unsupported formats are ignored and empty properties are returned.
                 Logger?.Warning(ufe, "File {Path} is not supported", fileInfo.FullName);
             }
             catch (TagLib.CorruptFileException cfe)
             {
+                // Corrupted files are skipped to prevent extraction failures.
                 Logger?.Warning(cfe, "File {Path} is corrupted", fileInfo.FullName);
             }
 #pragma warning disable CA1031 // Ne pas intercepter les types d'exception générale
             catch (Exception e)
             {
+                // Fallback for any other unexpected extraction errors.
                 Logger?.Warning(e, "Cannot read properties from file {Path}", fileInfo.FullName);
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
