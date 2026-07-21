@@ -9,6 +9,7 @@ You should have received a copy of the GNU General Public License along with HTM
  */
 
 using System.Globalization;
+using System.Threading;
 
 namespace HdlgFileProperty
 {
@@ -22,7 +23,8 @@ namespace HdlgFileProperty
 
 		private readonly TimeSpan propertyExtractionTimeout;
 
-		private long TotalNumberOfFiles { get; set; }
+		private long totalNumberOfFiles;
+		public long TotalNumberOfFiles => Interlocked.Read(ref totalNumberOfFiles);
 
 		public FilePropertyBrowser(Serilog.ILogger logger, params IFilePropertyGetter[] imagePropertyGetters)
 			: this(logger, FilePropertyLimits.MaxFileSizeBytes, FilePropertyLimits.PropertyExtractionTimeout, imagePropertyGetters)
@@ -44,7 +46,7 @@ namespace HdlgFileProperty
 			this.maxFileSizeBytes = maxFileSizeBytes;
 			this.propertyExtractionTimeout = propertyExtractionTimeout;
 			filePropertyGetters = new FilePropertyGetterStatistic[imagePropertyGetters.Length];
-			TotalNumberOfFiles = 0;
+			totalNumberOfFiles = 0;
 
 			for (int i = 0; i < imagePropertyGetters.Length; i++)
 			{
@@ -64,7 +66,7 @@ namespace HdlgFileProperty
 		{
 			ArgumentNullException.ThrowIfNull(fileInfo);
 			string path = fileInfo.FullName;
-			TotalNumberOfFiles++;
+			Interlocked.Increment(ref totalNumberOfFiles);
 
 			IReadOnlyDictionary<string, IConvertible>? firstProperties = null;
 			Dictionary<string, IConvertible>? mergedProperties = null;

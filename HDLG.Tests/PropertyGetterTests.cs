@@ -109,7 +109,7 @@ namespace HDLG.Tests
                         FilePropertyLimits.MaxFileSizeBytes,
                         FilePropertyLimits.MaxFileSizeBytes + 1,
                         tempFile),
-                    Times.Once);
+                    Times.Once());
             }
             finally
             {
@@ -183,7 +183,7 @@ namespace HDLG.Tests
 
             // Assert
             properties.Should().BeEmpty();
-            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Cannot read properties from file")), It.IsAny<string>()), Times.Once);
+            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Cannot read properties from file")), It.IsAny<string>()), Times.Once());
         }
 
 
@@ -199,7 +199,7 @@ namespace HDLG.Tests
 
             // Assert
             properties.Should().BeEmpty();
-            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Unsupported image format") || s.Contains("Cannot read properties")), It.IsAny<string>()), Times.Once);
+            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Unsupported image format") || s.Contains("Cannot read properties")), It.IsAny<string>()), Times.Once());
         }
 
         [Fact]
@@ -214,7 +214,7 @@ namespace HDLG.Tests
 
             // Assert
             properties.Should().BeEmpty();
-            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Invalid image content") || s.Contains("Unsupported image format") || s.Contains("Cannot read properties")), It.IsAny<string>()), Times.Once);
+            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Invalid image content") || s.Contains("Unsupported image format") || s.Contains("Cannot read properties")), It.IsAny<string>()), Times.Once());
         }
 
 
@@ -313,7 +313,7 @@ namespace HDLG.Tests
 
             // Assert
             properties.Should().BeEmpty();
-            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Invalid image content")), It.IsAny<string>()), Times.Once);
+            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Invalid image content")), It.IsAny<string>()), Times.Once());
         }
         [Theory]
         [InlineData("test.mp3", true)]
@@ -351,6 +351,34 @@ namespace HDLG.Tests
             properties["Year"].Should().Be(0u);
         }
 
+
+        [Fact]
+        public void Mp3PropertyGetter_GetFileProperties_CorruptFile_LogsWarningAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+            var corruptFile = "test_corrupt_empty.mp3";
+            System.IO.File.WriteAllBytes(corruptFile, Array.Empty<byte>());
+
+            try
+            {
+                // Act
+                var properties = getter.GetFileProperties(new FileInfo(corruptFile));
+
+                // Assert
+                loggerMock.Verify(l => l.Warning(It.IsAny<TagLib.CorruptFileException>(), It.Is<string>(s => s.Contains("is corrupted")), It.IsAny<string>()), Times.Once);
+                properties.Should().BeEmpty();
+            }
+            finally
+            {
+                if (System.IO.File.Exists(corruptFile))
+                {
+                    System.IO.File.Delete(corruptFile);
+                }
+            }
+        }
+
         [Fact]
         public void Mp3PropertyGetter_GetFileProperties_FileNotFound_LogsErrorAndReturnsEmpty()
         {
@@ -362,7 +390,7 @@ namespace HDLG.Tests
             var properties = getter.GetFileProperties(new FileInfo("nonexistent.mp3"));
 
             // Assert
-            loggerMock.Verify(l => l.Error(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Cannot read file")), It.IsAny<string>()), Times.Once);
+            loggerMock.Verify(l => l.Error(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Cannot read file")), It.IsAny<string>()), Times.Once());
             properties.Should().BeEmpty();
         }
 
@@ -381,7 +409,7 @@ namespace HDLG.Tests
                 var properties = getter.GetFileProperties(new FileInfo(invalidFile));
 
                 // Assert
-                loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("is corrupted") || s.Contains("is not supported") || s.Contains("Cannot read properties from file")), It.IsAny<string>()), Times.Once);
+                loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("is corrupted") || s.Contains("is not supported") || s.Contains("Cannot read properties from file")), It.IsAny<string>()), Times.Once());
                 properties.Should().BeEmpty();
             }
             finally
@@ -393,6 +421,34 @@ namespace HDLG.Tests
             }
         }
 
+
+
+        [Fact]
+        public void Mp3PropertyGetter_GetFileProperties_UnsupportedFormat_LogsWarningAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+            var invalidFile = Path.GetTempFileName();
+            System.IO.File.WriteAllText(invalidFile, "unsupported content");
+
+            try
+            {
+                // Act
+                var properties = getter.GetFileProperties(new FileInfo(invalidFile));
+
+                // Assert
+                loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("is not supported")), It.IsAny<string>()), Times.Once());
+                properties.Should().BeEmpty();
+            }
+            finally
+            {
+                if (System.IO.File.Exists(invalidFile))
+                {
+                    System.IO.File.Delete(invalidFile);
+                }
+            }
+        }
 
 
         [Fact]
@@ -436,7 +492,7 @@ namespace HDLG.Tests
 
             // Assert
 
-            loggerMock.Verify(l => l.Error(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Cannot read file")), It.IsAny<string>()), Times.Once);
+            loggerMock.Verify(l => l.Error(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Cannot read file")), It.IsAny<string>()), Times.Once());
         }
 
         [Fact]
@@ -451,7 +507,7 @@ namespace HDLG.Tests
 
             // Assert
 
-            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Cannot read properties from file")), It.IsAny<string>()), Times.Once);
+            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Cannot read properties from file")), It.IsAny<string>()), Times.Once());
         }
 
         [Fact]
@@ -465,7 +521,7 @@ namespace HDLG.Tests
             var properties = getter.GetFileProperties(new FileInfo("test_encrypted.pdf"));
 
             // Assert
-            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("password protected")), It.IsAny<string>()), Times.Once);
+            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("password protected")), It.IsAny<string>()), Times.Once());
         }
 
         [Theory]
@@ -565,7 +621,7 @@ namespace HDLG.Tests
             var properties = getter.GetFileProperties(new FileInfo("nonexistent.xlsx"));
 
             // Assert
-            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Could not open Excel file")), It.IsAny<string>()), Times.Once);
+            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Could not open Excel file")), It.IsAny<string>()), Times.Once());
             properties.Should().BeEmpty();
         }
 
@@ -580,7 +636,7 @@ namespace HDLG.Tests
             var properties = getter.GetFileProperties(new FileInfo("test_invalid.xlsx"));
 
             // Assert
-            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Could not open Excel file")), It.IsAny<string>()), Times.Once);
+            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Could not open Excel file")), It.IsAny<string>()), Times.Once());
             properties.Should().BeEmpty();
         }
 
