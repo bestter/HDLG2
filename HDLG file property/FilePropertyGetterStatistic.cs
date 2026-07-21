@@ -8,38 +8,35 @@ HTML Directory List Generator is distributed in the hope that it will be useful,
 You should have received a copy of the GNU General Public License along with HTML Directory List Generator. If not, see <https://www.gnu.org/licenses/>. 
  */
 
-using System.Diagnostics;
-
 namespace HdlgFileProperty
 {
-    internal class FilePropertyGetterStatistic
-    {
-        public FilePropertyGetterStatistic(IFilePropertyGetter filePropertyGetter)
-        {
-            FilePropertyGetter = filePropertyGetter ?? throw new ArgumentNullException(nameof(filePropertyGetter));
+	internal class FilePropertyGetterStatistic
+	{
+		public FilePropertyGetterStatistic (IFilePropertyGetter filePropertyGetter)
+		{
+			FilePropertyGetter = filePropertyGetter ?? throw new ArgumentNullException( nameof( filePropertyGetter ) );
+		}
 
-        }
+		public IFilePropertyGetter FilePropertyGetter { get; private set; }
 
-        public IFilePropertyGetter FilePropertyGetter { get; private set; }
+		private long _totalExecutionTimeTicks;
 
-        private long _totalExecutionTimeTicks;
+		private long _totalFiles;
+		public long TotalFiles => System.Threading.Interlocked.Read( ref _totalFiles );
 
-        private long _totalFiles;
-        public long TotalFiles => System.Threading.Interlocked.Read(ref _totalFiles);
+		public void AddExecutionTime (TimeSpan timeSpan)
+		{
+			System.Threading.Interlocked.Add( ref _totalExecutionTimeTicks, timeSpan.Ticks );
+		}
 
-        public void AddExecutionTime(TimeSpan timeSpan)
-        {
-            System.Threading.Interlocked.Add(ref _totalExecutionTimeTicks, timeSpan.Ticks);
-        }
+		public TimeSpan GetTotalExecutionTime ()
+		{
+			return TimeSpan.FromTicks( System.Threading.Interlocked.Read( ref _totalExecutionTimeTicks ) );
+		}
 
-        public TimeSpan GetTotalExecutionTime()
-        {
-            return TimeSpan.FromTicks(System.Threading.Interlocked.Read(ref _totalExecutionTimeTicks));
-        }
-
-        public void IncrementFile()
-        {
-            System.Threading.Interlocked.Increment(ref _totalFiles);
-        }
-    }
+		public void IncrementFile ()
+		{
+			System.Threading.Interlocked.Increment( ref _totalFiles );
+		}
+	}
 }
