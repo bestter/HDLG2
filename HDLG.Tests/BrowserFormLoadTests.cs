@@ -86,8 +86,8 @@ namespace HDLG.Tests
                     var rootNode = treeView.Nodes[0];
 
                     // TreeView1_BeforeExpand is async void; pump the WinForms sync context until it completes.
-                    var deadline = Stopwatch.StartNew();
-                    while (deadline.Elapsed < TimeSpan.FromSeconds(5))
+                    long startTimestamp = Stopwatch.GetTimestamp();
+                    while (Stopwatch.GetElapsedTime(startTimestamp).TotalMilliseconds < 5000)
                     {
                         Application.DoEvents();
                         if (rootNode.Nodes.Count > 0 && rootNode.Nodes[0].Text != "Loading...")

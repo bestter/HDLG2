@@ -85,13 +85,13 @@ namespace HdlgFileProperty
 
 					propertyGetters.IncrementFile( );
 					// Use a local Stopwatch: shared StartTimer/StopTimer is not thread-safe under concurrent extraction.
-					var sw = System.Diagnostics.Stopwatch.StartNew( );
+					long startTimestamp = System.Diagnostics.Stopwatch.GetTimestamp( );
 					var currentProperties = await GetFilePropertiesWithTimeoutAsync(
 						propertyGetters.FilePropertyGetter,
 						fileInfo,
 						propertyGetters.FilePropertyGetter.GetType( ) ).ConfigureAwait( false );
-					sw.Stop( );
-					propertyGetters.AddExecutionTime( sw.Elapsed );
+					var elapsed = System.Diagnostics.Stopwatch.GetElapsedTime( startTimestamp );
+					propertyGetters.AddExecutionTime( elapsed );
 
 					// Performance optimization: Avoid allocating a dictionary enumerator when there are no properties
 					if (currentProperties.Count > 0)
