@@ -274,5 +274,42 @@ namespace HDLG.Tests
                     System.IO.File.Delete(htmlPath);
             }
         }
+
+        [Fact]
+        public async Task SaveAsHTMLAsync_FileLinks_GeneratesValidFileUrls()
+        {
+            // Arrange
+            var testSubDir = Path.Combine(baseDirectoryPath, "DOSSIER1");
+            System.IO.Directory.CreateDirectory(testSubDir);
+            var testFilePath = Path.Combine(testSubDir, "FICHIER1.JPG");
+            await System.IO.File.WriteAllTextAsync(testFilePath, "dummy content");
+
+            var dir = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+            var browser = new HdlgFileProperty.FilePropertyBrowser(loggerMock.Object);
+            await dir.BrowseAsync(browser);
+
+            var htmlPath = Path.Combine(Path.GetTempPath(), "test_file_link_" + Guid.NewGuid().ToString() + ".html");
+
+            try
+            {
+                // Act
+                await directoryBrowser.SaveAsHTMLAsync(htmlPath, dir);
+
+                // Assert
+                var htmlContent = await System.IO.File.ReadAllTextAsync(htmlPath);
+
+                var expectedUri = new Uri(testFilePath).AbsoluteUri;
+                var expectedEncodedUri = WebUtility.HtmlEncode(expectedUri);
+
+                htmlContent.Should().Contain($"<a href=\"{expectedEncodedUri}\" download=\"FICHIER1.JPG\" referrerpolicy=\"strict-origin\">FICHIER1.JPG</a>");
+                htmlContent.Should().NotContain("file:///D%3A%5C");
+                htmlContent.Should().NotContain("file:///C%3A%5C");
+            }
+            finally
+            {
+                if (System.IO.File.Exists(htmlPath))
+                    System.IO.File.Delete(htmlPath);
+            }
+        }
     }
 }
