@@ -13,7 +13,7 @@
 
 - 📁 **Recursive Folder Scanning**: Fast, lazy-loaded interactive UI tree navigation alongside configurable recursive scans.
 - 🌐 **Beautiful HTML Export**: Generates a self-contained, fully-styled HTML report featuring:
-  - Responsive inline CSS styling (system fonts only for full self-containment, offline support and security; no external Google Fonts).
+  - Responsive inline CSS styling (system fonts only for full self-containment, offline support and security; strict CSP with no external Google Fonts).
   - Interactive table of contents with navigable anchor links.
   - Quick-click `file:///` pathways to directly open indexed items.
   - Branded footer with inline SVG logo and generator attribution.
@@ -26,7 +26,7 @@
 - ⚡ **Performance Instrumentation**: Measures, records, and displays execution metrics (scantime, compilation, and save-time).
 - 🛡️ **DoS Hardening (Property Extraction)**: Configurable safeguards in `FilePropertyLimits` — rejects files exceeding 100 MB, enforces a 30-second timeout per property getter in `FilePropertyBrowser`, and caps image dimensions at 32 768 px via `ImagePropertyGetter` (with `DecoderOptions.MaxFrames = 1`).
 - 🪵 **Structured Logging**: Rolling diagnostic logs written daily to `%LOCALAPPDATA%\HDLG\logs`.
-- 🎨 **Modern WinForms UI (v1.4)**: Fluent-style desktop interface powered by **Krypton.Toolkit** (Microsoft 365 Blue Light palette), with a dashboard layout on the main window and harmonized explorer/about dialogs.
+- 🎨 **Modern WinForms UI (v1.4)**: Desktop interface powered by **AppUiBootstrap** (`MinimalistSlate` palette, slate `#F8FAFC` background, Segoe UI typography) and **ModernControls** (`ModernCardPanel`, `ModernButton`), featuring a clean dashboard layout on the main window and harmonized explorer/about dialogs.
 - 🏷️ **HDLG Monogram Branding**: Original geometric logo (Concept C, 2×2 layout, accent `#0284C8`) in the About dialog, application icon, and HTML export footer (inline SVG).
 
 ---
@@ -38,12 +38,12 @@ The solution consists of three primary layers:
 1. **`HDLG winforms` (Desktop GUI App)**: 
    - Manages the Windows Forms layout, progress metrics, and output generation orchestrators.
    - Built on `Microsoft.Extensions.Hosting` utilizing full Dependency Injection (DI) and robust background threading (`Task.Run`) to keep the UI perfectly responsive.
-   - UI theme initialized via `AppUiBootstrap` using **Krypton.Toolkit** controls (`KryptonForm`, `KryptonHeaderGroup`, `KryptonTreeView`, etc.).
+   - UI theme initialized via `AppUiBootstrap` with custom modern card panels and buttons (`ModernControls.cs`).
 2. **`HdlgFileProperty` (Extraction Engine)**:
    - Houses the core extraction strategy (`IFilePropertyGetter`), delegating specialized tasks to respective metadata engines based on MIME/file formats.
    - `FilePropertyBrowser` orchestrates getters with file-size checks and per-getter timeouts; `FilePropertyLimits` centralizes the configurable thresholds.
 3. **`HDLG.Tests` (Unit Tests)**:
-   - xUnit v3-based test suite (`xunit.v3` + runner) with FluentAssertions and Moq, covering export engines, metadata extraction orchestration, directory model logic, property getter contracts, security helpers (e.g. OpenWithDefaultProgram), UI bootstrap, and structural WinForms UI tests.
+   - xUnit v3-based test suite (240 passing tests) with FluentAssertions and Moq, covering export engines, metadata extraction orchestration, directory model logic, property getter contracts, security helpers (e.g. OpenWithDefaultProgram), UI bootstrap, explorer loading, performance metrics, and structural WinForms UI tests on STA thread.
 
 ---
 
@@ -70,13 +70,13 @@ Run the shortcut compilation script at the root directory:
 ```
 
 ### 3. Running Tests
-Execute the full test suite:
+Execute the full test suite (240 unit & UI tests):
 ```powershell
 dotnet test HDLG.sln
 ```
 
 The `HDLG.Tests` project covers:
-- **DirectoryBrowserTests** — XML and HTML export validation (parameter guards, output structure).
+- **DirectoryBrowserTests** — XML and HTML export validation (parameter guards, output structure, CSP).
 - **FilePropertyBrowserTests** — Property extraction orchestration (getter delegation, multi-getter combination, oversized-file rejection, timeout behavior, statistics logging).
 - **FilePropertyGetterStatisticTests** — Execution statistics validation for getters (elapsed time, file count).
 - **HdlgDirectoryTests** — Directory model construction, recursive browse behavior, and equality semantics.
@@ -85,10 +85,12 @@ The `HDLG.Tests` project covers:
 - **WordPropertyGetterTests** — Word document property extraction and error handling.
 - **ExcelPropertyGetterTests** — Excel workbook property extraction and error handling.
 - **OpenWithDefaultProgramTests** — Security validation for `MainWindow.OpenWithDefaultProgram` (dangerous extension blocklist to prevent process injection).
-- **AppUiBootstrapTests** — Validates Krypton global palette initialization and watermark removal.
+- **AppUiBootstrapTests** — Validates `MinimalistSlate` palette initialization, High-DPI, and legacy branding removal.
 - **AppBrandingTests** — Validates inline SVG markup and HTML footer generation.
 - **AppLogoRendererTests** — Validates packaged logo/icon asset loading.
-- **WinFormsUiTests** — Structural UI tests (STA thread) verifying Krypton controls on `MainWindow`, `BrowserForm`, and `Credit`.
+- **BrowserFormLoadTests** — Validates tree navigation loading and node population in `BrowserForm`.
+- **PerformanceCountTests** — Validates execution time metric calculations (`PerformanceCount`).
+- **WinFormsUiTests** — Structural UI tests (STA thread) verifying controls on `MainWindow`, `BrowserForm`, and `Credit`.
 
 ---
 
@@ -120,7 +122,7 @@ You should have received a copy of the GNU General Public License along with HTM
 
 ## 🎨 Branding & Assets
 
-The application uses an original **HDLG** monogram (Concept C: 2×2 letter grid without visible grid lines, geometric style, Krypton palette `#0284C8`).
+The application uses an original **HDLG** monogram (Concept C: 2×2 letter grid without visible grid lines, geometric style, palette `#0284C8`).
 
 | Asset | Path | Usage |
 |---|---|---|

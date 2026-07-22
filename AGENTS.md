@@ -3,7 +3,7 @@
 Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
 **Version** : 1.4.0.0  
-**Dernière mise à jour** : 26 juin 2026 — Modernisation UI WinForms via **Krypton.Toolkit** (palette Microsoft 365 Blue Light, layout dashboard sur `MainWindow`, harmonisation `BrowserForm`/`Credit`, bootstrap `AppUiBootstrap`), monogramme HDLG original (`AppBranding`, assets SVG/Inkscape, pied de page HTML), retrait watermark Krypton, tests UI (`AppUiBootstrapTests`, `AppBrandingTests`, `AppLogoRendererTests`, `WinFormsUiTests`), bump de version 1.4.0.
+**Dernière mise à jour** : 22 juillet 2026 — Audit complet et synchronisation de la documentation, modernisation UI WinForms via `AppUiBootstrap` (palette `MinimalistSlate`, fond slate `#F8FAFC`, Segoe UI, contrôles modernes `ModernControls` / `ModernCardPanel`), monogramme HDLG original (`AppBranding`, assets SVG/Inkscape, pied de page HTML), suite complète de 240 tests unitaires et UI (`HDLG.Tests` avec support thread STA xUnit v3).
 **Propriétaire** : Martin Labelle (@bestter)
 
 ---
@@ -66,22 +66,23 @@ La solution `HDLG.sln` contient **trois projets** :
 | Fichier | Rôle |
 |---|---|
 | **`Program.cs`** | Point d'entrée de l'application. Configure l'injection de dépendances (DI) via `Microsoft.Extensions.Hosting`, initialise Serilog, appelle `AppUiBootstrap.Configure()`, et enregistre les gestionnaires d'exceptions globales (thread UI + threads d'arrière-plan). |
-| **`AppUiBootstrap.cs`** | Initialise le thème global Krypton (`PaletteMode.Microsoft365BlueLightMode`) partagé par tous les formulaires ; `RemoveFormBranding()` retire le watermark Krypton. |
+| **`AppUiBootstrap.cs`** | Initialise la configuration UI globale (High-DPI PerMonitorV2, thème `MinimalistSlate`) ; `RemoveFormBranding()` applique le fond slate `#F8FAFC` et la police Segoe UI. |
 | **`AppBranding.cs`** | Centralise le markup SVG inline (exports HTML), le pied de page HTML, et le chargement des assets logo/icône (`Assets/hdlg-logo.png`, `Assets/hdlg-icon.ico`). |
 | **`AppLogoRenderer.cs`** | Rendu bitmap de secours du monogramme (géométrie alignée sur le SVG) si les assets empaquetés sont absents. |
 | **`Assets/`** | Sources SVG (`hdlg-logo.svg`, `hdlg-app-icon.svg`) et exports PNG/ICO générés via `scripts/GenerateAppLogoAssets.ps1` (Inkscape). |
-| **`MainWindow.cs`** | Fenêtre principale (`KryptonForm`). Permet de sélectionner un répertoire, lancer le parcours en XML ou HTML via `Task.Run`, ouvrir l'UI Explorer, afficher les temps de performance (browse, save, total). |
-| **`MainWindow.Designer.cs`** | Layout WinForms de la fenêtre principale (contrôles Krypton : `KryptonHeaderGroup`, `KryptonButton`, `KryptonProgressBar`, etc.). |
-| **`BrowserForm.cs`** | Formulaire de navigation arborescente (`KryptonTreeView`) avec chargement paresseux (lazy loading) des répertoires/fichiers. Affiche les propriétés d'un fichier sélectionné dans un `KryptonListView`. |
-| **`BrowserForm.Designer.cs`** | Layout WinForms de l'explorateur (contrôles Krypton, `KryptonSplitContainer`). |
-| **`DirectoryBrowser.cs`** | Cœur logique de l'export. Contient `SaveAsXMLAsync()` (génération XML via `XmlWriter`) et `SaveAsHTMLAsync()` (génération HTML self-contained avec CSS embarqué ; polices système uniquement, sans Google Fonts externes pour offline/sécurité). |
-| **`Directory.cs`** | Modèle de données (legacy) représentant un répertoire. Implémente `IEquatable`, `IComparable`. Parcourt récursivement les sous-répertoires et fichiers. |
-| **`HdlgDirectory.cs`** | Modèle de données (version refactorisée) d'un répertoire. Même rôle que `Directory.cs` mais avec un code plus propre (utilisation de `IReadOnlyList`, `ArgumentNullException.ThrowIfNull`, etc.). |
-| **`File.cs`** | Modèle de données (legacy) d'un fichier. Contient les métadonnées (nom, chemin, extension, taille, date de création, propriétés étendues). |
-| **`HdlgFile.cs`** | Modèle de données (version refactorisée) d'un fichier. Version améliorée de `File.cs`. |
-| **`PerformanceCount.cs`** | Structure pour stocker les métriques de performance (temps de parcours, sauvegarde, total). |
-| **`credit.cs`** | Formulaire « About » (`KryptonForm`) affichant la version, la licence GPLv3, et le monogramme HDLG (`AppBranding.LoadLogoImage()`). |
-| **`hdlg.css`** | Feuille de style CSS embarquée dans les fichiers HTML générés (polices système uniquement pour self-containment ; version obsolète avec Google Fonts existe à la racine mais n'est pas utilisée). |
+| **`MainWindow.cs`** | Fenêtre principale (`Form`). Layout dashboard avec panneaux `ModernCardPanel`, sélection de répertoire, parcours XML/HTML via `Task.Run`, lancement de l'UI Explorer, affichage des métriques de performance. |
+| **`MainWindow.Designer.cs`** | Layout WinForms de la fenêtre principale (contrôles `ModernCardPanel`, `ModernButton`, `ProgressBar`, `StatusStrip`, etc.). |
+| **`BrowserForm.cs`** | Formulaire de navigation arborescente (`TreeView`) avec chargement paresseux (lazy loading) des répertoires/fichiers. Affiche les propriétés d'un fichier sélectionné dans un `ListView`. |
+| **`BrowserForm.Designer.cs`** | Layout WinForms de l'explorateur (contrôles `ModernCardPanel`, `TreeView`, `ListView`, `SplitContainer`). |
+| **`ModernControls.cs`** | Composants UI personnalisés (`ModernCardPanel` avec en-tête et description, `ModernButton` avec effets de survol/clic). |
+| **`DirectoryBrowser.cs`** | Cœur logique de l'export. Contient `SaveAsXMLAsync()` (génération XML via `XmlWriter`) et `SaveAsHTMLAsync()` (génération HTML self-contained avec CSS embarqué ; polices système uniquement, CSP strict sans Google Fonts externes). |
+| **`Directory.cs`** | Modèle de données (legacy) représentant un répertoire. Implémente `IEquatable`, `IComparable`. |
+| **`HdlgDirectory.cs`** | Modèle de données refactorisé d'un répertoire (`IReadOnlyList`, `ArgumentNullException.ThrowIfNull`, etc.). |
+| **`File.cs`** | Modèle de données (legacy) d'un fichier (métadonnées, taille, date, propriétés étendues). |
+| **`HdlgFile.cs`** | Modèle de données refactorisé d'un fichier. |
+| **`PerformanceCount.cs`** | Structure pour stocker les métriques de performance (browse, save, total). |
+| **`credit.cs`** | Formulaire « About » (`Form`) affichant la version, la licence GPLv3, et le monogramme HDLG (`AppBranding.LoadLogoImage()`). |
+| **`hdlg.css`** | Feuille de style CSS embarquée dans les fichiers HTML générés (polices système uniquement pour self-containment). |
 
 ### Projet 2 : `HdlgFileProperty` (Bibliothèque d'extraction de propriétés)
 
@@ -101,20 +102,23 @@ La solution `HDLG.sln` contient **trois projets** :
 
 | Fichier | Rôle |
 |---|---|
-| **`DirectoryBrowserTests.cs`** | Tests de `DirectoryBrowser` : validation des paramètres (null/empty), génération XML (structure, balises attendues) et génération HTML (DOCTYPE, structure, contenu). Utilise des fichiers temporaires nettoyés via `IDisposable`. |
-| **`FilePropertyBrowserTests.cs`** | Tests de `FilePropertyBrowser` : validation du constructeur (null logger, null getters), délégation correcte aux `IFilePropertyGetter` via mocks Moq, combinaison de propriétés de multiples getters, rejet des fichiers trop volumineux, comportement timeout, et vérification des statistiques de logging. |
-| **`HdlgDirectoryTests.cs`** | Tests de `HdlgDirectory` : construction avec propriétés valides, validation des paramètres null, parcours avec/sans sous-répertoires, et vérification de l'égalité par chemin. Utilise des répertoires temporaires sur le système de fichiers. |
-| **`PropertyGetterTests.cs`** | Tests des implémentations `IFilePropertyGetter` : `ImagePropertyGetter`, `Mp3PropertyGetter`, `PdfPropertyGetter`. Vérifie `AddLogger()`, la validation null, `IsSupportedFile()` via `[Theory]`/`[InlineData]`, et le rejet des images trop volumineuses. |
-| **`WordPropertyGetterTests.cs`** | Tests dédiés de `WordPropertyGetter` : extraction des propriétés, gestion des fichiers invalides/manquants, et journalisation Serilog. |
-| **`ExcelPropertyGetterTests.cs`** | Tests dédiés de `ExcelPropertyGetter` : extraction des propriétés, gestion des fichiers invalides/manquants, et journalisation Serilog. |
+| **`DirectoryBrowserTests.cs`** | Tests de `DirectoryBrowser` : validation des paramètres (null/empty), génération XML (structure, balises attendues) et génération HTML (DOCTYPE, structure, CSP, contenu). |
+| **`FilePropertyBrowserTests.cs`** | Tests de `FilePropertyBrowser` : validation du constructeur (null logger, null getters), délégation aux `IFilePropertyGetter` via Moq, combinaison multi-getters, rejet des fichiers trop volumineux, timeout, et logging. |
+| **`HdlgDirectoryTests.cs`** | Tests de `HdlgDirectory` : construction, validation null, parcours avec/sans sous-répertoires, égalité par chemin. |
+| **`HdlgFileTests.cs`** | Tests de `HdlgFile` : construction, métadonnées, calculs de taille et extension. |
+| **`PropertyGetterTests.cs`** | Tests des implémentations `IFilePropertyGetter` : `ImagePropertyGetter`, `Mp3PropertyGetter`, `PdfPropertyGetter`. |
+| **`WordPropertyGetterTests.cs`** | Tests de `WordPropertyGetter` : extraction des propriétés, gestion des fichiers invalides/manquants, logging. |
+| **`ExcelPropertyGetterTests.cs`** | Tests de `ExcelPropertyGetter` : extraction des propriétés, gestion des fichiers invalides/manquants, logging. |
 | **`FilePropertyGetterStatisticTests.cs`** | Tests de `FilePropertyGetterStatistic` : validation des statistiques d'exécution d'un getter (temps écoulé, nombre de fichiers traités). |
-| **`HdlgFileTests.cs`** | Tests de `HdlgFile` : validation de la construction, propriétés, calculs de taille et extension. |
 | **`OpenWithDefaultProgramTests.cs`** | Tests de `MainWindow.OpenWithDefaultProgram` (sécurité : validation des extensions dangereuses pour prévenir l'injection de processus). |
-| **`AppUiBootstrapTests.cs`** | Tests du bootstrap UI Krypton (palette globale `Microsoft365BlueLightMode`, retrait watermark). |
+| **`AppUiBootstrapTests.cs`** | Tests du bootstrap UI (`MinimalistSlate`, High-DPI, suppression de branding legacy). |
 | **`AppBrandingTests.cs`** | Tests du markup SVG inline et du pied de page HTML généré. |
 | **`AppLogoRendererTests.cs`** | Tests de chargement des assets logo/icône empaquetés. |
+| **`BrowserFormLoadTests.cs`** | Tests de chargement et lazy-loading dans `BrowserForm`. |
+| **`PerformanceCountTests.cs`** | Tests de calcul et formatage des métriques de temps d'exécution (`PerformanceCount`). |
 | **`WinFormsUiTestCollection.cs`** | Collection xUnit sérialisée pour éviter les conflits GDI+ entre tests WinForms. |
-| **`WinFormsUiTests.cs`** | Tests UI structurels (thread STA) : instanciation des formulaires et présence des contrôles Krypton clés (`MainWindow`, `BrowserForm`, `Credit`). |
+| **`WinFormsUiTests.cs`** | Tests UI structurels (thread STA) : instanciation des formulaires et présence des contrôles modernes clés (`MainWindow`, `BrowserForm`, `Credit`). |
+| **`ExcelSetup.cs` / `ImageSetup.cs` / `WordSetup.cs` / `WordPropertyGetterTestSetup.cs`** | Classes utilitaires de création de fixtures de test temporaires isolées. |
 
 ---
 
@@ -124,19 +128,18 @@ La solution `HDLG.sln` contient **trois projets** :
 
 | Package | Version | Usage |
 |---|---|---|
-| `Microsoft.Extensions.Hosting` | 10.0.9 | Hébergement et injection de dépendances (transitive : DependencyInjection + Logging) |
+| `Microsoft.Extensions.Hosting` | 10.0.10 | Hébergement et injection de dépendances (transitive : DependencyInjection + Logging) |
 | `Serilog.Sinks.File` | 7.0.0 | Journalisation vers fichiers |
-| `Krypton.Toolkit` | 105.26.4.110 | Thème et contrôles WinForms modernes (Fluent / Microsoft 365) |
 
 ### `HdlgFileProperty`
 
 | Package | Version | Usage |
 |---|---|---|
 | `DocumentFormat.OpenXml` | 3.5.1 | Lecture de documents Office (Word, Excel) |
-| `PdfPig` | 0.1.14 | Lecture de propriétés PDF |
-| `Serilog` | 4.3.1 | Logging |
+| `PdfPig` | 0.1.15 | Lecture de propriétés PDF |
+| `Serilog` | 4.4.0 | Logging |
 | `SixLabors.ImageSharp` | 3.1.12 | Traitement d'images |
-| `System.Drawing.Common` | 10.0.8 | API graphique Windows |
+| `System.Drawing.Common` | 10.0.10 | API graphique Windows |
 | `TagLibSharp` | 2.3.0 | Lecture de métadonnées audio (MP3) |
 
 ### `HDLG.Tests`
@@ -145,33 +148,35 @@ La solution `HDLG.sln` contient **trois projets** :
 | -----------------------------| ---------| ----------------------------------------|
 | `coverlet.collector`        | 10.0.1  | Collecte de couverture de code         |
 | `FluentAssertions`          | 8.10.0  | Assertions lisibles et expressives     |
-| `Microsoft.AspNetCore.TestHost` | 10.0.8 | Hébergement de test ASP.NET Core (référencé par le projet de tests) |
-| `Microsoft.NET.Test.Sdk`    | 18.5.1  | Infrastructure de test .NET            |
-| `Serilog`                   | 4.3.1   | Logging dans les tests                 |
-| `TagLibSharp`               | 2.3.0   | Création de fixtures audio pour les tests |
+| `Microsoft.AspNetCore.TestHost` | 10.0.10 | Hébergement de test ASP.NET Core (référencé par le projet de tests) |
+| `Microsoft.NET.Test.Sdk`    | 18.8.1  | Infrastructure de test .NET            |
 | `Moq`                       | 4.20.72 | Mocking d'interfaces pour tests isolés |
+| `Serilog`                   | 4.4.0   | Logging dans les tests                 |
+| `TagLibSharp`               | 2.3.0   | Création de fixtures audio pour les tests |
 | `xunit.v3`                  | 3.2.2   | Framework de tests unitaires (v3)      |
 | `xunit.runner.visualstudio` | 3.1.5   | Runner Visual Studio pour xUnit        |
 
 ---
 
-## 🎨 Stratégie UI/UX (Windows Forms – Krypton Toolkit)
+## 🎨 Stratégie UI/UX (Windows Forms)
 
 Pour toute modification de l'interface utilisateur :
 
-1. **Thème global** : Toute form hérite de `KryptonForm` et s'appuie sur `AppUiBootstrap.Configure()` (palette `Microsoft365BlueLightMode`). Ne pas hardcoder de couleurs inline sauf nécessité documentée.
+1. **Thème global** : Toute form hérite de `Form` et s'appuie sur `AppUiBootstrap.Configure()` et `AppUiBootstrap.RemoveFormBranding()` (palette `MinimalistSlate`, fond `#F8FAFC`, police Segoe UI). Ne pas hardcoder de couleurs inline sauf nécessité documentée.
 
-2. **Fichiers `.Designer.cs`** : Le layout (contrôles Krypton, ancres, docking) est défini dans les `.Designer.cs`. Les refontes UI peuvent modifier ces fichiers ; la logique métier reste dans les `.cs` non-Designer.
+2. **Composants UI modernes** : Les cartes avec en-tête et description utilisent `ModernCardPanel` (défini dans `ModernControls.cs`). Les boutons d'action stylisés utilisent `ModernButton`.
 
-3. **La logique événementielle reste dans les fichiers `.cs` correspondants** (ex: `MainWindow.cs`, `BrowserForm.cs`).
+3. **Fichiers `.Designer.cs`** : Le layout (contrôles, ancres, docking) est défini dans les `.Designer.cs`. La logique métier reste dans les `.cs` non-Designer.
 
-4. **Injection de dépendances** : Les formulaires reçoivent leurs dépendances via le constructeur (DI configurée dans `Program.cs`). Ne jamais instancier manuellement les services.
+4. **La logique événementielle reste dans les fichiers `.cs` correspondants** (ex: `MainWindow.cs`, `BrowserForm.cs`).
 
-5. **Opérations longues** : Utiliser `Task.Run` + `ConfigureAwait(true)` pour les tâches de parcours et d'export afin de ne pas bloquer le thread UI. La barre de progression utilise `KryptonProgressBar` en mode `Marquee` pendant le traitement.
+5. **Injection de dépendances** : Les formulaires reçoivent leurs dépendances via le constructeur (DI configurée dans `Program.cs`). Ne jamais instancier manuellement les services.
 
-6. **Palette visuelle** : Alignée sur `hdlg.css` (fond `#F8FAFC`, accent `#0284C8`, texte `#0F172A`).
+6. **Opérations longues** : Utiliser `Task.Run` + `ConfigureAwait(true)` pour les tâches de parcours et d'export afin de ne pas bloquer le thread UI. La barre de progression utilise `ProgressBar` en mode `Marquee` pendant le traitement.
 
-7. **Branding** : Monogramme HDLG original (Concept C, grille 2×2 sans lignes visibles). Wordmark via `hdlg-logo.svg` (About + HTML) ; icône Windows via `hdlg-app-icon.svg` (optimisée 16–48 px). Régénérer PNG/ICO avec `scripts/GenerateAppLogoAssets.ps1` (Inkscape requis). Ne pas réutiliser d'assets Flaticon.
+7. **Palette visuelle** : Alignée sur `hdlg.css` (fond `#F8FAFC`, accent `#0284C8`, texte `#0F172A`).
+
+8. **Branding** : Monogramme HDLG original (Concept C, grille 2×2 sans lignes visibles). Wordmark via `hdlg-logo.svg` (About + HTML) ; icône Windows via `hdlg-app-icon.svg` (optimisée 16–48 px). Régénérer PNG/ICO avec `scripts/GenerateAppLogoAssets.ps1` (Inkscape requis). Ne pas réutiliser d'assets Flaticon.
 
 ---
 
@@ -179,14 +184,14 @@ Pour toute modification de l'interface utilisateur :
 
 1. **Parcours récursif de répertoires** : Navigation dans un répertoire sélectionné et ses sous-répertoires (optionnel via checkbox).
 2. **Export XML** : Génération asynchrone d'un fichier XML structuré (`XmlWriter`) contenant l'arborescence complète avec métadonnées.
-3. **Export HTML** : Génération asynchrone d'un fichier HTML self-contained avec CSS embarqué (polices système, sans Google Fonts pour offline et mitigation XSS), table des matières avec ancres navigables, et liens `file:///` vers les fichiers.
+3. **Export HTML** : Génération asynchrone d'un fichier HTML self-contained avec CSS embarqué (polices système, CSP strict sans Google Fonts pour offline et mitigation XSS), table des matières avec ancres navigables, et liens `file:///` vers les fichiers.
 4. **Extraction de propriétés étendues** : Pour chaque fichier, extraction automatique des métadonnées spécifiques selon le type (dimensions d'image, auteur Word/Excel, tags MP3, etc.).
 5. **Navigation arborescente** (`BrowserForm`) : Exploration interactive du système de fichiers avec lazy loading et affichage des propriétés.
 6. **Métriques de performance** : Mesure et affichage des temps de parcours, sauvegarde et total.
 7. **Logging structuré** : Journalisation via Serilog dans `%LOCALAPPDATA%\HDLG\logs\log.txt` (rolling quotidien).
 8. **Gestion d'exceptions globale** : Intercepteurs pour les exceptions du thread UI et des threads d'arrière-plan.
 9. **Protection anti-DoS (extraction de propriétés)** : Limites de taille de fichier (100 Mo), timeout par getter (30 s), et plafond de dimensions image (32 768 px) pour mitiger les attaques par déni de service lors du parsing de fichiers non fiables.
-10. **Interface modernisée (v1.4)** : `MainWindow` en layout dashboard (sections Source Directory / Export), bouton About intégré, `BrowserForm` et `Credit` harmonisés via Krypton Toolkit.
+10. **Interface modernisée (v1.4)** : `MainWindow` en layout dashboard avec `ModernCardPanel`, section Source Directory / Export, bouton About intégré, `BrowserForm` et `Credit` harmonisés.
 11. **Branding HDLG** : Monogramme original dans About, icône application, et pied de page des exports HTML (SVG inline self-contained).
 
 ---
@@ -198,8 +203,8 @@ Pour toute modification de l'interface utilisateur :
 - **Modèles en doublon** : Il existe actuellement deux versions de modèles (`Directory.cs`/`File.cs` et `HdlgDirectory.cs`/`HdlgFile.cs`). Les versions `Hdlg*` sont la version refactorisée et doivent être privilégiées pour tout nouveau développement.
 - **Logging** : Utiliser exclusivement Serilog via l'injection du `Logger`. Ne pas créer de nouvelles instances de logger en dehors de `Program.cs`.
 - **Build** : Le projet se compile via `dotnet build HDLG.sln`. Un fichier `build.bat` est fourni à la racine pour simplifier la commande.
-- **CI/CD** : GitHub Actions (`.github/workflows/dotnet-desktop.yml`) exécute le build (via msbuild) sur push/PR vers `main` en configurations Debug et Release (tests commentés dans le workflow). Dependabot est activé pour les mises à jour NuGet (pas d'écosystème GitHub Actions configuré dans dependabot.yml).
-- **Tests** : Le projet `HDLG.Tests` (xUnit) contient les tests unitaires de la solution. Les tests utilisent **FluentAssertions** pour des assertions expressives et **Moq** pour le mocking d'interfaces. Pour exécuter les tests : `dotnet test HDLG.sln`. Tout nouveau code doit être accompagné de tests unitaires correspondants dans ce projet.
+- **CI/CD** : GitHub Actions (`.github/workflows/dotnet-desktop.yml`) exécute le build (via msbuild) sur push/PR vers `main` en configurations Debug et Release. Dependabot est activé pour les mises à jour NuGet.
+- **Tests** : Le projet `HDLG.Tests` (xUnit v3) contient les 240 tests unitaires et UI de la solution. Les tests utilisent **FluentAssertions** pour des assertions expressives et **Moq** pour le mocking d'interfaces. Pour exécuter les tests : `dotnet test HDLG.sln`. Tout nouveau code doit être accompagné de tests unitaires correspondants dans ce projet.
 - **Encodage des fichiers** : Les fichiers `.cs` et `.vb` utilisent des **tabulations** pour l'indentation (`indent_style = tab`, `tab_width = 4`) et les fins de ligne **CRLF** (`end_of_line = crlf`).
 
 ## 🐙 Conventions Git et Historique

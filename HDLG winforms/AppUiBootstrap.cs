@@ -8,8 +8,6 @@
  You should have received a copy of the GNU General Public License along with HTML Directory List Generator. If not, see <https://www.gnu.org/licenses/>.
  */
 
-using Krypton.Toolkit;
-
 namespace HDLG_winforms
 {
 	/// <summary>
@@ -18,11 +16,10 @@ namespace HDLG_winforms
 	public static class AppUiBootstrap
 	{
 		private static readonly object configureLock = new( );
-		private static KryptonManager? uiManager;
 		private static bool isConfigured;
 
 		/// <summary>
-		/// Applies the global Krypton palette used by all forms.
+		/// Applies global UI configuration and High-DPI modes.
 		/// </summary>
 		public static void Configure ()
 		{
@@ -33,32 +30,25 @@ namespace HDLG_winforms
 					return;
 				}
 
-				uiManager = new KryptonManager( );
-				uiManager.GlobalPaletteMode = PaletteMode.Microsoft365BlueLightMode;
+				Application.SetHighDpiMode( HighDpiMode.PerMonitorV2 );
 				isConfigured = true;
 			}
 		}
 
 		/// <summary>
-		/// Removes the default Krypton watermark rendered in the form client area.
+		/// Configures standard form appearance with modern background and fonts.
 		/// </summary>
-		public static void RemoveFormBranding (KryptonForm form)
+		public static void RemoveFormBranding (Form form)
 		{
 			ArgumentNullException.ThrowIfNull( form );
-
-			PaletteBack commonBack = form.StateCommon!.Back!;
-			commonBack.Image = null;
-			commonBack.ImageStyle = PaletteImageStyle.Inherit;
-
-			form.StateActive!.Back!.Image = null;
-			form.StateInactive!.Back!.Image = null;
+			form.BackColor = Color.FromArgb( 248, 250, 252 );
+			form.Font = new Font( "Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point );
 			form.BackgroundImage = null;
 		}
 
 		/// <summary>
-		/// Returns the active global palette mode after configuration.
+		/// Returns the active global UI theme name.
 		/// </summary>
-		public static PaletteMode ActivePaletteMode =>
-			uiManager?.GlobalPaletteMode ?? PaletteMode.Microsoft365BlueLightMode;
+		public static string ActiveTheme => "MinimalistSlate";
 	}
 }

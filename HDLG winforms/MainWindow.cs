@@ -8,7 +8,6 @@ HTML Directory List Generator is distributed in the hope that it will be useful,
 You should have received a copy of the GNU General Public License along with HTML Directory List Generator. If not, see <https://www.gnu.org/licenses/>. 
  */
 using HdlgFileProperty;
-using Krypton.Toolkit;
 using Serilog;
 using Serilog.Core;
 using System.ComponentModel;
@@ -20,7 +19,7 @@ using System.Reflection;
 namespace HDLG_winforms
 {
 	[System.Diagnostics.CodeAnalysis.SuppressMessage( "Localization", "CA1303:Do not pass literals as localized parameters" )]
-	public partial class MainWindow : KryptonForm
+	public partial class MainWindow : Form
 	{
 		#region PropertyGetter
 		public ImagePropertyGetter ImagePropertyGetter;
@@ -77,7 +76,7 @@ namespace HDLG_winforms
 			AssemblyName an = typeof( MainWindow ).Assembly.GetName( );
 			string version = an.Version?.ToString( ) ?? string.Empty;
 			Text = $"{an.Name} {version}";
-			lblAppTitle.Values.Text = $"HTML Directory List Generator {version}";
+			lblAppTitle.Text = $"HTML Directory List Generator {version}";
 			selectedDirectory = null;
 			selectedDirectoryLabel.Text = "No directory selected";
 			toolStripStatusLabelBrowseTime.Text = string.Empty;

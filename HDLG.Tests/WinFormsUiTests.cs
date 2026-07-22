@@ -1,7 +1,6 @@
 using FluentAssertions;
 using HdlgFileProperty;
 using HDLG_winforms;
-using Krypton.Toolkit;
 using Serilog;
 using System.Reflection;
 using System.Windows.Forms;
@@ -35,28 +34,28 @@ namespace HDLG.Tests
         }
 
         [Fact]
-        public void MainWindow_InitializesWithKryptonDashboardControls()
+        public void MainWindow_InitializesWithDashboardControls()
         {
             RunSta(() =>
             {
                 AppUiBootstrap.Configure();
                 using var window = CreateMainWindow();
 
-                window.Should().BeAssignableTo<KryptonForm>();
-                FindControl<KryptonHeaderGroup>(window, "headerGroupDirectory").Should().NotBeNull();
-                FindControl<KryptonHeaderGroup>(window, "headerGroupExport").Should().NotBeNull();
-                FindControl<KryptonButton>(window, "btnChooseFolder").Should().NotBeNull();
-                FindControl<KryptonButton>(window, "btnStartXml").Should().NotBeNull();
-                FindControl<KryptonButton>(window, "btnStartHtml").Should().NotBeNull();
-                FindControl<KryptonButton>(window, "btnStartUi").Should().NotBeNull();
-                FindControl<KryptonButton>(window, "btnAbout").Should().NotBeNull();
-                FindControl<KryptonProgressBar>(window, "progressBar1").Should().NotBeNull();
-                FindControl<KryptonStatusStrip>(window, "statusStrip1").Should().NotBeNull();
+                window.Should().BeAssignableTo<Form>();
+                FindControl<ModernCardPanel>(window, "headerGroupDirectory").Should().NotBeNull();
+                FindControl<ModernCardPanel>(window, "headerGroupExport").Should().NotBeNull();
+                FindControl<ModernButton>(window, "btnChooseFolder").Should().NotBeNull();
+                FindControl<ModernButton>(window, "btnStartXml").Should().NotBeNull();
+                FindControl<ModernButton>(window, "btnStartHtml").Should().NotBeNull();
+                FindControl<ModernButton>(window, "btnStartUi").Should().NotBeNull();
+                FindControl<ModernButton>(window, "btnAbout").Should().NotBeNull();
+                FindControl<ProgressBar>(window, "progressBar1").Should().NotBeNull();
+                FindControl<StatusStrip>(window, "statusStrip1").Should().NotBeNull();
             });
         }
 
         [Fact]
-        public void BrowserForm_InitializesWithKryptonExplorerControls()
+        public void BrowserForm_InitializesWithExplorerControls()
         {
             RunSta(() =>
             {
@@ -68,11 +67,11 @@ namespace HDLG.Tests
                     using var logger = new LoggerConfiguration().CreateLogger();
                     using var form = new BrowserForm(tempDir, CreatePropertyBrowser(logger), logger);
 
-                    form.Should().BeAssignableTo<KryptonForm>();
-                    FindControl<KryptonTreeView>(form, "treeView1").Should().NotBeNull();
-                    FindControl<KryptonListView>(form, "listViewProperties").Should().NotBeNull();
-                    FindControl<KryptonButton>(form, "btnOpenFile").Should().NotBeNull();
-                    FindControl<KryptonHeaderGroup>(form, "headerGroupExplorer").Should().NotBeNull();
+                    form.Should().BeAssignableTo<Form>();
+                    FindControl<TreeView>(form, "treeView1").Should().NotBeNull();
+                    FindControl<ListView>(form, "listViewProperties").Should().NotBeNull();
+                    FindControl<ModernButton>(form, "btnOpenFile").Should().NotBeNull();
+                    FindControl<ModernCardPanel>(form, "headerGroupExplorer").Should().NotBeNull();
                 }
                 finally
                 {
@@ -92,9 +91,9 @@ namespace HDLG.Tests
                 AppUiBootstrap.Configure();
                 using var form = new Credit();
 
-                form.Should().BeAssignableTo<KryptonForm>();
-                FindControl<KryptonLabel>(form, "lblTitle").Should().NotBeNull();
-                FindControl<KryptonLinkLabel>(form, "labelGPL").Should().NotBeNull();
+                form.Should().BeAssignableTo<Form>();
+                FindControl<Label>(form, "lblTitle").Should().NotBeNull();
+                FindControl<LinkLabel>(form, "labelGPL").Should().NotBeNull();
                 FindControl<PictureBox>(form, "pictureBox1").Should().NotBeNull();
                 form.Text.Should().Be("About");
             });

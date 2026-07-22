@@ -6,12 +6,19 @@
 
 ## 2026-06-26 - WinForms UI Structural Tests
 
-**Learning:** WinForms/Krypton form instantiation requires an STA thread. Use a dedicated STA thread wrapper in tests (`WinFormsUiTests.RunSta`) rather than assuming the default xUnit thread apartment state.
+**Learning:** WinForms form instantiation requires an STA thread. Use a dedicated STA thread wrapper in tests (`WinFormsUiTests.RunSta`) rather than assuming the default xUnit thread apartment state.
 
-**Action:** UI tests should validate control presence and form type (`KryptonForm`, key `Krypton*` controls) without requiring visual rendering or user input simulation.
+**Action:** UI tests should validate control presence and form type (`Form`, key `ModernCardPanel`, `ModernButton` controls) without requiring visual rendering or user input simulation.
 
 ## 2026-06-26 - Branding Tests
 
 **Learning:** Logo tests (`AppBrandingTests`, `AppLogoRendererTests`) belong to the serialized `WinFormsUiTestCollection` to avoid GDI+ cross-thread conflicts with other tests.
 
 **Action:** After editing SVG sources under `HDLG winforms/Assets/`, run `scripts/GenerateAppLogoAssets.ps1` (Inkscape) before validating UI assets manually.
+
+## 2026-07-22 - Codebase Audit & Documentation Alignment
+
+**Learning:** Keeping project documentation synchronized across `README.md`, `AGENTS.md`, `ANTIGRAVITY.md`, and `.jules/` requires tracking UI component evolutions (e.g. `ModernControls.cs`), NuGet package versions (`Microsoft.Extensions.Hosting` 10.0.10, `PdfPig` 0.1.15, `Serilog` 4.4.0), and test suite counts (240 unit & UI tests).
+
+**Action:** Perform regular solution-wide audits and maintain strict language rules (English for code/commits/README, French for AGENTS/ANTIGRAVITY).
+

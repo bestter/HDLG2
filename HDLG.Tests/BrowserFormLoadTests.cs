@@ -3,7 +3,6 @@ using System.Reflection;
 using FluentAssertions;
 using HdlgFileProperty;
 using HDLG_winforms;
-using Krypton.Toolkit;
 using Moq;
 using Serilog;
 using System.Windows.Forms;
@@ -38,9 +37,7 @@ namespace HDLG.Tests
 
         /// <summary>
         /// Verifies IOException handling on directory expand.
-        /// Note: KryptonTreeView swallows exceptions thrown from BeforeExpand event handlers, so
-        /// BrowserForm_Load's try/catch around rootNode.Expand() is not reachable for event-sourced
-        /// failures. The real IO path is TreeView1_BeforeExpand (async), which surfaces "IO Error".
+        /// The real IO path is TreeView1_BeforeExpand (async), which surfaces "IO Error".
         /// </summary>
         [Fact]
         public void BrowserForm_BeforeExpand_CatchesIOException_And_ShowsIOErrorNode()
@@ -69,12 +66,11 @@ namespace HDLG.Tests
                     var propBrowser = new FilePropertyBrowser(mockLogger.Object, new ImagePropertyGetter());
                     using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object);
 
-                    // Native handles required so Expand raises BeforeExpand through Krypton's internal TreeView.
+                    // Native handles required so Expand raises BeforeExpand.
                     _ = form.Handle;
                     var treeViewField = form.GetType().GetField("treeView1", BindingFlags.Instance | BindingFlags.NonPublic);
-                    var treeView = (KryptonTreeView)treeViewField!.GetValue(form)!;
+                    var treeView = (TreeView)treeViewField!.GetValue(form)!;
                     _ = treeView.Handle;
-                    _ = treeView.TreeView.Handle;
 
                     // Remove the directory after construction so Expand's enumeration throws IOException.
                     System.IO.Directory.Delete(tempDir, true);

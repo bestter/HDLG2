@@ -8,7 +8,6 @@ HTML Directory List Generator is distributed in the hope that it will be useful,
 You should have received a copy of the GNU General Public License along with HTML Directory List Generator. If not, see <https://www.gnu.org/licenses/>. 
  */
 using HdlgFileProperty;
-using Krypton.Toolkit;
 using Serilog;
 using System.Diagnostics;
 using System.Globalization;
@@ -16,7 +15,7 @@ using System.Security;
 
 namespace HDLG_winforms
 {
-	public partial class BrowserForm : KryptonForm
+	public partial class BrowserForm : Form
 	{
 		private readonly string rootDirectory;
 		private readonly string _resolvedRootDirectory;
@@ -198,14 +197,14 @@ namespace HDLG_winforms
 
 			if (e.Node == null || e.Node.Tag is not NodeInfo info)
 			{
-				lblSelectedFileName.Values.Text = "Select a file to view properties";
+				lblSelectedFileName.Text = "Select a file to view properties";
 				return;
 			}
 
 			if (info.IsDirectory)
 			{
 				var dirInfo = new DirectoryInfo( info.Path );
-				lblSelectedFileName.Values.Text = dirInfo.Name;
+				lblSelectedFileName.Text = dirInfo.Name;
 				return;
 			}
 
@@ -222,7 +221,7 @@ namespace HDLG_winforms
 					return;
 				}
 
-				lblSelectedFileName.Values.Text = fileInfo.Name;
+				lblSelectedFileName.Text = fileInfo.Name;
 
 				listViewProperties.BeginUpdate( );
 				try
