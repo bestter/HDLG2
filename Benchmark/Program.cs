@@ -39,11 +39,11 @@ namespace Benchmark
             for (int i = 0; i < iterations; i++)
             {
                 var dir = new HdlgDirectory(testDir, true, true, Log.Logger);
-                var sw = Stopwatch.StartNew();
+                long startTimestamp = Stopwatch.GetTimestamp();
                 await dir.BrowseAsync(propertyBrowser);
-                sw.Stop();
-                totalMs += sw.ElapsedMilliseconds;
-                Console.WriteLine($"Iteration {i}: {sw.ElapsedMilliseconds} ms (Dirs: {dir.TotalDirectories}, Files: {dir.TotalFiles})");
+                var elapsed = Stopwatch.GetElapsedTime(startTimestamp);
+                totalMs += (long)elapsed.TotalMilliseconds;
+                Console.WriteLine($"Iteration {i}: {elapsed.TotalMilliseconds} ms (Dirs: {dir.TotalDirectories}, Files: {dir.TotalFiles})");
             }
 
             Console.WriteLine($"Average: {totalMs / (double)iterations} ms");

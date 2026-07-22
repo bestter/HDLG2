@@ -180,12 +180,12 @@ toolStripStatusLabelTotalTime.Visible = false;
 			{
 				Logger.Information( "{SelectedDirectory}", selecteDirectory );
 				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
-				Stopwatch stopwatch = Stopwatch.StartNew( );
+				long startTimestamp = Stopwatch.GetTimestamp( );
 
 				Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
 				await directory.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
 				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.BrowseAsync ), directory.Name );
-				TimeSpan browseTime = stopwatch.Elapsed;
+				TimeSpan browseTime = Stopwatch.GetElapsedTime( startTimestamp );
 				propertyBrowser.LogGetterStatistics( );
 
 				DirectoryBrowser db = new( Logger );
@@ -194,11 +194,11 @@ toolStripStatusLabelTotalTime.Visible = false;
 				await db.SaveAsXMLAsync( saveFilePath, directory ).ConfigureAwait( false );
 
 				Logger.Debug( "{MethodName} done", nameof( DirectoryBrowser.SaveAsXMLAsync ) );
-				stopwatch.Stop( );
+				TimeSpan totalTime = Stopwatch.GetElapsedTime( startTimestamp );
 
-				TimeSpan saveTime = stopwatch.Elapsed - browseTime;
+				TimeSpan saveTime = totalTime - browseTime;
 
-				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
+				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = totalTime };
 
 				Logger.Information( "Done at {EndTime:T}", DateTime.Now );
 				return result;
@@ -478,11 +478,11 @@ toolStripStatusLabelTotalTime.Visible = false;
 			{
 				Logger.Information( "{SelectedDirectory}", selecteDirectory );
 				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
-				Stopwatch stopwatch = Stopwatch.StartNew( );
+				long startTimestamp = Stopwatch.GetTimestamp( );
 				Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
 				await directory.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
 				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.BrowseAsync ), directory.Name );
-				TimeSpan browseTime = stopwatch.Elapsed;
+				TimeSpan browseTime = Stopwatch.GetElapsedTime( startTimestamp );
 				propertyBrowser.LogGetterStatistics( );
 
 				DirectoryBrowser db = new( Logger );
@@ -491,10 +491,10 @@ toolStripStatusLabelTotalTime.Visible = false;
 				await db.SaveAsHTMLAsync( saveFilePath, directory ).ConfigureAwait( false );
 
 				Logger.Debug( "{MethodName} done", nameof( DirectoryBrowser.SaveAsHTMLAsync ) );
-				stopwatch.Stop( );
-				TimeSpan saveTime = stopwatch.Elapsed - browseTime;
+				TimeSpan totalTime = Stopwatch.GetElapsedTime( startTimestamp );
+				TimeSpan saveTime = totalTime - browseTime;
 
-				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
+				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = totalTime };
 				Logger.Information( "Done at {EndTime:T}", DateTime.Now );
 				return result;
 			}
