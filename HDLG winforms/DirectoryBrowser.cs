@@ -526,7 +526,7 @@ namespace HDLG_winforms
 			await writer.WriteLineAsync( spacer + "<div class=\"file\">" ).ConfigureAwait( false );
 
 			string encodedName = WebUtility.HtmlEncode( file.Name );
-			string fileUri = Uri.TryCreate( file.Path, UriKind.Absolute, out Uri? uri ) ? uri.AbsoluteUri : "file:///" + file.Path.Replace( '\\', '/' );
+			string fileUri = "file:///" + string.Join("/", file.Path.Split('\\', '/').Select(p => p.EndsWith(":", StringComparison.Ordinal) ? p : Uri.EscapeDataString(p)));
 			string encodedFileUri = WebUtility.HtmlEncode( fileUri );
 			await writer.WriteLineAsync( $"{spacer}\t<a href=\"{encodedFileUri}\" download=\"{encodedName}\" referrerpolicy=\"strict-origin\">{encodedName}</a>" ).ConfigureAwait( false );
 
