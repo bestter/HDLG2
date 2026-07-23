@@ -129,34 +129,36 @@ namespace HDLG_winforms
 					} ).ConfigureAwait( true );
 
 					// Safe WinForms practice: construct TreeNodes on the UI thread after I/O is complete
-					// Performance optimization: Use a single traversal with heuristically sized Lists
-					// to avoid the O(n) overhead of redundant double traversal arrays logic.
-					var dirNodes = new List<TreeNode>( fsInfos.Length / 2 );
-					var fileNodes = new List<TreeNode>( fsInfos.Length / 2 );
+					// Performance optimization: Use a single List to gather all nodes with capacity sized to exact need.
+					// This prevents List resizing allocations and allows a single array allocation for AddRange.
+					// We iterate twice to ensure directories appear before files, avoiding expensive List.Insert operations.
+					var allNodes = new List<TreeNode>( fsInfos.Length );
 
 					for (int i = 0; i < fsInfos.Length; i++)
 					{
-						var fsInfo = fsInfos [i];
-						if (fsInfo is DirectoryInfo dir)
+						if (fsInfos [i] is DirectoryInfo dir)
 						{
 							if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;
 
 							var node = new TreeNode( dir.Name );
 							node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
 							node.Nodes.Add( new TreeNode( "Loading..." ) );
-							dirNodes.Add( node );
+							allNodes.Add( node );
 						}
-						else if (fsInfo is FileInfo file)
+					}
+
+					for (int i = 0; i < fsInfos.Length; i++)
+					{
+						if (fsInfos [i] is FileInfo file)
 						{
 							var node = new TreeNode( file.Name );
 							node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
-							fileNodes.Add( node );
+							allNodes.Add( node );
 						}
 					}
 
 					e.Node.TreeView?.BeginUpdate( );
-					e.Node.Nodes.AddRange( dirNodes.ToArray( ) );
-					e.Node.Nodes.AddRange( fileNodes.ToArray( ) );
+					e.Node.Nodes.AddRange( allNodes.ToArray( ) );
 					e.Node.TreeView?.EndUpdate( );
 				}
 				catch (UnauthorizedAccessException ex)
