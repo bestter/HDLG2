@@ -129,10 +129,11 @@ namespace HDLG_winforms
 					} ).ConfigureAwait( true );
 
 					// Safe WinForms practice: construct TreeNodes on the UI thread after I/O is complete
-					// Performance optimization: Use a single List to gather all nodes with capacity sized to exact need.
-					// This prevents List resizing allocations and allows a single array allocation for AddRange.
-					// We iterate twice to ensure directories appear before files, avoiding expensive List.Insert operations.
-					var allNodes = new List<TreeNode>( fsInfos.Length );
+					// Performance optimization: Use two lists with heuristic initial capacities (Length / 2)
+					// to gather nodes in a single pass over fsInfos, avoiding redundant double traversal.
+					// We combine them into an exact-sized array to avoid .ToArray() overhead on lists with excess capacity.
+					var dirNodes = new List<TreeNode>( fsInfos.Length / 2 );
+					var fileNodes = new List<TreeNode>( fsInfos.Length / 2 );
 
 					for (int i = 0; i < fsInfos.Length; i++)
 					{
@@ -143,22 +144,22 @@ namespace HDLG_winforms
 							var node = new TreeNode( dir.Name );
 							node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
 							node.Nodes.Add( new TreeNode( "Loading..." ) );
-							allNodes.Add( node );
+							dirNodes.Add( node );
 						}
-					}
-
-					for (int i = 0; i < fsInfos.Length; i++)
-					{
-						if (fsInfos [i] is FileInfo file)
+						else if (fsInfos [i] is FileInfo file)
 						{
 							var node = new TreeNode( file.Name );
 							node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
-							allNodes.Add( node );
+							fileNodes.Add( node );
 						}
 					}
 
+					var allNodes = new TreeNode[dirNodes.Count + fileNodes.Count];
+					dirNodes.CopyTo( allNodes, 0 );
+					fileNodes.CopyTo( allNodes, dirNodes.Count );
+
 					e.Node.TreeView?.BeginUpdate( );
-					e.Node.Nodes.AddRange( allNodes.ToArray( ) );
+					e.Node.Nodes.AddRange( allNodes );
 					e.Node.TreeView?.EndUpdate( );
 				}
 				catch (UnauthorizedAccessException ex)
@@ -250,7 +251,7 @@ namespace HDLG_winforms
 					return;
 				}
 
-				if (props != null && props.Count > 0)
+				if (props != null)
 				{
 					listViewProperties.BeginUpdate( );
 					try
