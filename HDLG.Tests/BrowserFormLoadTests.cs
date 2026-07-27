@@ -18,13 +18,22 @@ namespace HDLG.Tests
             Exception? caught = null;
             var thread = new Thread(() =>
             {
+                var syncContext = new WindowsFormsSynchronizationContext();
+                SynchronizationContext.SetSynchronizationContext(syncContext);
                 try
                 {
                     action();
+                    Application.DoEvents();
                 }
                 catch (Exception ex)
                 {
                     caught = ex;
+                }
+                finally
+                {
+                    Application.DoEvents();
+                    SynchronizationContext.SetSynchronizationContext(null);
+                    syncContext.Dispose();
                 }
             });
             thread.SetApartmentState(ApartmentState.STA);
@@ -65,14 +74,9 @@ namespace HDLG.Tests
                         });
 
                     var propBrowser = new FilePropertyBrowser(mockLogger.Object, new ImagePropertyGetter());
-                    using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object);
+                    using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object, _ => { });
 
-                    // Hook the TreeView's BeforeExpand event to throw a SecurityException.
-                    // This is triggered synchronously during BrowserForm_Load when rootNode.Expand() is called.
-                    var treeViewField = form.GetType().GetField("treeView1", BindingFlags.Instance | BindingFlags.NonPublic);
-                    var treeView = (TreeView)treeViewField!.GetValue(form)!;
-
-                    treeView.BeforeExpand += (s, e) => throw new SecurityException("Injected SecurityException");
+                    form._loadHook = () => throw new SecurityException("Injected SecurityException");
 
                     var loadMethod = form.GetType().GetMethod("BrowserForm_Load", BindingFlags.Instance | BindingFlags.NonPublic);
                     loadMethod!.Invoke(form, new object[] { form, EventArgs.Empty });
@@ -114,7 +118,7 @@ namespace HDLG.Tests
                         });
 
                     var propBrowser = new FilePropertyBrowser(mockLogger.Object, new ImagePropertyGetter());
-                    using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object);
+                    using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object, _ => { });
 
                     // Native handles required so Expand raises BeforeExpand.
                     _ = form.Handle;
@@ -186,7 +190,7 @@ namespace HDLG.Tests
                         });
 
                     var propBrowser = new FilePropertyBrowser(mockLogger.Object, new ImagePropertyGetter());
-                    using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object);
+                    using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object, _ => { });
 
                     // Native handles required so Expand raises BeforeExpand.
                     _ = form.Handle;
