@@ -24,6 +24,8 @@ namespace HDLG_winforms
 		private readonly ILogger logger;
 		private readonly Action<string>? _showError;
 
+		internal Func<string, FileSystemInfo[]> _getFileSystemInfosHook = path => new DirectoryInfo(path).GetFileSystemInfos();
+
 		public BrowserForm (string rootDirectory, FilePropertyBrowser propertyBrowser, ILogger logger, Action<string>? showError = null)
 		{
 			InitializeComponent( );
@@ -55,12 +57,14 @@ namespace HDLG_winforms
 			catch (UnauthorizedAccessException ex)
 			{
 				logger.Warning( ex, "Access denied loading root directory in BrowserForm" );
-				MessageBox.Show( this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+				if (_showError != null) _showError( "Error: Access Denied." );
+				else MessageBox.Show( this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 			catch (SecurityException ex)
 			{
 				logger.Warning( ex, "Security exception loading root directory in BrowserForm" );
-				MessageBox.Show( this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+				if (_showError != null) _showError( "Error: Access Denied." );
+				else MessageBox.Show( this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 			catch (IOException ex)
 			{
@@ -72,7 +76,8 @@ namespace HDLG_winforms
 			catch (Exception ex)
 			{
 				logger.Error( ex, "Error loading root directory in BrowserForm" );
-				MessageBox.Show( this, "An unexpected error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+				if (_showError != null) _showError( "An unexpected error occurred while loading the directory." );
+				else MessageBox.Show( this, "An unexpected error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 #pragma warning restore CA1031 // Do not catch general exception types
 		}
@@ -124,15 +129,15 @@ namespace HDLG_winforms
 					// due to avoiding List capacity resizing and allowing exact allocation of the TreeNode array.
 					var fsInfos = await Task.Run( () =>
 					{
-						var dirInfo = new DirectoryInfo( info.Path );
-						return dirInfo.GetFileSystemInfos( );
+						return _getFileSystemInfosHook( info.Path );
 					} ).ConfigureAwait( true );
 
 					// Safe WinForms practice: construct TreeNodes on the UI thread after I/O is complete
-					// Performance optimization: Use a single List to gather all nodes with capacity sized to exact need.
-					// This prevents List resizing allocations and allows a single array allocation for AddRange.
-					// We iterate twice to ensure directories appear before files, avoiding expensive List.Insert operations.
-					var allNodes = new List<TreeNode>( fsInfos.Length );
+					// Performance optimization: Use two lists with heuristic initial capacities (Length / 2)
+					// to gather nodes in a single pass over fsInfos, avoiding redundant double traversal.
+					// We combine them into an exact-sized array to avoid .ToArray() overhead on lists with excess capacity.
+					var dirNodes = new List<TreeNode>( fsInfos.Length / 2 );
+					var fileNodes = new List<TreeNode>( fsInfos.Length / 2 );
 
 					for (int i = 0; i < fsInfos.Length; i++)
 					{
@@ -143,22 +148,22 @@ namespace HDLG_winforms
 							var node = new TreeNode( dir.Name );
 							node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
 							node.Nodes.Add( new TreeNode( "Loading..." ) );
-							allNodes.Add( node );
+							dirNodes.Add( node );
 						}
-					}
-
-					for (int i = 0; i < fsInfos.Length; i++)
-					{
-						if (fsInfos [i] is FileInfo file)
+						else if (fsInfos [i] is FileInfo file)
 						{
 							var node = new TreeNode( file.Name );
 							node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
-							allNodes.Add( node );
+							fileNodes.Add( node );
 						}
 					}
 
+					var allNodes = new TreeNode[dirNodes.Count + fileNodes.Count];
+					dirNodes.CopyTo( allNodes, 0 );
+					fileNodes.CopyTo( allNodes, dirNodes.Count );
+
 					e.Node.TreeView?.BeginUpdate( );
-					e.Node.Nodes.AddRange( allNodes.ToArray( ) );
+					e.Node.Nodes.AddRange( allNodes );
 					e.Node.TreeView?.EndUpdate( );
 				}
 				catch (UnauthorizedAccessException ex)
@@ -250,7 +255,7 @@ namespace HDLG_winforms
 					return;
 				}
 
-				if (props != null && props.Count > 0)
+				if (props != null)
 				{
 					listViewProperties.BeginUpdate( );
 					try
