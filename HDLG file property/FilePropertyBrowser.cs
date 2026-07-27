@@ -156,7 +156,7 @@ namespace HdlgFileProperty
 
             try
             {
-                var result = await task.WaitAsync(propertyExtractionTimeout, cts.Token).ConfigureAwait(false);
+                var result = await task.WaitAsync(propertyExtractionTimeout).ConfigureAwait(false);
                 return result;
             }
             catch (TimeoutException)

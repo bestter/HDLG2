@@ -193,15 +193,6 @@ namespace HDLG.Tests
                             }
                         });
 
-                    var propBrowser = new FilePropertyBrowser(mockLogger.Object, new ImagePropertyGetter());
-                    using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object, _ => { });
-
-                    // Native handles required so Expand raises BeforeExpand.
-                    _ = form.Handle;
-                    var treeViewField = form.GetType().GetField("treeView1", BindingFlags.Instance | BindingFlags.NonPublic);
-                    var treeView = (TreeView)treeViewField!.GetValue(form)!;
-                    _ = treeView.Handle;
-
                     string restrictedDirPath = Path.Combine(tempDir, "RestrictedDir");
                     System.IO.Directory.CreateDirectory(restrictedDirPath);
 
@@ -219,6 +210,16 @@ namespace HDLG.Tests
                     {
                         System.IO.File.SetUnixFileMode(restrictedDirPath, System.IO.UnixFileMode.None);
                     }
+
+                    var propBrowser = new FilePropertyBrowser(mockLogger.Object, new ImagePropertyGetter());
+                    using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object, _ => { });
+
+                    // Native handles required so Expand raises BeforeExpand.
+                    _ = form.Handle;
+                    var treeViewField = form.GetType().GetField("treeView1", BindingFlags.Instance | BindingFlags.NonPublic);
+                    var treeView = (KryptonTreeView)treeViewField!.GetValue(form)!;
+                    _ = treeView.Handle;
+                    _ = treeView.TreeView.Handle;
 
                     var loadMethod = form.GetType().GetMethod("BrowserForm_Load", BindingFlags.Instance | BindingFlags.NonPublic);
                     loadMethod!.Invoke(form, new object[] { form, EventArgs.Empty });

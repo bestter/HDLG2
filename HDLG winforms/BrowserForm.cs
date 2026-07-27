@@ -104,6 +104,18 @@ namespace HDLG_winforms
 				|| string.Equals( resolvedPath, _resolvedRootDirectory, StringComparison.OrdinalIgnoreCase );
 		}
 
+		private static bool IsReparsePoint (FileSystemInfo info)
+		{
+			try
+			{
+				return (info.Attributes & FileAttributes.ReparsePoint) != 0;
+			}
+			catch (Exception ex) when (ex is UnauthorizedAccessException or SecurityException or IOException)
+			{
+				return false;
+			}
+		}
+
 		private async void TreeView1_BeforeExpand (object sender, TreeViewCancelEventArgs e)
 		{
 			if (e.Node == null || e.Node.Tag is not NodeInfo info || !info.IsDirectory)
@@ -146,7 +158,7 @@ namespace HDLG_winforms
 						var fsInfo = fsInfos [i];
 						if (fsInfo is DirectoryInfo dir)
 						{
-							if ((dir.Attributes & FileAttributes.ReparsePoint) == 0)
+							if (!IsReparsePoint( dir ))
 								dirCount++;
 						}
 						else if (fsInfo is FileInfo)
@@ -166,7 +178,7 @@ namespace HDLG_winforms
 						var fsInfo = fsInfos [i];
 						if (fsInfo is DirectoryInfo dir)
 						{
-							if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;
+							if (IsReparsePoint( dir )) continue;
 
 							var node = new TreeNode( dir.Name );
 							node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
