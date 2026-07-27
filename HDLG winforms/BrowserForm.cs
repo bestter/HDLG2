@@ -25,6 +25,7 @@ namespace HDLG_winforms
 		private readonly Action<string>? _showError;
 
 		internal Func<string, FileSystemInfo[]> _getFileSystemInfosHook = path => new DirectoryInfo(path).GetFileSystemInfos();
+		internal Action? _loadHook;
 
 		public BrowserForm (string rootDirectory, FilePropertyBrowser propertyBrowser, ILogger logger, Action<string>? showError = null)
 		{
@@ -48,6 +49,7 @@ namespace HDLG_winforms
 		{
 			try
 			{
+				_loadHook?.Invoke( );
 				var rootNode = new TreeNode( rootDirectory );
 				rootNode.Tag = new NodeInfo { IsDirectory = true, Path = rootDirectory };
 				rootNode.Nodes.Add( new TreeNode( "Loading..." ) );
@@ -162,36 +164,65 @@ namespace HDLG_winforms
 					dirNodes.CopyTo( allNodes, 0 );
 					fileNodes.CopyTo( allNodes, dirNodes.Count );
 
-					e.Node.TreeView?.BeginUpdate( );
-					e.Node.Nodes.AddRange( allNodes );
-					e.Node.TreeView?.EndUpdate( );
+					PopulateChildNodes( e.Node, allNodes );
 				}
 				catch (UnauthorizedAccessException ex)
 				{
 					logger.Warning( ex, "Access denied to directory: {Path}", info.Path );
-					e.Node.Nodes.Add( new TreeNode( "Access Denied" ) );
+					AddErrorNode( e.Node, "Access Denied" );
 				}
 				catch (SecurityException ex)
 				{
 					logger.Warning( ex, "Security exception accessing directory: {Path}", info.Path );
-					e.Node.Nodes.Add( new TreeNode( "Access Denied" ) );
+					AddErrorNode( e.Node, "Access Denied" );
 				}
 				catch (IOException ex)
 				{
 					logger.Error( ex, "IO Error loading directory: {Path}", info.Path );
-					e.Node.Nodes.Add( new TreeNode( "IO Error" ) );
+					AddErrorNode( e.Node, "IO Error" );
 				}
 #pragma warning disable CA1031 // Do not catch general exception types
 				catch (Exception ex)
 				{
 					logger.Error( ex, "Error loading directory: {Path}", info.Path );
-					e.Node.Nodes.Add( new TreeNode( "Error" ) );
+					AddErrorNode( e.Node, "Error" );
 				}
 #pragma warning restore CA1031 // Do not catch general exception types
 				finally
 				{
 					Cursor = Cursors.Default;
 				}
+			}
+		}
+
+		private void AddErrorNode(TreeNode targetNode, string text)
+		{
+			if (InvokeRequired)
+			{
+				Invoke( () => targetNode.Nodes.Add( new TreeNode( text ) ) );
+			}
+			else
+			{
+				targetNode.Nodes.Add( new TreeNode( text ) );
+			}
+		}
+
+		private void PopulateChildNodes(TreeNode targetNode, TreeNode[] childNodes)
+		{
+			if (InvokeRequired)
+			{
+				Invoke( () =>
+				{
+					targetNode.TreeView?.BeginUpdate( );
+					targetNode.Nodes.AddRange( childNodes );
+					targetNode.TreeView?.EndUpdate( );
+				} );
+			}
+			else
+			{
+				targetNode.TreeView?.BeginUpdate( );
+				targetNode.Nodes.AddRange( childNodes );
+				targetNode.TreeView?.EndUpdate( );
 			}
 		}
 
