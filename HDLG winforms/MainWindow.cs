@@ -216,7 +216,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 		private static readonly HashSet<string> DangerousExtensions = new( StringComparer.OrdinalIgnoreCase )
 		{
 			// Executables, scripts, and shell hosts
-			".exe", ".bat", ".cmd", ".ps1", ".ps1xml", ".psc1", ".psd1", ".vbs", ".vbe", ".vb", ".js", ".jse",
+			".exe", ".bat", ".cmd", ".ps1", ".ps1xml", ".psc1", ".psd1", ".vbs", ".vbe", ".vb", ".js", ".jse", ".py", ".pyw", ".sh", ".bash",
 			".wsf", ".wsh", ".ws", ".wsc", ".sct", ".scr", ".com", ".msi", ".msp", ".pif", ".hta", ".cpl",
 			".jar", ".jnlp", ".reg", ".lnk", ".msc", ".scf", ".shb", ".shs",
 			// Native libraries and drivers (ShellExecute / rundll32 / registration vectors)
@@ -242,7 +242,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			".mp4", ".avi", ".mkv", ".mov", ".wmv", ".webm", ".flv",
 			".html", ".htm", ".xml", ".json", ".yaml", ".yml", ".md", ".log",
 			".zip", ".rar", ".7z", ".tar", ".gz", ".bz2",
-			".cs", ".cpp", ".h", ".c", ".java", ".py", ".ts", ".jsx", ".tsx", ".css"
+			".cs", ".cpp", ".h", ".c", ".java", ".ts", ".jsx", ".tsx", ".css"
 		};
 
 		/// <summary>
@@ -260,7 +260,8 @@ toolStripStatusLabelTotalTime.Visible = false;
 				OpenWithDefaultProgram( path, p =>
 				{
 					using Process fileopener = new( );
-					fileopener.StartInfo = new ProcessStartInfo( "explorer.exe", $"\"{p}\"" )
+					string explorerPath = System.IO.Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "explorer.exe" );
+					fileopener.StartInfo = new ProcessStartInfo( explorerPath, $"\"{p}\"" )
 					{
 						UseShellExecute = false,
 						WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )

@@ -79,11 +79,12 @@ namespace HDLG_winforms
 			}
 			files.Sort( );
 
+			var tasks = new Task [directories.Count];
 			for (int i = 0; i < directories.Count; i++)
 			{
-				Directory d = directories [i];
-				await d.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
+				tasks [i] = directories [i].BrowseAsync( propertyBrowser );
 			}
+			await Task.WhenAll( tasks ).ConfigureAwait( false );
 		}
 
 		public override string ToString () { return Path; }

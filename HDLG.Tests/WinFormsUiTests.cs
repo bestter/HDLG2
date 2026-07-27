@@ -16,13 +16,22 @@ namespace HDLG.Tests
             Exception? caught = null;
             var thread = new Thread(() =>
             {
+                var syncContext = new WindowsFormsSynchronizationContext();
+                SynchronizationContext.SetSynchronizationContext(syncContext);
                 try
                 {
                     action();
+                    Application.DoEvents();
                 }
                 catch (Exception ex)
                 {
                     caught = ex;
+                }
+                finally
+                {
+                    Application.DoEvents();
+                    SynchronizationContext.SetSynchronizationContext(null);
+                    syncContext.Dispose();
                 }
             });
             thread.SetApartmentState(ApartmentState.STA);

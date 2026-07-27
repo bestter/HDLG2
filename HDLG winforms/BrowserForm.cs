@@ -25,6 +25,9 @@ namespace HDLG_winforms
 		private readonly ILogger logger;
 		private readonly Action<string>? _showError;
 
+		internal Func<string, FileSystemInfo[]> _getFileSystemInfosHook = path => new DirectoryInfo(path).GetFileSystemInfos();
+		internal Action? _loadHook;
+
 		public BrowserForm (string rootDirectory, FilePropertyBrowser propertyBrowser, ILogger logger, Action<string>? showError = null)
 		{
 			InitializeComponent( );
@@ -47,6 +50,7 @@ namespace HDLG_winforms
 		{
 			try
 			{
+				_loadHook?.Invoke( );
 				var rootNode = new TreeNode( rootDirectory );
 				rootNode.Tag = new NodeInfo { IsDirectory = true, Path = rootDirectory };
 				rootNode.Nodes.Add( new TreeNode( "Loading..." ) );
@@ -56,12 +60,14 @@ namespace HDLG_winforms
 			catch (UnauthorizedAccessException ex)
 			{
 				logger.Warning( ex, "Access denied loading root directory in BrowserForm" );
-				MessageBox.Show( this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+				if (_showError != null) _showError( "Error: Access Denied." );
+				else MessageBox.Show( this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 			catch (SecurityException ex)
 			{
 				logger.Warning( ex, "Security exception loading root directory in BrowserForm" );
-				MessageBox.Show( this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+				if (_showError != null) _showError( "Error: Access Denied." );
+				else MessageBox.Show( this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 			catch (IOException ex)
 			{
@@ -73,7 +79,8 @@ namespace HDLG_winforms
 			catch (Exception ex)
 			{
 				logger.Error( ex, "Error loading root directory in BrowserForm" );
-				MessageBox.Show( this, "An unexpected error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+				if (_showError != null) _showError( "An unexpected error occurred while loading the directory." );
+				else MessageBox.Show( this, "An unexpected error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 #pragma warning restore CA1031 // Do not catch general exception types
 		}
@@ -125,8 +132,7 @@ namespace HDLG_winforms
 					// due to avoiding List capacity resizing and allowing exact allocation of the TreeNode array.
 					var fsInfos = await Task.Run( () =>
 					{
-						var dirInfo = new DirectoryInfo( info.Path );
-						return dirInfo.GetFileSystemInfos( );
+						return _getFileSystemInfosHook( info.Path );
 					} ).ConfigureAwait( true );
 
 					// Safe WinForms practice: construct TreeNodes on the UI thread after I/O is complete
@@ -183,29 +189,60 @@ namespace HDLG_winforms
 				catch (UnauthorizedAccessException ex)
 				{
 					logger.Warning( ex, "Access denied to directory: {Path}", info.Path );
-					e.Node.Nodes.Add( new TreeNode( "Access Denied" ) );
+					AddErrorNode( e.Node, "Access Denied" );
 				}
 				catch (SecurityException ex)
 				{
 					logger.Warning( ex, "Security exception accessing directory: {Path}", info.Path );
-					e.Node.Nodes.Add( new TreeNode( "Access Denied" ) );
+					AddErrorNode( e.Node, "Access Denied" );
 				}
 				catch (IOException ex)
 				{
 					logger.Error( ex, "IO Error loading directory: {Path}", info.Path );
-					e.Node.Nodes.Add( new TreeNode( "IO Error" ) );
+					AddErrorNode( e.Node, "IO Error" );
 				}
 #pragma warning disable CA1031 // Do not catch general exception types
 				catch (Exception ex)
 				{
 					logger.Error( ex, "Error loading directory: {Path}", info.Path );
-					e.Node.Nodes.Add( new TreeNode( "Error" ) );
+					AddErrorNode( e.Node, "Error" );
 				}
 #pragma warning restore CA1031 // Do not catch general exception types
 				finally
 				{
 					Cursor = Cursors.Default;
 				}
+			}
+		}
+
+		private void AddErrorNode(TreeNode targetNode, string text)
+		{
+			if (InvokeRequired)
+			{
+				Invoke( () => targetNode.Nodes.Add( new TreeNode( text ) ) );
+			}
+			else
+			{
+				targetNode.Nodes.Add( new TreeNode( text ) );
+			}
+		}
+
+		private void PopulateChildNodes(TreeNode targetNode, TreeNode[] childNodes)
+		{
+			if (InvokeRequired)
+			{
+				Invoke( () =>
+				{
+					targetNode.TreeView?.BeginUpdate( );
+					targetNode.Nodes.AddRange( childNodes );
+					targetNode.TreeView?.EndUpdate( );
+				} );
+			}
+			else
+			{
+				targetNode.TreeView?.BeginUpdate( );
+				targetNode.Nodes.AddRange( childNodes );
+				targetNode.TreeView?.EndUpdate( );
 			}
 		}
 
@@ -269,7 +306,7 @@ namespace HDLG_winforms
 					return;
 				}
 
-				if (props != null && props.Count > 0)
+				if (props != null)
 				{
 					listViewProperties.BeginUpdate( );
 					try

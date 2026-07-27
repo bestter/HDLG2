@@ -6,6 +6,7 @@ using HDLG_winforms;
 using Krypton.Toolkit;
 using Moq;
 using Serilog;
+using System.Security;
 using System.Windows.Forms;
 
 namespace HDLG.Tests
@@ -18,13 +19,22 @@ namespace HDLG.Tests
             Exception? caught = null;
             var thread = new Thread(() =>
             {
+                var syncContext = new WindowsFormsSynchronizationContext();
+                SynchronizationContext.SetSynchronizationContext(syncContext);
                 try
                 {
                     action();
+                    Application.DoEvents();
                 }
                 catch (Exception ex)
                 {
                     caught = ex;
+                }
+                finally
+                {
+                    Application.DoEvents();
+                    SynchronizationContext.SetSynchronizationContext(null);
+                    syncContext.Dispose();
                 }
             });
             thread.SetApartmentState(ApartmentState.STA);
@@ -42,6 +52,50 @@ namespace HDLG.Tests
         /// BrowserForm_Load's try/catch around rootNode.Expand() is not reachable for event-sourced
         /// failures. The real IO path is TreeView1_BeforeExpand (async), which surfaces "IO Error".
         /// </summary>
+        [Fact]
+        public void BrowserForm_Load_CatchesSecurityException_And_LogsWarning()
+        {
+            RunSta(() =>
+            {
+                AppUiBootstrap.Configure();
+                string tempDir = Path.Combine(Path.GetTempPath(), "HDLG_UiTests_BrowserFormSec_" + Guid.NewGuid());
+                System.IO.Directory.CreateDirectory(tempDir);
+                try
+                {
+                    var mockLogger = new Mock<ILogger>(MockBehavior.Loose);
+                    bool errorLogged = false;
+
+                    mockLogger
+                        .Setup(x => x.Warning(It.IsAny<Exception>(), It.IsAny<string>()))
+                        .Callback((Exception ex, string messageTemplate) =>
+                        {
+                            if (ex is SecurityException
+                                && messageTemplate.Contains("Security exception loading root directory", StringComparison.Ordinal))
+                            {
+                                errorLogged = true;
+                            }
+                        });
+
+                    var propBrowser = new FilePropertyBrowser(mockLogger.Object, new ImagePropertyGetter());
+                    using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object, _ => { });
+
+                    form._loadHook = () => throw new SecurityException("Injected SecurityException");
+
+                    var loadMethod = form.GetType().GetMethod("BrowserForm_Load", BindingFlags.Instance | BindingFlags.NonPublic);
+                    loadMethod!.Invoke(form, new object[] { form, EventArgs.Empty });
+
+                    errorLogged.Should().BeTrue("SecurityException during load should be logged as a warning");
+                }
+                finally
+                {
+                    if (System.IO.Directory.Exists(tempDir))
+                    {
+                        System.IO.Directory.Delete(tempDir, true);
+                    }
+                }
+            });
+        }
+
         [Fact]
         public void BrowserForm_BeforeExpand_CatchesIOException_And_ShowsIOErrorNode()
         {
@@ -67,7 +121,7 @@ namespace HDLG.Tests
                         });
 
                     var propBrowser = new FilePropertyBrowser(mockLogger.Object, new ImagePropertyGetter());
-                    using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object);
+                    using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object, _ => { });
 
                     // Native handles required so Expand raises BeforeExpand through Krypton's internal TreeView.
                     _ = form.Handle;
@@ -111,5 +165,137 @@ namespace HDLG.Tests
                 }
             });
         }
-    }
+
+        /// <summary>
+        /// Verifies UnauthorizedAccessException handling on directory expand.
+        /// The real IO path is TreeView1_BeforeExpand (async), which surfaces "Access Denied".
+        /// </summary>
+        [Fact]
+        public void BrowserForm_BeforeExpand_CatchesUnauthorizedAccessException_And_ShowsAccessDeniedNode()
+        {
+            RunSta(() =>
+            {
+                AppUiBootstrap.Configure();
+                string tempDir = Path.Combine(Path.GetTempPath(), "HDLG_UiTests_BrowserFormAuth_" + Guid.NewGuid());
+                System.IO.Directory.CreateDirectory(tempDir);
+                try
+                {
+                    var mockLogger = new Mock<ILogger>(MockBehavior.Loose);
+                    bool errorLogged = false;
+                    mockLogger
+                        .Setup(x => x.Warning(It.IsAny<Exception>(), It.IsAny<string>(), It.IsAny<string>()))
+                        .Callback((Exception ex, string messageTemplate, string _) =>
+                        {
+                            if (ex is UnauthorizedAccessException
+                                && messageTemplate.Contains("Access denied to directory", StringComparison.Ordinal))
+                            {
+                                errorLogged = true;
+                            }
+                        });
+
+                    var propBrowser = new FilePropertyBrowser(mockLogger.Object, new ImagePropertyGetter());
+                    using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object, _ => { });
+
+                    // Native handles required so Expand raises BeforeExpand.
+                    _ = form.Handle;
+                    var treeViewField = form.GetType().GetField("treeView1", BindingFlags.Instance | BindingFlags.NonPublic);
+                    var treeView = (TreeView)treeViewField!.GetValue(form)!;
+                    _ = treeView.Handle;
+
+                    string restrictedDirPath = Path.Combine(tempDir, "RestrictedDir");
+                    System.IO.Directory.CreateDirectory(restrictedDirPath);
+
+                    if (OperatingSystem.IsWindows())
+                    {
+                        var di = new DirectoryInfo(restrictedDirPath);
+                        var ds = di.GetAccessControl();
+                        ds.AddAccessRule(new System.Security.AccessControl.FileSystemAccessRule(
+                            Environment.UserName,
+                            System.Security.AccessControl.FileSystemRights.ReadData,
+                            System.Security.AccessControl.AccessControlType.Deny));
+                        di.SetAccessControl(ds);
+                    }
+                    else
+                    {
+                        System.IO.File.SetUnixFileMode(restrictedDirPath, System.IO.UnixFileMode.None);
+                    }
+
+                    var loadMethod = form.GetType().GetMethod("BrowserForm_Load", BindingFlags.Instance | BindingFlags.NonPublic);
+                    loadMethod!.Invoke(form, new object[] { form, EventArgs.Empty });
+
+                    treeView.Nodes.Count.Should().Be(1);
+                    var rootNode = treeView.Nodes[0];
+
+                    // Wait for initial load to finish expanding root dir
+                    long startTimestamp = Stopwatch.GetTimestamp();
+                    while (Stopwatch.GetElapsedTime(startTimestamp).TotalMilliseconds < 5000)
+                    {
+                        Application.DoEvents();
+                        if (rootNode.Nodes.Count > 0 && rootNode.Nodes[0].Text != "Loading...")
+                        {
+                            break;
+                        }
+                        Thread.Sleep(20);
+                    }
+
+                    // Find the restricted dir node
+                    TreeNode? restrictedNode = null;
+                    foreach (TreeNode n in rootNode.Nodes)
+                    {
+                        if (n.Text == "RestrictedDir")
+                        {
+                            restrictedNode = n;
+                            break;
+                        }
+                    }
+
+                    restrictedNode.Should().NotBeNull();
+
+                    // Trigger expansion on restricted node
+                    restrictedNode.Expand();
+
+                    startTimestamp = Stopwatch.GetTimestamp();
+                    while (Stopwatch.GetElapsedTime(startTimestamp).TotalMilliseconds < 5000)
+                    {
+                        Application.DoEvents();
+                        if (restrictedNode.Nodes.Count > 0 && restrictedNode.Nodes[0].Text != "Loading...")
+                        {
+                            break;
+                        }
+                        Thread.Sleep(20);
+                    }
+
+                    restrictedNode.Nodes.Count.Should().Be(1);
+                    restrictedNode.Nodes[0].Text.Should().Be("Access Denied");
+                    errorLogged.Should().BeTrue("UnauthorizedAccessException during expand should be logged");
+                }
+                finally
+                {
+                    if (System.IO.Directory.Exists(tempDir))
+                    {
+                        // Remove access restrictions so the directory can be deleted
+                        string restrictedDirPath = Path.Combine(tempDir, "RestrictedDir");
+                        if (System.IO.Directory.Exists(restrictedDirPath))
+                        {
+                            if (OperatingSystem.IsWindows())
+                            {
+                                var di = new DirectoryInfo(restrictedDirPath);
+                                var ds = di.GetAccessControl();
+                                ds.RemoveAccessRule(new System.Security.AccessControl.FileSystemAccessRule(
+                                    Environment.UserName,
+                                    System.Security.AccessControl.FileSystemRights.ReadData,
+                                    System.Security.AccessControl.AccessControlType.Deny));
+                                di.SetAccessControl(ds);
+                            }
+                            else
+                            {
+                                System.IO.File.SetUnixFileMode(restrictedDirPath, System.IO.UnixFileMode.UserRead | System.IO.UnixFileMode.UserWrite | System.IO.UnixFileMode.UserExecute);
+                            }
+                        }
+                        System.IO.Directory.Delete(tempDir, true);
+                    }
+                }
+            });
+        }
+}
 }

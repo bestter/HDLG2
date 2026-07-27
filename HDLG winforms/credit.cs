@@ -45,7 +45,8 @@ namespace HDLG_winforms
 				DialogResult res = MessageBox.Show( $"You are about to open an external website:\n\n{url}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
 				if (res != DialogResult.Yes) return;
 
-				ProcessStartInfo psInfo = new( "explorer.exe", $"\"{uriResult.AbsoluteUri}\"" )
+				string explorerPath = System.IO.Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "explorer.exe" );
+				ProcessStartInfo psInfo = new( explorerPath, $"\"{uriResult.AbsoluteUri}\"" )
 				{
 					UseShellExecute = false,
 					WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )

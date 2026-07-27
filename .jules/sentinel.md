@@ -142,3 +142,12 @@
 **Vulnerability:** The application attempted to set `X-Content-Type-Options: nosniff` via a `<meta http-equiv="...">` tag in the generated HTML exports, but modern browsers strictly ignore this security directive when placed in a meta tag.
 **Learning:** Security directives like `X-Content-Type-Options` or `X-Frame-Options` must be sent as actual HTTP response headers. Using them in `<meta>` tags is ineffective "security theater" and provides no real protection.
 **Prevention:** Do not attempt to set security headers using `<meta http-equiv="...">` unless explicitly supported by browser standards (like `Content-Security-Policy`). Remove such tags to avoid giving a false sense of security.
+## 2026-06-25 - [Prevent Process Injection via Script Execution]
+**Vulnerability:** The extension `.py` was explicitly allowed in the `SafeExtensions` list. Opening a Python file on Windows via `Process.Start` can lead to unintended arbitrary code execution if the Python launcher is installed and registered.
+**Learning:** In UI applications enforcing file execution allowlists, script extensions (e.g., `.py`, `.pyw`, `.sh`, `.bash`) must be treated as highly dangerous because they are designed to execute arbitrary code when triggered by their respective interpreters. They should never be included in safe allowlists intended for standard documents.
+**Prevention:** Always audit safe extension allowlists for script extensions. Explicitly classify script extensions as dangerous alongside binaries like `.exe`.
+
+## 2026-06-25 - [Prevent PATH Hijacking / Binary Planting]
+**Vulnerability:** The application invoked `explorer.exe` using a relative executable name with `UseShellExecute = false`. This relied on the system `PATH` to locate the binary, making the application vulnerable to PATH hijacking if a malicious executable named `explorer.exe` was placed in a directory with higher precedence.
+**Learning:** When invoking critical system binaries (like `explorer.exe`, `cmd.exe`, etc.) without shell execution, relying on unqualified executable names introduces a binary planting vector.
+**Prevention:** Always use the absolute path when invoking system binaries programmatically. For example, use `Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe")` to ensure the exact system binary is executed.
