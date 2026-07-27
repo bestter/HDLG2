@@ -55,12 +55,14 @@ namespace HDLG_winforms
 			catch (UnauthorizedAccessException ex)
 			{
 				logger.Warning( ex, "Access denied loading root directory in BrowserForm" );
-				MessageBox.Show( this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+				if (_showError != null) _showError( "Error: Access Denied." );
+				else MessageBox.Show( this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 			catch (SecurityException ex)
 			{
 				logger.Warning( ex, "Security exception loading root directory in BrowserForm" );
-				MessageBox.Show( this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+				if (_showError != null) _showError( "Error: Access Denied." );
+				else MessageBox.Show( this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 			catch (IOException ex)
 			{
@@ -72,7 +74,8 @@ namespace HDLG_winforms
 			catch (Exception ex)
 			{
 				logger.Error( ex, "Error loading root directory in BrowserForm" );
-				MessageBox.Show( this, "An unexpected error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+				if (_showError != null) _showError( "An unexpected error occurred while loading the directory." );
+				else MessageBox.Show( this, "An unexpected error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 #pragma warning restore CA1031 // Do not catch general exception types
 		}

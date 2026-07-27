@@ -107,5 +107,63 @@ namespace HDLG.Tests
                 }
             });
         }
-    }
+
+        [Fact]
+        public void BrowserForm_Load_CatchesUnauthorizedAccessException()
+        {
+            RunSta(() =>
+            {
+                AppUiBootstrap.Configure();
+                string tempDir = Path.Combine(Path.GetTempPath(), "HDLG_UiTests_BrowserFormUA_" + Guid.NewGuid());
+                System.IO.Directory.CreateDirectory(tempDir);
+                try
+                {
+                    var mockLogger = new Mock<ILogger>(MockBehavior.Loose);
+                    bool errorLogged = false;
+
+                    mockLogger
+                        .Setup(x => x.Warning(It.IsAny<Exception>(), It.IsAny<string>()))
+                        .Callback((Exception ex, string messageTemplate) =>
+                        {
+                            if (ex is UnauthorizedAccessException && messageTemplate == "Access denied loading root directory in BrowserForm")
+                            {
+                                errorLogged = true;
+                            }
+                        });
+
+                    var propBrowser = new FilePropertyBrowser(mockLogger.Object, new ImagePropertyGetter());
+                    using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object, err => { });
+
+                    var treeViewField = form.GetType().GetField("treeView1", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                    var myTreeView = new TestTreeView();
+                    treeViewField!.SetValue(form, myTreeView);
+
+                    var loadMethod = form.GetType().GetMethod("BrowserForm_Load", BindingFlags.Instance | BindingFlags.NonPublic);
+                    loadMethod!.Invoke(form, new object[] { form, EventArgs.Empty });
+
+                    errorLogged.Should().BeTrue("UnauthorizedAccessException during Load should be logged");
+                }
+                finally
+                {
+                    if (System.IO.Directory.Exists(tempDir))
+                    {
+                        System.IO.Directory.Delete(tempDir, true);
+                    }
+                }
+            });
+        }
+
+        private class TestTreeView : TreeView
+        {
+            protected override void WndProc(ref Message m)
+            {
+                if (m.Msg == 0x1132 || m.Msg == 0x1100)
+                {
+                    throw new UnauthorizedAccessException("Simulated");
+                }
+                base.WndProc(ref m);
+            }
+        }
+}
 }
