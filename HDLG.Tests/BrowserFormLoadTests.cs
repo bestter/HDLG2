@@ -107,5 +107,76 @@ namespace HDLG.Tests
                 }
             });
         }
+
+        /// <summary>
+        /// Verifies SecurityException handling on directory expand.
+        /// </summary>
+        [Fact]
+        public void BrowserForm_BeforeExpand_CatchesSecurityException_And_ShowsAccessDeniedNode()
+        {
+            RunSta(() =>
+            {
+                AppUiBootstrap.Configure();
+                string tempDir = Path.Combine(Path.GetTempPath(), "HDLG_UiTests_BrowserFormSecurity_" + Guid.NewGuid());
+                System.IO.Directory.CreateDirectory(tempDir);
+                try
+                {
+                    var mockLogger = new Mock<ILogger>(MockBehavior.Loose);
+                    bool errorLogged = false;
+
+                    mockLogger
+                        .Setup(x => x.Warning(It.IsAny<Exception>(), It.IsAny<string>(), It.IsAny<string>()))
+                        .Callback((Exception ex, string messageTemplate, string _) =>
+                        {
+                            if (ex is System.Security.SecurityException
+                                && messageTemplate.Contains("Security exception accessing directory", StringComparison.Ordinal))
+                            {
+                                errorLogged = true;
+                            }
+                        });
+
+                    var propBrowser = new FilePropertyBrowser(mockLogger.Object, new ImagePropertyGetter());
+                    using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object);
+
+                    // Inject the mock hook that throws SecurityException
+                    form._getFileSystemInfosHook = _ => throw new System.Security.SecurityException("Mocked SecurityException");
+
+                    // Native handles required so Expand raises BeforeExpand.
+                    _ = form.Handle;
+                    var treeViewField = form.GetType().GetField("treeView1", BindingFlags.Instance | BindingFlags.NonPublic);
+                    var treeView = (TreeView)treeViewField!.GetValue(form)!;
+                    _ = treeView.Handle;
+
+                    var loadMethod = form.GetType().GetMethod("BrowserForm_Load", BindingFlags.Instance | BindingFlags.NonPublic);
+                    loadMethod!.Invoke(form, new object[] { form, EventArgs.Empty });
+
+                    treeView.Nodes.Count.Should().Be(1);
+                    var rootNode = treeView.Nodes[0];
+
+                    // TreeView1_BeforeExpand is async void; pump the WinForms sync context until it completes.
+                    long startTimestamp = Stopwatch.GetTimestamp();
+                    while (Stopwatch.GetElapsedTime(startTimestamp).TotalMilliseconds < 5000)
+                    {
+                        Application.DoEvents();
+                        if (rootNode.Nodes.Count > 0 && rootNode.Nodes[0].Text != "Loading...")
+                        {
+                            break;
+                        }
+                        Thread.Sleep(20);
+                    }
+
+                    rootNode.Nodes.Count.Should().Be(1);
+                    rootNode.Nodes[0].Text.Should().Be("Access Denied");
+                    errorLogged.Should().BeTrue("SecurityException during expand should be logged");
+                }
+                finally
+                {
+                    if (System.IO.Directory.Exists(tempDir))
+                    {
+                        System.IO.Directory.Delete(tempDir, true);
+                    }
+                }
+            });
+        }
     }
 }
