@@ -1,5 +1,6 @@
 using FluentAssertions;
 using HDLG_winforms;
+using Krypton.Toolkit;
 
 namespace HDLG.Tests
 {
@@ -7,20 +8,22 @@ namespace HDLG.Tests
     public class AppUiBootstrapTests
     {
         [Fact]
-        public void Configure_InitializesActiveTheme()
+        public void Configure_SetsMicrosoft365BlueLightPalette()
         {
             AppUiBootstrap.Configure();
 
-            AppUiBootstrap.ActiveTheme.Should().Be("MinimalistSlate");
+            AppUiBootstrap.ActivePaletteMode.Should().Be(PaletteMode.Microsoft365BlueLightMode);
         }
 
         [Fact]
-        public void RemoveFormBranding_ConfiguresFormTheme()
+        public void RemoveFormBranding_ClearsKryptonWatermarkImage()
         {
             AppUiBootstrap.Configure();
             using var form = new Credit();
 
-            form.BackColor.Should().Be(System.Drawing.Color.FromArgb(248, 250, 252));
+            form.StateCommon!.Back!.Image.Should().BeNull();
+            form.StateActive!.Back!.Image.Should().BeNull();
+            form.StateInactive!.Back!.Image.Should().BeNull();
             form.BackgroundImage.Should().BeNull();
         }
     }

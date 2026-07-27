@@ -266,19 +266,17 @@ namespace HDLG_winforms
 				return xml;
 			}
 
-			// Avoid StringBuilder allocations and method overhead by using a simple array buffer.
-			char[] buffer = new char[xml.Length];
-			xml.CopyTo( 0, buffer, 0, firstIllegalCharIndex );
-			int writeIndex = firstIllegalCharIndex;
+			// Only allocate StringBuilder if sanitization is actually required.
+			StringBuilder sb = new StringBuilder( xml.Length );
+			sb.Append( xml, 0, firstIllegalCharIndex );
 			for (int i = firstIllegalCharIndex + 1; i < xml.Length; i++)
 			{
-				char c = xml [i];
-				if (IsLegalXmlChar( c ))
+				if (IsLegalXmlChar( xml [i] ))
 				{
-					buffer[writeIndex++] = c;
+					sb.Append( xml [i] );
 				}
 			}
-			return new string( buffer, 0, writeIndex );
+			return sb.ToString( );
 		}
 
 		private static bool IsLegalXmlChar (int character)
@@ -526,9 +524,8 @@ namespace HDLG_winforms
 			await writer.WriteLineAsync( spacer + "<div class=\"file\">" ).ConfigureAwait( false );
 
 			string encodedName = WebUtility.HtmlEncode( file.Name );
-			string fileUri = "file:///" + string.Join("/", file.Path.Split('\\', '/').Select(p => p.EndsWith(":", StringComparison.Ordinal) ? p : Uri.EscapeDataString(p)));
-			string encodedFileUri = WebUtility.HtmlEncode( fileUri );
-			await writer.WriteLineAsync( $"{spacer}\t<a href=\"{encodedFileUri}\" download=\"{encodedName}\" referrerpolicy=\"strict-origin\">{encodedName}</a>" ).ConfigureAwait( false );
+			string encodedPath = Uri.EscapeDataString( file.Path );
+			await writer.WriteLineAsync( $"{spacer}\t<a href=\"file:///{encodedPath}\" download=\"{encodedName}\" referrerpolicy=\"strict-origin\">{encodedName}</a>" ).ConfigureAwait( false );
 
 			await writer.WriteLineAsync( $"{spacer}\t<div class=\"file-meta\">" ).ConfigureAwait( false );
 			await writer.WriteLineAsync( $"{spacer}\t\t<span class=\"size\">{file.Size.ToString( CultureInfo.CurrentCulture )} kb</span>" ).ConfigureAwait( false );
