@@ -24,6 +24,8 @@ namespace HDLG_winforms
 		private readonly ILogger logger;
 		private readonly Action<string>? _showError;
 
+		internal Func<string, FileSystemInfo[]> _getFileSystemInfosHook = path => new DirectoryInfo(path).GetFileSystemInfos();
+
 		public BrowserForm (string rootDirectory, FilePropertyBrowser propertyBrowser, ILogger logger, Action<string>? showError = null)
 		{
 			InitializeComponent( );
@@ -127,8 +129,7 @@ namespace HDLG_winforms
 					// due to avoiding List capacity resizing and allowing exact allocation of the TreeNode array.
 					var fsInfos = await Task.Run( () =>
 					{
-						var dirInfo = new DirectoryInfo( info.Path );
-						return dirInfo.GetFileSystemInfos( );
+						return _getFileSystemInfosHook( info.Path );
 					} ).ConfigureAwait( true );
 
 					// Safe WinForms practice: construct TreeNodes on the UI thread after I/O is complete
