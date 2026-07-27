@@ -3,7 +3,7 @@
 Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
 **Version** : 1.4.0.0  
-**Dernière mise à jour** : 26 juin 2026 — Modernisation UI WinForms via **Krypton.Toolkit** (palette Microsoft 365 Blue Light, layout dashboard sur `MainWindow`, harmonisation `BrowserForm`/`Credit`, bootstrap `AppUiBootstrap`), monogramme HDLG original (`AppBranding`, assets SVG/Inkscape, pied de page HTML), retrait watermark Krypton, tests UI (`AppUiBootstrapTests`, `AppBrandingTests`, `AppLogoRendererTests`, `WinFormsUiTests`), bump de version 1.4.0.
+**Dernière mise à jour** : 27 juillet 2026 — Vérification sécurisée des répertoires restreints (`IsReparsePoint` dans `BrowserForm`), correction du mécanisme de temporisation (`WaitAsync` dans `FilePropertyBrowser`), harmonisation et fiabilisation de la suite de tests unitaires (`BrowserFormLoadTests`).
 **Propriétaire** : Martin Labelle (@bestter)
 
 ---

@@ -24,7 +24,7 @@
   - **PDF**: Document title (using *PdfPig*).
   - **MP3**: Title, duration, album, year, performers, album artists, composers, and copyright (using *TagLibSharp*).
 - ⚡ **Performance Instrumentation**: Measures, records, and displays execution metrics (scantime, compilation, and save-time).
-- 🛡️ **DoS Hardening (Property Extraction)**: Configurable safeguards in `FilePropertyLimits` — rejects files exceeding 100 MB, enforces a 30-second timeout per property getter in `FilePropertyBrowser`, and caps image dimensions at 32 768 px via `ImagePropertyGetter` (with `DecoderOptions.MaxFrames = 1`).
+- 🛡️ **DoS Hardening & Fault Tolerance**: Configurable safeguards in `FilePropertyLimits` — rejects files exceeding 100 MB, enforces a 30-second timeout per property getter in `FilePropertyBrowser`, caps image dimensions at 32 768 px via `ImagePropertyGetter` (with `DecoderOptions.MaxFrames = 1`), and uses safe attribute checks (`IsReparsePoint`) in `BrowserForm` to prevent permission denial crashes when enumerating restricted system items.
 - 🪵 **Structured Logging**: Rolling diagnostic logs written daily to `%LOCALAPPDATA%\HDLG\logs`.
 - 🎨 **Modern WinForms UI (v1.4)**: Fluent-style desktop interface powered by **Krypton.Toolkit** (Microsoft 365 Blue Light palette), with a dashboard layout on the main window and harmonized explorer/about dialogs.
 - 🏷️ **HDLG Monogram Branding**: Original geometric logo (Concept C, 2×2 layout, accent `#0284C8`) in the About dialog, application icon, and HTML export footer (inline SVG).
