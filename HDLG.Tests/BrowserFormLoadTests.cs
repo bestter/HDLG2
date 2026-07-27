@@ -5,6 +5,7 @@ using HdlgFileProperty;
 using HDLG_winforms;
 using Moq;
 using Serilog;
+using System.Security;
 using System.Windows.Forms;
 
 namespace HDLG.Tests
@@ -39,6 +40,55 @@ namespace HDLG.Tests
         /// Verifies IOException handling on directory expand.
         /// The real IO path is TreeView1_BeforeExpand (async), which surfaces "IO Error".
         /// </summary>
+        [Fact]
+        public void BrowserForm_Load_CatchesSecurityException_And_LogsWarning()
+        {
+            RunSta(() =>
+            {
+                AppUiBootstrap.Configure();
+                string tempDir = Path.Combine(Path.GetTempPath(), "HDLG_UiTests_BrowserFormSec_" + Guid.NewGuid());
+                System.IO.Directory.CreateDirectory(tempDir);
+                try
+                {
+                    var mockLogger = new Mock<ILogger>(MockBehavior.Loose);
+                    bool errorLogged = false;
+
+                    mockLogger
+                        .Setup(x => x.Warning(It.IsAny<Exception>(), It.IsAny<string>()))
+                        .Callback((Exception ex, string messageTemplate) =>
+                        {
+                            if (ex is SecurityException
+                                && messageTemplate.Contains("Security exception loading root directory", StringComparison.Ordinal))
+                            {
+                                errorLogged = true;
+                            }
+                        });
+
+                    var propBrowser = new FilePropertyBrowser(mockLogger.Object, new ImagePropertyGetter());
+                    using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object);
+
+                    // Hook the TreeView's BeforeExpand event to throw a SecurityException.
+                    // This is triggered synchronously during BrowserForm_Load when rootNode.Expand() is called.
+                    var treeViewField = form.GetType().GetField("treeView1", BindingFlags.Instance | BindingFlags.NonPublic);
+                    var treeView = (TreeView)treeViewField!.GetValue(form)!;
+
+                    treeView.BeforeExpand += (s, e) => throw new SecurityException("Injected SecurityException");
+
+                    var loadMethod = form.GetType().GetMethod("BrowserForm_Load", BindingFlags.Instance | BindingFlags.NonPublic);
+                    loadMethod!.Invoke(form, new object[] { form, EventArgs.Empty });
+
+                    errorLogged.Should().BeTrue("SecurityException during load should be logged as a warning");
+                }
+                finally
+                {
+                    if (System.IO.Directory.Exists(tempDir))
+                    {
+                        System.IO.Directory.Delete(tempDir, true);
+                    }
+                }
+            });
+        }
+
         [Fact]
         public void BrowserForm_BeforeExpand_CatchesIOException_And_ShowsIOErrorNode()
         {
