@@ -71,12 +71,6 @@ namespace HDLG_winforms
 		}
 
 
-		private static async Task<HdlgFile> ProcessFileAsync (FileInfo f, FilePropertyBrowser propertyBrowser)
-		{
-			var properties = await propertyBrowser.GetFilePropertyAsync( f ).ConfigureAwait( false );
-			return new HdlgFile( f, properties );
-		}
-
 		/// <summary>
 		/// Browse the content
 		/// </summary>
@@ -92,7 +86,6 @@ namespace HDLG_winforms
 				{
 					// Performance optimization: Iterate via enumerator directly to avoid GetFileSystemInfos() array allocation bloat
 					// and List<T> capacity over-allocation which can cause severe memory bloat on large directories.
-					var fileTasks = new List<Task<HdlgFile>>( );
 					foreach (var info in directoryInfo.EnumerateFileSystemInfos( ))
 					{
 						if (info is DirectoryInfo d)
@@ -107,22 +100,10 @@ namespace HDLG_winforms
 						}
 						else if (info is FileInfo f)
 						{
-							fileTasks.Add( ProcessFileAsync( f, propertyBrowser ) );
+							var properties = await propertyBrowser.GetFilePropertyAsync( f ).ConfigureAwait( false );
+							var file = new HdlgFile( f, properties );
+							files.Add( file );
 						}
-
-						// Batch processing to prevent unbounded concurrency
-						if (fileTasks.Count >= 50)
-						{
-							var processedFiles = await Task.WhenAll( fileTasks ).ConfigureAwait( false );
-							files.AddRange( processedFiles );
-							fileTasks.Clear( );
-						}
-					}
-
-					if (fileTasks.Count > 0)
-					{
-						var processedFiles = await Task.WhenAll( fileTasks ).ConfigureAwait( false );
-						files.AddRange( processedFiles );
 					}
 				}
 				catch (UnauthorizedAccessException ex)
@@ -141,24 +122,11 @@ namespace HDLG_winforms
 				{
 					// Performance optimization: Iterate via enumerator directly to avoid GetFiles() array allocation bloat
 					// and List<T> capacity over-allocation which can cause severe memory bloat on large directories.
-					var fileTasks = new List<Task<HdlgFile>>( );
 					foreach (var f in directoryInfo.EnumerateFiles( ))
 					{
-						fileTasks.Add( ProcessFileAsync( f, propertyBrowser ) );
-
-						// Batch processing to prevent unbounded concurrency
-						if (fileTasks.Count >= 50)
-						{
-							var processedFiles = await Task.WhenAll( fileTasks ).ConfigureAwait( false );
-							files.AddRange( processedFiles );
-							fileTasks.Clear( );
-						}
-					}
-
-					if (fileTasks.Count > 0)
-					{
-						var processedFiles = await Task.WhenAll( fileTasks ).ConfigureAwait( false );
-						files.AddRange( processedFiles );
+						var properties = await propertyBrowser.GetFilePropertyAsync( f ).ConfigureAwait( false );
+						var file = new HdlgFile( f, properties );
+						files.Add( file );
 					}
 				}
 				catch (UnauthorizedAccessException ex)
@@ -176,7 +144,6 @@ namespace HDLG_winforms
 			TotalDirectories = directories.Count;
 			TotalFiles = files.Count;
 
-			// Concurrent recursive subdirectory browsing (wide/shallow trees benefit most).
 			var tasks = new Task [directories.Count];
 			for (int i = 0; i < directories.Count; i++)
 			{

@@ -8,6 +8,7 @@ HTML Directory List Generator is distributed in the hope that it will be useful,
 You should have received a copy of the GNU General Public License along with HTML Directory List Generator. If not, see <https://www.gnu.org/licenses/>. 
  */
 using HdlgFileProperty;
+using Krypton.Toolkit;
 using Serilog;
 using Serilog.Core;
 using System.ComponentModel;
@@ -19,7 +20,7 @@ using System.Reflection;
 namespace HDLG_winforms
 {
 	[System.Diagnostics.CodeAnalysis.SuppressMessage( "Localization", "CA1303:Do not pass literals as localized parameters" )]
-	public partial class MainWindow : Form
+	public partial class MainWindow : KryptonForm
 	{
 		#region PropertyGetter
 		public ImagePropertyGetter ImagePropertyGetter;
@@ -76,7 +77,7 @@ namespace HDLG_winforms
 			AssemblyName an = typeof( MainWindow ).Assembly.GetName( );
 			string version = an.Version?.ToString( ) ?? string.Empty;
 			Text = $"{an.Name} {version}";
-			lblAppTitle.Text = $"HTML Directory List Generator {version}";
+			lblAppTitle.Values.Text = $"HTML Directory List Generator {version}";
 			selectedDirectory = null;
 			selectedDirectoryLabel.Text = "No directory selected";
 			toolStripStatusLabelBrowseTime.Text = string.Empty;
@@ -179,12 +180,12 @@ toolStripStatusLabelTotalTime.Visible = false;
 			{
 				Logger.Information( "{SelectedDirectory}", selecteDirectory );
 				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
-				long startTimestamp = Stopwatch.GetTimestamp( );
+				Stopwatch stopwatch = Stopwatch.StartNew( );
 
 				Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
 				await directory.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
 				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.BrowseAsync ), directory.Name );
-				TimeSpan browseTime = Stopwatch.GetElapsedTime( startTimestamp );
+				TimeSpan browseTime = stopwatch.Elapsed;
 				propertyBrowser.LogGetterStatistics( );
 
 				DirectoryBrowser db = new( Logger );
@@ -193,11 +194,11 @@ toolStripStatusLabelTotalTime.Visible = false;
 				await db.SaveAsXMLAsync( saveFilePath, directory ).ConfigureAwait( false );
 
 				Logger.Debug( "{MethodName} done", nameof( DirectoryBrowser.SaveAsXMLAsync ) );
-				TimeSpan totalTime = Stopwatch.GetElapsedTime( startTimestamp );
+				stopwatch.Stop( );
 
-				TimeSpan saveTime = totalTime - browseTime;
+				TimeSpan saveTime = stopwatch.Elapsed - browseTime;
 
-				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = totalTime };
+				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
 
 				Logger.Information( "Done at {EndTime:T}", DateTime.Now );
 				return result;
@@ -478,11 +479,11 @@ toolStripStatusLabelTotalTime.Visible = false;
 			{
 				Logger.Information( "{SelectedDirectory}", selecteDirectory );
 				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
-				long startTimestamp = Stopwatch.GetTimestamp( );
+				Stopwatch stopwatch = Stopwatch.StartNew( );
 				Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
 				await directory.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
 				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.BrowseAsync ), directory.Name );
-				TimeSpan browseTime = Stopwatch.GetElapsedTime( startTimestamp );
+				TimeSpan browseTime = stopwatch.Elapsed;
 				propertyBrowser.LogGetterStatistics( );
 
 				DirectoryBrowser db = new( Logger );
@@ -491,10 +492,10 @@ toolStripStatusLabelTotalTime.Visible = false;
 				await db.SaveAsHTMLAsync( saveFilePath, directory ).ConfigureAwait( false );
 
 				Logger.Debug( "{MethodName} done", nameof( DirectoryBrowser.SaveAsHTMLAsync ) );
-				TimeSpan totalTime = Stopwatch.GetElapsedTime( startTimestamp );
-				TimeSpan saveTime = totalTime - browseTime;
+				stopwatch.Stop( );
+				TimeSpan saveTime = stopwatch.Elapsed - browseTime;
 
-				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = totalTime };
+				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
 				Logger.Information( "Done at {EndTime:T}", DateTime.Now );
 				return result;
 			}

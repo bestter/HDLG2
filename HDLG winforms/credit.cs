@@ -1,17 +1,18 @@
 /*
  This file is part of HTML Directory List Generator.
 
- HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+HTML Directory List Generator is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
- HTML Directory List Generator is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+HTML Directory List Generator is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License along with HTML Directory List Generator. If not, see <https://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License along with HTML Directory List Generator. If not, see <https://www.gnu.org/licenses/>. 
  */
+using Krypton.Toolkit;
 using System.Diagnostics;
 
 namespace HDLG_winforms
 {
-	public partial class Credit : Form
+	public partial class Credit : KryptonForm
 	{
 		public Credit ()
 		{
@@ -24,7 +25,9 @@ namespace HDLG_winforms
 
 		private void Credit_Load (object sender, EventArgs e)
 		{
-			lblTitle.Text = "HTML Directory List Generator " + typeof( Credit ).Assembly?.GetName( )?.Version?.ToString( );
+			//Version version = Assembly.GetExecutingAssembly( ).GetName( ).Version;
+			lblTitle.Values.Text = "HTML Directory List Generator " + typeof( Credit ).Assembly?.GetName( )?.Version?.ToString( );
+
 		}
 
 		private static void OpenUrlSafe (string url)
@@ -56,9 +59,12 @@ namespace HDLG_winforms
 			}
 		}
 
-		private void labelGPL_LinkClicked (object sender, LinkLabelLinkClickedEventArgs e)
+		private void labelGPL_LinkClicked (object sender, EventArgs e)
 		{
 			OpenUrlSafe( "https://www.gnu.org/licenses/gpl-3.0.en.html" );
 		}
+
+
+
 	}
 }

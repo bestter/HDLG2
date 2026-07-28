@@ -3,6 +3,7 @@ using System.Reflection;
 using FluentAssertions;
 using HdlgFileProperty;
 using HDLG_winforms;
+using Krypton.Toolkit;
 using Moq;
 using Serilog;
 using System.Security;
@@ -47,7 +48,9 @@ namespace HDLG.Tests
 
         /// <summary>
         /// Verifies IOException handling on directory expand.
-        /// The real IO path is TreeView1_BeforeExpand (async), which surfaces "IO Error".
+        /// Note: KryptonTreeView swallows exceptions thrown from BeforeExpand event handlers, so
+        /// BrowserForm_Load's try/catch around rootNode.Expand() is not reachable for event-sourced
+        /// failures. The real IO path is TreeView1_BeforeExpand (async), which surfaces "IO Error".
         /// </summary>
         [Fact]
         public void BrowserForm_Load_CatchesSecurityException_And_LogsWarning()
@@ -120,11 +123,12 @@ namespace HDLG.Tests
                     var propBrowser = new FilePropertyBrowser(mockLogger.Object, new ImagePropertyGetter());
                     using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object, _ => { });
 
-                    // Native handles required so Expand raises BeforeExpand.
+                    // Native handles required so Expand raises BeforeExpand through Krypton's internal TreeView.
                     _ = form.Handle;
                     var treeViewField = form.GetType().GetField("treeView1", BindingFlags.Instance | BindingFlags.NonPublic);
-                    var treeView = (TreeView)treeViewField!.GetValue(form)!;
+                    var treeView = (KryptonTreeView)treeViewField!.GetValue(form)!;
                     _ = treeView.Handle;
+                    _ = treeView.TreeView.Handle;
 
                     // Remove the directory after construction so Expand's enumeration throws IOException.
                     System.IO.Directory.Delete(tempDir, true);
@@ -136,8 +140,8 @@ namespace HDLG.Tests
                     var rootNode = treeView.Nodes[0];
 
                     // TreeView1_BeforeExpand is async void; pump the WinForms sync context until it completes.
-                    long startTimestamp = Stopwatch.GetTimestamp();
-                    while (Stopwatch.GetElapsedTime(startTimestamp).TotalMilliseconds < 5000)
+                    var deadline = Stopwatch.StartNew();
+                    while (deadline.Elapsed < TimeSpan.FromSeconds(5))
                     {
                         Application.DoEvents();
                         if (rootNode.Nodes.Count > 0 && rootNode.Nodes[0].Text != "Loading...")
@@ -189,15 +193,6 @@ namespace HDLG.Tests
                             }
                         });
 
-                    var propBrowser = new FilePropertyBrowser(mockLogger.Object, new ImagePropertyGetter());
-                    using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object, _ => { });
-
-                    // Native handles required so Expand raises BeforeExpand.
-                    _ = form.Handle;
-                    var treeViewField = form.GetType().GetField("treeView1", BindingFlags.Instance | BindingFlags.NonPublic);
-                    var treeView = (TreeView)treeViewField!.GetValue(form)!;
-                    _ = treeView.Handle;
-
                     string restrictedDirPath = Path.Combine(tempDir, "RestrictedDir");
                     System.IO.Directory.CreateDirectory(restrictedDirPath);
 
@@ -215,6 +210,16 @@ namespace HDLG.Tests
                     {
                         System.IO.File.SetUnixFileMode(restrictedDirPath, System.IO.UnixFileMode.None);
                     }
+
+                    var propBrowser = new FilePropertyBrowser(mockLogger.Object, new ImagePropertyGetter());
+                    using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object, _ => { });
+
+                    // Native handles required so Expand raises BeforeExpand.
+                    _ = form.Handle;
+                    var treeViewField = form.GetType().GetField("treeView1", BindingFlags.Instance | BindingFlags.NonPublic);
+                    var treeView = (KryptonTreeView)treeViewField!.GetValue(form)!;
+                    _ = treeView.Handle;
+                    _ = treeView.TreeView.Handle;
 
                     var loadMethod = form.GetType().GetMethod("BrowserForm_Load", BindingFlags.Instance | BindingFlags.NonPublic);
                     loadMethod!.Invoke(form, new object[] { form, EventArgs.Empty });

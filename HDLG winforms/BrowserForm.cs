@@ -8,6 +8,7 @@ HTML Directory List Generator is distributed in the hope that it will be useful,
 You should have received a copy of the GNU General Public License along with HTML Directory List Generator. If not, see <https://www.gnu.org/licenses/>. 
  */
 using HdlgFileProperty;
+using Krypton.Toolkit;
 using Serilog;
 using System.Diagnostics;
 using System.Globalization;
@@ -15,7 +16,7 @@ using System.Security;
 
 namespace HDLG_winforms
 {
-	public partial class BrowserForm : Form
+	public partial class BrowserForm : KryptonForm
 	{
 		private readonly string rootDirectory;
 		private readonly string _resolvedRootDirectory;
@@ -103,6 +104,18 @@ namespace HDLG_winforms
 				|| string.Equals( resolvedPath, _resolvedRootDirectory, StringComparison.OrdinalIgnoreCase );
 		}
 
+		private static bool IsReparsePoint (FileSystemInfo info)
+		{
+			try
+			{
+				return (info.Attributes & FileAttributes.ReparsePoint) != 0;
+			}
+			catch (Exception ex) when (ex is UnauthorizedAccessException or SecurityException or IOException)
+			{
+				return false;
+			}
+		}
+
 		private async void TreeView1_BeforeExpand (object sender, TreeViewCancelEventArgs e)
 		{
 			if (e.Node == null || e.Node.Tag is not NodeInfo info || !info.IsDirectory)
@@ -135,36 +148,55 @@ namespace HDLG_winforms
 					} ).ConfigureAwait( true );
 
 					// Safe WinForms practice: construct TreeNodes on the UI thread after I/O is complete
-					// Performance optimization: Use two lists with heuristic initial capacities (Length / 2)
-					// to gather nodes in a single pass over fsInfos, avoiding redundant double traversal.
-					// We combine them into an exact-sized array to avoid .ToArray() overhead on lists with excess capacity.
-					var dirNodes = new List<TreeNode>( fsInfos.Length / 2 );
-					var fileNodes = new List<TreeNode>( fsInfos.Length / 2 );
+					// Performance optimization: Count elements first to allocate exact-size arrays,
+					// avoiding List<T> growth allocations and ToArray() overhead.
+					int dirCount = 0;
+					int fileCount = 0;
 
 					for (int i = 0; i < fsInfos.Length; i++)
 					{
-						if (fsInfos [i] is DirectoryInfo dir)
+						var fsInfo = fsInfos [i];
+						if (fsInfo is DirectoryInfo dir)
 						{
-							if ((dir.Attributes & FileAttributes.ReparsePoint) != 0) continue;
+							if (!IsReparsePoint( dir ))
+								dirCount++;
+						}
+						else if (fsInfo is FileInfo)
+						{
+							fileCount++;
+						}
+					}
+
+					var _dirNodes = new TreeNode [dirCount];
+					var _fileNodes = new TreeNode [fileCount];
+
+					int dirIndex = 0;
+					int fileIndex = 0;
+
+					for (int i = 0; i < fsInfos.Length; i++)
+					{
+						var fsInfo = fsInfos [i];
+						if (fsInfo is DirectoryInfo dir)
+						{
+							if (IsReparsePoint( dir )) continue;
 
 							var node = new TreeNode( dir.Name );
 							node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
 							node.Nodes.Add( new TreeNode( "Loading..." ) );
-							dirNodes.Add( node );
+							_dirNodes [dirIndex++] = node;
 						}
-						else if (fsInfos [i] is FileInfo file)
+						else if (fsInfo is FileInfo file)
 						{
 							var node = new TreeNode( file.Name );
 							node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
-							fileNodes.Add( node );
+							_fileNodes [fileIndex++] = node;
 						}
 					}
 
-					var allNodes = new TreeNode[dirNodes.Count + fileNodes.Count];
-					dirNodes.CopyTo( allNodes, 0 );
-					fileNodes.CopyTo( allNodes, dirNodes.Count );
-
-					PopulateChildNodes( e.Node, allNodes );
+					e.Node.TreeView?.BeginUpdate( );
+					e.Node.Nodes.AddRange( _dirNodes );
+					e.Node.Nodes.AddRange( _fileNodes );
+					e.Node.TreeView?.EndUpdate( );
 				}
 				catch (UnauthorizedAccessException ex)
 				{
@@ -235,14 +267,14 @@ namespace HDLG_winforms
 
 			if (e.Node == null || e.Node.Tag is not NodeInfo info)
 			{
-				lblSelectedFileName.Text = "Select a file to view properties";
+				lblSelectedFileName.Values.Text = "Select a file to view properties";
 				return;
 			}
 
 			if (info.IsDirectory)
 			{
 				var dirInfo = new DirectoryInfo( info.Path );
-				lblSelectedFileName.Text = dirInfo.Name;
+				lblSelectedFileName.Values.Text = dirInfo.Name;
 				return;
 			}
 
@@ -259,7 +291,7 @@ namespace HDLG_winforms
 					return;
 				}
 
-				lblSelectedFileName.Text = fileInfo.Name;
+				lblSelectedFileName.Values.Text = fileInfo.Name;
 
 				listViewProperties.BeginUpdate( );
 				try
