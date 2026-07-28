@@ -83,13 +83,15 @@ namespace HdlgFileProperty
                     }
 
                     propertyGetters.IncrementFile();
-                    var sw = System.Diagnostics.Stopwatch.StartNew();
+
+                    // Performance optimization: Use Stopwatch.GetTimestamp() instead of Stopwatch.StartNew()
+                    // to prevent a heap allocation of a new Stopwatch object for every file iteration.
+                    long startTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
                     var currentProperties = await GetFilePropertiesWithTimeoutAsync(
                         propertyGetters.FilePropertyGetter,
                         fileInfo,
                         propertyGetters.FilePropertyGetter.GetType()).ConfigureAwait(false);
-                    sw.Stop();
-                    propertyGetters.AddExecutionTime(sw.Elapsed);
+                    propertyGetters.AddExecutionTime(System.Diagnostics.Stopwatch.GetElapsedTime(startTimestamp));
 
                     // Performance optimization: Avoid allocating a dictionary enumerator when there are no properties
                     if (currentProperties.Count > 0)

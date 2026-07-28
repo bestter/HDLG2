@@ -146,3 +146,7 @@
 ## 2026-07-20 - Prevent CS0128 local variable scope duplication
 **Learning:** When making code edits that replace arrays or collections in hot paths, be careful of duplicate variable declarations causing CS0128 errors. While testing and editing across commits, duplicate variable declarations (e.g. `var dirNodes` declared twice in the same scope) can slip through.
 **Action:** When fixing CS0128 errors due to variable scoping, uniquely prefix the local variables with underscores (`_dirNodes`, `_fileNodes`) if avoiding the duplication completely requires extensive block restructuring, making sure to replace all subsequent references in that block correctly.
+
+## 2024-05-28 - Optimize Stopwatch heap allocations in hot paths
+**Learning:** Using `Stopwatch.StartNew()` instantiates a new `Stopwatch` object on the heap. When called in a hot loop (like checking properties for every single file in a recursive directory scan), this creates significant garbage collection pressure.
+**Action:** In .NET 7+, prefer using the static `Stopwatch.GetTimestamp()` to get the start time and `Stopwatch.GetElapsedTime(startTimestamp)` to calculate the duration, which avoids heap allocations entirely while maintaining high-resolution timing.
