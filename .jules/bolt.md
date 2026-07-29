@@ -150,3 +150,7 @@
 ## 2024-05-28 - Optimize Stopwatch heap allocations in hot paths
 **Learning:** Using `Stopwatch.StartNew()` instantiates a new `Stopwatch` object on the heap. When called in a hot loop (like checking properties for every single file in a recursive directory scan), this creates significant garbage collection pressure.
 **Action:** In .NET 7+, prefer using the static `Stopwatch.GetTimestamp()` to get the start time and `Stopwatch.GetElapsedTime(startTimestamp)` to calculate the duration, which avoids heap allocations entirely while maintaining high-resolution timing.
+
+## 2026-07-28 - Avoid StringBuilder for string sanitization in hot loops
+**Learning:** Using `StringBuilder` for character-by-character string sanitization inside hot paths (like escaping paths for thousands of files during XML serialization) is slower than necessary because of the object allocation overhead, internal capacity management, and bounds checking.
+**Action:** To optimize string sanitization or filtering in C# hot loops where the final length is unknown but bounded, avoid character-by-character `StringBuilder.Append()`. Instead, pre-allocate a `char[]` buffer to the maximum possible length, write valid characters via an index tracker (`buffer[writeIndex++] = c`), and return `new string(buffer, 0, writeIndex)`. This bypasses `StringBuilder` overhead and often outperforms `ArrayPool` or `string.Create` for single-pass iterations.
