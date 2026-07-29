@@ -266,17 +266,23 @@ namespace HDLG_winforms
 				return xml;
 			}
 
-			// Only allocate StringBuilder if sanitization is actually required.
-			StringBuilder sb = new StringBuilder( xml.Length );
-			sb.Append( xml, 0, firstIllegalCharIndex );
+			// Performance optimization: Optimize string sanitization in hot loops using a pre-allocated char array.
+			char[] buffer = new char[xml.Length];
+			int writeIndex = 0;
+
+			for (int i = 0; i < firstIllegalCharIndex; i++)
+			{
+				buffer[writeIndex++] = xml[i];
+			}
+
 			for (int i = firstIllegalCharIndex + 1; i < xml.Length; i++)
 			{
 				if (IsLegalXmlChar( xml [i] ))
 				{
-					sb.Append( xml [i] );
+					buffer[writeIndex++] = xml[i];
 				}
 			}
-			return sb.ToString( );
+			return new string(buffer, 0, writeIndex);
 		}
 
 		private static bool IsLegalXmlChar (int character)
