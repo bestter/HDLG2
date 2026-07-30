@@ -530,7 +530,17 @@ namespace HDLG_winforms
 			await writer.WriteLineAsync( spacer + "<div class=\"file\">" ).ConfigureAwait( false );
 
 			string encodedName = WebUtility.HtmlEncode( file.Name );
-			string encodedPath = Uri.EscapeDataString( file.Path );
+
+			string[] pathParts = file.Path.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
+			for (int i = 0; i < pathParts.Length; i++)
+			{
+				if (!pathParts[i].EndsWith(":", StringComparison.Ordinal))
+				{
+					pathParts[i] = Uri.EscapeDataString(pathParts[i]);
+				}
+			}
+			string encodedPath = string.Join("/", pathParts);
+
 			await writer.WriteLineAsync( $"{spacer}\t<a href=\"file:///{encodedPath}\" download=\"{encodedName}\" referrerpolicy=\"strict-origin\">{encodedName}</a>" ).ConfigureAwait( false );
 
 			await writer.WriteLineAsync( $"{spacer}\t<div class=\"file-meta\">" ).ConfigureAwait( false );
