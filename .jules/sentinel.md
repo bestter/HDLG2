@@ -151,3 +151,8 @@
 **Vulnerability:** The application invoked `explorer.exe` using a relative executable name with `UseShellExecute = false`. This relied on the system `PATH` to locate the binary, making the application vulnerable to PATH hijacking if a malicious executable named `explorer.exe` was placed in a directory with higher precedence.
 **Learning:** When invoking critical system binaries (like `explorer.exe`, `cmd.exe`, etc.) without shell execution, relying on unqualified executable names introduces a binary planting vector.
 **Prevention:** Always use the absolute path when invoking system binaries programmatically. For example, use `Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe")` to ensure the exact system binary is executed.
+
+## 2024-07-30 - [Fix Incorrect file:/// URI Escaping]
+**Vulnerability:** The application was using `Uri.EscapeDataString()` on the entire local file path when generating `file:///` URLs for HTML exports. This incorrectly escaped Windows drive letters (e.g., `C:` became `C%3A`), resulting in invalid URLs that could break local file access or navigation.
+**Learning:** `Uri.EscapeDataString()` is designed to escape individual data strings (like query parameters or URL segments), not entire paths containing scheme or drive letter delimiters. Applying it to an entire Windows path corrupts the drive letter.
+**Prevention:** When constructing `file:///` URLs from local paths in C#, split the path by directory separators and apply `Uri.EscapeDataString` to each segment individually, explicitly skipping segments that end with a colon (e.g., `p.EndsWith(":", StringComparison.Ordinal)`).
