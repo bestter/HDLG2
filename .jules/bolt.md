@@ -154,3 +154,7 @@
 ## 2026-07-28 - Avoid StringBuilder for string sanitization in hot loops
 **Learning:** Using `StringBuilder` for character-by-character string sanitization inside hot paths (like escaping paths for thousands of files during XML serialization) is slower than necessary because of the object allocation overhead, internal capacity management, and bounds checking.
 **Action:** To optimize string sanitization or filtering in C# hot loops where the final length is unknown but bounded, avoid character-by-character `StringBuilder.Append()`. Instead, pre-allocate a `char[]` buffer to the maximum possible length, write valid characters via an index tracker (`buffer[writeIndex++] = c`), and return `new string(buffer, 0, writeIndex)`. This bypasses `StringBuilder` overhead and often outperforms `ArrayPool` or `string.Create` for single-pass iterations.
+
+## 2026-07-31 - Concurrent file property extraction during directory browse
+**Learning:** Awaiting file property extraction sequentially inside the enumeration loops (e.g., `await propertyBrowser.GetFilePropertyAsync(f)` in `foreach`) causes a significant performance bottleneck during directory traversal, as it processes one file at a time and ties up the thread pool.
+**Action:** Always prefer `Parallel.ForEachAsync` to execute independent IO-bound tasks concurrently, which is particularly beneficial when extracting properties for numerous files during directory traversal. This also avoids the memory bloat of collecting thousands of tasks in a single list.
