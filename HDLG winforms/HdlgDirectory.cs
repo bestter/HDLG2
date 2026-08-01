@@ -80,13 +80,41 @@ namespace HDLG_winforms
 			ArgumentNullException.ThrowIfNull( propertyBrowser );
 			log.Debug( "Directory: {Path} {IsTopDirectoryName}: {IsTopDirectory} {BrowseSubdirectoryName}: {BrowseSubdirectory}", Path, nameof( IsTopDirectory ), IsTopDirectory, nameof( BrowseSubdirectory ), BrowseSubdirectory );
 
+			async Task ProcessFileAsync(FileInfo f)
+			{
+				try
+				{
+					var properties = await propertyBrowser.GetFilePropertyAsync( f ).ConfigureAwait( false );
+					var file = new HdlgFile( f, properties );
+					lock (files)
+					{
+						files.Add( file );
+					}
+				}
+				catch (UnauthorizedAccessException ex)
+				{
+					log.Warning( ex, "Access denied to file: {Path}", f.FullName );
+				}
+				catch (System.Security.SecurityException ex)
+				{
+					log.Warning( ex, "Security error accessing file: {Path}", f.FullName );
+				}
+			}
+
+			// Performance optimization: Use Parallel.ForEachAsync to execute IO-bound file extraction
+			// concurrently while naturally bounding parallelism and avoiding the memory bloat of generating a massive List<Task>.
+			var parallelOptions = new ParallelOptions
+			{
+				MaxDegreeOfParallelism = Environment.ProcessorCount * 2
+			};
+
 			if (BrowseSubdirectory)
 			{
 				try
 				{
 					// Performance optimization: Iterate via enumerator directly to avoid GetFileSystemInfos() array allocation bloat
 					// and List<T> capacity over-allocation which can cause severe memory bloat on large directories.
-					foreach (var info in directoryInfo.EnumerateFileSystemInfos( ))
+					await Parallel.ForEachAsync( directoryInfo.EnumerateFileSystemInfos( ), parallelOptions, async (info, token) =>
 					{
 						if (info is DirectoryInfo d)
 						{
@@ -94,17 +122,20 @@ namespace HDLG_winforms
 							if ((d.Attributes & FileAttributes.ReparsePoint) != 0)
 							{
 								log.Warning( "Skipping symlink directory to prevent infinite recursion: {DirectoryName}", d.FullName );
-								continue;
+								return;
 							}
-							directories.Add( new HdlgDirectory( d, false, true, log ) );
+
+							var hd = new HdlgDirectory( d, false, true, log );
+							lock (directories)
+							{
+								directories.Add( hd );
+							}
 						}
 						else if (info is FileInfo f)
 						{
-							var properties = await propertyBrowser.GetFilePropertyAsync( f ).ConfigureAwait( false );
-							var file = new HdlgFile( f, properties );
-							files.Add( file );
+							await ProcessFileAsync( f ).ConfigureAwait( false );
 						}
-					}
+					} ).ConfigureAwait( false );
 				}
 				catch (UnauthorizedAccessException ex)
 				{
@@ -122,12 +153,10 @@ namespace HDLG_winforms
 				{
 					// Performance optimization: Iterate via enumerator directly to avoid GetFiles() array allocation bloat
 					// and List<T> capacity over-allocation which can cause severe memory bloat on large directories.
-					foreach (var f in directoryInfo.EnumerateFiles( ))
+					await Parallel.ForEachAsync( directoryInfo.EnumerateFiles( ), parallelOptions, async (f, token) =>
 					{
-						var properties = await propertyBrowser.GetFilePropertyAsync( f ).ConfigureAwait( false );
-						var file = new HdlgFile( f, properties );
-						files.Add( file );
-					}
+						await ProcessFileAsync( f ).ConfigureAwait( false );
+					} ).ConfigureAwait( false );
 				}
 				catch (UnauthorizedAccessException ex)
 				{
