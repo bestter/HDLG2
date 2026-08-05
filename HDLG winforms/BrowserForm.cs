@@ -167,11 +167,12 @@ namespace HDLG_winforms
 						}
 					}
 
-					var _dirNodes = new TreeNode [dirCount];
-					var _fileNodes = new TreeNode [fileCount];
+					// Performance optimization: Allocate a single array sized exactly for the sum of directories and files
+					// to eliminate multiple array allocations and minimize the number of AddRange calls.
+					var _allNodes = new TreeNode [dirCount + fileCount];
 
 					int dirIndex = 0;
-					int fileIndex = 0;
+					int fileIndex = dirCount;
 
 					for (int i = 0; i < fsInfos.Length; i++)
 					{
@@ -183,19 +184,18 @@ namespace HDLG_winforms
 							var node = new TreeNode( dir.Name );
 							node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
 							node.Nodes.Add( new TreeNode( "Loading..." ) );
-							_dirNodes [dirIndex++] = node;
+							_allNodes [dirIndex++] = node;
 						}
 						else if (fsInfo is FileInfo file)
 						{
 							var node = new TreeNode( file.Name );
 							node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
-							_fileNodes [fileIndex++] = node;
+							_allNodes [fileIndex++] = node;
 						}
 					}
 
 					e.Node.TreeView?.BeginUpdate( );
-					e.Node.Nodes.AddRange( _dirNodes );
-					e.Node.Nodes.AddRange( _fileNodes );
+					e.Node.Nodes.AddRange( _allNodes );
 					e.Node.TreeView?.EndUpdate( );
 				}
 				catch (UnauthorizedAccessException ex)
