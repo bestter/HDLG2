@@ -158,3 +158,6 @@
 ## 2026-07-31 - Concurrent file property extraction during directory browse
 **Learning:** Awaiting file property extraction sequentially inside the enumeration loops (e.g., `await propertyBrowser.GetFilePropertyAsync(f)` in `foreach`) causes a significant performance bottleneck during directory traversal, as it processes one file at a time and ties up the thread pool.
 **Action:** Always prefer `Parallel.ForEachAsync` to execute independent IO-bound tasks concurrently, which is particularly beneficial when extracting properties for numerous files during directory traversal. This also avoids the memory bloat of collecting thousands of tasks in a single list.
+## 2026-08-01 - Avoid guessing code from truncated terminal output
+**Learning:** When using `cat` or `grep`, output may be artificially truncated by the terminal buffer (e.g. at 1000 characters). Assuming variable names or logic (like `AddRange` calls) that are hidden by truncation leads to hallucinated plans that fail review and violate the Groundedness Rule.
+**Action:** Always use targeted line extraction commands like `sed -n '<start>,<end>p' <file>` to inspect the actual full logic of a method block if previous reads were truncated, prior to forming a plan.
