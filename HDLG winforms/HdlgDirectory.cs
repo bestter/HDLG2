@@ -173,13 +173,12 @@ namespace HDLG_winforms
 			TotalDirectories = directories.Count;
 			TotalFiles = files.Count;
 
-			var tasks = new Task [directories.Count];
-			for (int i = 0; i < directories.Count; i++)
+			// Performance optimization: Throttle recursive directory browsing using Parallel.ForEachAsync
+			// instead of an unbounded Task.WhenAll to prevent thread pool starvation and file handle exhaustion.
+			await Parallel.ForEachAsync( directories, parallelOptions, async (dir, token) =>
 			{
-				tasks [i] = directories [i].BrowseAsync( propertyBrowser );
-			}
-
-			await Task.WhenAll( tasks ).ConfigureAwait( false );
+				await dir.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
+			} ).ConfigureAwait( false );
 
 			for (int i = 0; i < directories.Count; i++)
 			{
