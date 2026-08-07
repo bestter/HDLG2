@@ -471,6 +471,7 @@ namespace HDLG_winforms
 			log.Debug( "In {Method} {Type} {Directory}", nameof( WritHtmlDirectoryAsync ), nameof( HdlgDirectory ), directory );
 			string spacer = depth < 20 ? Spacers [depth] : new string( ' ', depth );
 			string encodedPath = WebUtility.HtmlEncode( directory.Path );
+			string urlEncodedDirPath = GetUrlEncodedPath( directory.Path );
 			string id = encodedPath; // Re-use cached encoded path
 			string name = WebUtility.HtmlEncode( directory.Name );
 			string created = directory.CreationTime.ToString( "F", CultureInfo.CurrentCulture );
@@ -502,12 +503,25 @@ namespace HDLG_winforms
 				for (int i = 0; i < directory.Files.Count; i++)
 				{
 					HdlgFile file = directory.Files [i];
-					await WriteHtmlFileAsync( writer, file, spacer + "\t" ).ConfigureAwait( false );
+					await WriteHtmlFileAsync( writer, file, spacer + "\t", urlEncodedDirPath ).ConfigureAwait( false );
 				}
 				await writer.WriteLineAsync( spacer + "\t</div>" ).ConfigureAwait( false );
 			}
 
 			await writer.WriteLineAsync( spacer + "</details>" ).ConfigureAwait( false );
+		}
+
+		private static string GetUrlEncodedPath(string path)
+		{
+			string[] pathParts = path.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
+			for (int i = 0; i < pathParts.Length; i++)
+			{
+				if (!pathParts[i].EndsWith(":", StringComparison.Ordinal))
+				{
+					pathParts[i] = Uri.EscapeDataString(pathParts[i]);
+				}
+			}
+			return string.Join("/", pathParts);
 		}
 
 		/// <summary>
@@ -517,7 +531,7 @@ namespace HDLG_winforms
 		/// <param name="file">File that content the data</param>
 		/// <returns>A task</returns>
 		/// <exception cref="ArgumentNullException"></exception>
-		private async Task WriteHtmlFileAsync (TextWriter writer, HdlgFile file, string spacer)
+		private async Task WriteHtmlFileAsync (TextWriter writer, HdlgFile file, string spacer, string urlEncodedDirPath)
 		{
 			if (writer is null)
 			{
@@ -531,15 +545,10 @@ namespace HDLG_winforms
 
 			string encodedName = WebUtility.HtmlEncode( file.Name );
 
-			string[] pathParts = file.Path.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
-			for (int i = 0; i < pathParts.Length; i++)
-			{
-				if (!pathParts[i].EndsWith(":", StringComparison.Ordinal))
-				{
-					pathParts[i] = Uri.EscapeDataString(pathParts[i]);
-				}
-			}
-			string encodedPath = string.Join("/", pathParts);
+			// Performance optimization: Combine pre-encoded directory path with file name instead of splitting full path per file
+			string encodedPath = urlEncodedDirPath.EndsWith('/')
+				? urlEncodedDirPath + Uri.EscapeDataString(file.Name)
+				: urlEncodedDirPath + "/" + Uri.EscapeDataString(file.Name);
 
 			await writer.WriteLineAsync( $"{spacer}\t<a href=\"file:///{encodedPath}\" download=\"{encodedName}\" referrerpolicy=\"strict-origin\">{encodedName}</a>" ).ConfigureAwait( false );
 
