@@ -415,7 +415,37 @@ namespace HDLG_winforms
 			{
 				if (IsPathWithinRoot( info.Path ))
 				{
-					MainWindow.OpenWithDefaultProgram( info.Path );
+					try
+					{
+						MainWindow.OpenWithDefaultProgram( info.Path );
+					}
+					catch (InvalidOperationException ex)
+					{
+						logger.Warning( ex, "Security block opening file: {Path}", info.Path );
+						MessageBox.Show( this, ex.Message, "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
+					}
+					catch (FileNotFoundException ex)
+					{
+						logger.Warning( ex, "File not found: {Path}", info.Path );
+						MessageBox.Show( this, "The file could not be found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+					}
+					catch (UnauthorizedAccessException ex)
+					{
+						logger.Warning( ex, "Access denied opening file: {Path}", info.Path );
+						MessageBox.Show( this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+					}
+					catch (SecurityException ex)
+					{
+						logger.Warning( ex, "Security exception opening file: {Path}", info.Path );
+						MessageBox.Show( this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+					}
+#pragma warning disable CA1031 // Do not catch general exception types
+					catch (Exception ex)
+					{
+						logger.Error( ex, "Error opening file: {Path}", info.Path );
+						MessageBox.Show( this, "Could not open the file. It might have been deleted or access is restricted.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+					}
+#pragma warning restore CA1031 // Do not catch general exception types
 				}
 				else
 				{
