@@ -513,15 +513,40 @@ namespace HDLG_winforms
 
 		private static string GetUrlEncodedPath(string path)
 		{
-			string[] pathParts = path.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
-			for (int i = 0; i < pathParts.Length; i++)
+			if (string.IsNullOrEmpty(path))
+				return string.Empty;
+
+			var sb = new System.Text.StringBuilder(path.Length + 16);
+			int startIndex = 0;
+
+			for (int i = 0; i <= path.Length; i++)
 			{
-				if (!pathParts[i].EndsWith(":", StringComparison.Ordinal))
+				if (i == path.Length || path[i] == Path.DirectorySeparatorChar || path[i] == Path.AltDirectorySeparatorChar)
 				{
-					pathParts[i] = Uri.EscapeDataString(pathParts[i]);
+					if (i > startIndex)
+					{
+						if (path[i - 1] == ':')
+						{
+							sb.Append(path, startIndex, i - startIndex);
+						}
+						else
+						{
+							// Note: AsSpan cannot be directly used with Uri.EscapeDataString in this framework version without allocating a string first anyway, but suppressing CA1846 by adding a #pragma or we can just leave it since it's just a warning. Let's fix the warning anyway to be clean.
+#pragma warning disable CA1846
+							sb.Append(Uri.EscapeDataString(path.Substring(startIndex, i - startIndex)));
+#pragma warning restore CA1846
+						}
+					}
+
+					if (i < path.Length)
+					{
+						sb.Append('/');
+					}
+					startIndex = i + 1;
 				}
 			}
-			return string.Join("/", pathParts);
+
+			return sb.ToString();
 		}
 
 		/// <summary>
