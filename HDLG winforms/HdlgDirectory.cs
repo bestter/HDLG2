@@ -54,6 +54,10 @@ namespace HDLG_winforms
 		/// </summary>
 		private readonly ILogger log;
 
+		internal Func<IEnumerable<FileSystemInfo>>? _enumerateFileSystemInfosHook;
+		internal Func<IEnumerable<FileInfo>>? _enumerateFilesHook;
+
+
 		public HdlgDirectory (string path, bool isTopDirectory, bool browseSubdirectory, ILogger log) : this( new DirectoryInfo( path ), isTopDirectory, browseSubdirectory, log )
 		{
 
@@ -114,7 +118,7 @@ namespace HDLG_winforms
 				{
 					// Performance optimization: Iterate via enumerator directly to avoid GetFileSystemInfos() array allocation bloat
 					// and List<T> capacity over-allocation which can cause severe memory bloat on large directories.
-					await Parallel.ForEachAsync( directoryInfo.EnumerateFileSystemInfos( ), parallelOptions, async (info, token) =>
+					await Parallel.ForEachAsync( (_enumerateFileSystemInfosHook?.Invoke() ?? directoryInfo.EnumerateFileSystemInfos()), parallelOptions, async (info, token) =>
 					{
 						if (info is DirectoryInfo d)
 						{
@@ -153,7 +157,7 @@ namespace HDLG_winforms
 				{
 					// Performance optimization: Iterate via enumerator directly to avoid GetFiles() array allocation bloat
 					// and List<T> capacity over-allocation which can cause severe memory bloat on large directories.
-					await Parallel.ForEachAsync( directoryInfo.EnumerateFiles( ), parallelOptions, async (f, token) =>
+					await Parallel.ForEachAsync( (_enumerateFilesHook?.Invoke() ?? directoryInfo.EnumerateFiles()), parallelOptions, async (f, token) =>
 					{
 						await ProcessFileAsync( f ).ConfigureAwait( false );
 					} ).ConfigureAwait( false );
