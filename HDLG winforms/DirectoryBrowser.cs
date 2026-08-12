@@ -471,6 +471,7 @@ namespace HDLG_winforms
 			log.Debug( "In {Method} {Type} {Directory}", nameof( WritHtmlDirectoryAsync ), nameof( HdlgDirectory ), directory );
 			string spacer = depth < 20 ? Spacers [depth] : new string( ' ', depth );
 			string encodedPath = WebUtility.HtmlEncode( directory.Path );
+			string urlEncodedDirPath = GetUrlEncodedPath( directory.Path );
 			string id = encodedPath; // Re-use cached encoded path
 			string name = WebUtility.HtmlEncode( directory.Name );
 			string created = directory.CreationTime.ToString( "F", CultureInfo.CurrentCulture );
@@ -502,12 +503,50 @@ namespace HDLG_winforms
 				for (int i = 0; i < directory.Files.Count; i++)
 				{
 					HdlgFile file = directory.Files [i];
-					await WriteHtmlFileAsync( writer, file, spacer + "\t" ).ConfigureAwait( false );
+					await WriteHtmlFileAsync( writer, file, spacer + "\t", urlEncodedDirPath ).ConfigureAwait( false );
 				}
 				await writer.WriteLineAsync( spacer + "\t</div>" ).ConfigureAwait( false );
 			}
 
 			await writer.WriteLineAsync( spacer + "</details>" ).ConfigureAwait( false );
+		}
+
+		private static string GetUrlEncodedPath(string path)
+		{
+			if (string.IsNullOrEmpty(path))
+				return string.Empty;
+
+			var sb = new System.Text.StringBuilder(path.Length + 16);
+			int startIndex = 0;
+
+			for (int i = 0; i <= path.Length; i++)
+			{
+				if (i == path.Length || path[i] == Path.DirectorySeparatorChar || path[i] == Path.AltDirectorySeparatorChar)
+				{
+					if (i > startIndex)
+					{
+						if (path[i - 1] == ':')
+						{
+							sb.Append(path, startIndex, i - startIndex);
+						}
+						else
+						{
+							// Note: AsSpan cannot be directly used with Uri.EscapeDataString in this framework version without allocating a string first anyway, but suppressing CA1846 by adding a #pragma or we can just leave it since it's just a warning. Let's fix the warning anyway to be clean.
+#pragma warning disable CA1846
+							sb.Append(Uri.EscapeDataString(path.Substring(startIndex, i - startIndex)));
+#pragma warning restore CA1846
+						}
+					}
+
+					if (i < path.Length)
+					{
+						sb.Append('/');
+					}
+					startIndex = i + 1;
+				}
+			}
+
+			return sb.ToString();
 		}
 
 		/// <summary>
@@ -517,7 +556,7 @@ namespace HDLG_winforms
 		/// <param name="file">File that content the data</param>
 		/// <returns>A task</returns>
 		/// <exception cref="ArgumentNullException"></exception>
-		private async Task WriteHtmlFileAsync (TextWriter writer, HdlgFile file, string spacer)
+		private async Task WriteHtmlFileAsync (TextWriter writer, HdlgFile file, string spacer, string urlEncodedDirPath)
 		{
 			if (writer is null)
 			{
@@ -531,36 +570,10 @@ namespace HDLG_winforms
 
 			string encodedName = WebUtility.HtmlEncode( file.Name );
 
-			// Performance optimization: Avoid Split(), array allocation, and string.Join() allocations
-			// by using a single-pass StringBuilder loop for generating the escaped file URI safely.
-			string filePath = file.Path;
-			System.Text.StringBuilder sb = new System.Text.StringBuilder( filePath.Length * 2 );
-			int lastSep = -1;
-			for (int i = 0; i <= filePath.Length; i++)
-			{
-				if (i == filePath.Length || filePath[i] == Path.DirectorySeparatorChar || filePath[i] == Path.AltDirectorySeparatorChar)
-				{
-					int segLen = i - (lastSep + 1);
-					if (segLen > 0)
-					{
-						if (filePath[i - 1] == ':')
-						{
-							sb.Append( filePath, lastSep + 1, segLen );
-						}
-						else
-						{
-							sb.Append( Uri.EscapeDataString( filePath.Substring( lastSep + 1, segLen ) ) );
-						}
-					}
-
-					if (i < filePath.Length)
-					{
-						sb.Append( '/' );
-					}
-					lastSep = i;
-				}
-			}
-			string encodedPath = sb.ToString( );
+			// Performance optimization: Combine pre-encoded directory path with file name instead of splitting full path per file
+			string encodedPath = urlEncodedDirPath.EndsWith('/')
+				? urlEncodedDirPath + Uri.EscapeDataString(file.Name)
+				: urlEncodedDirPath + "/" + Uri.EscapeDataString(file.Name);
 
 			await writer.WriteLineAsync( $"{spacer}\t<a href=\"file:///{encodedPath}\" download=\"{encodedName}\" referrerpolicy=\"strict-origin\">{encodedName}</a>" ).ConfigureAwait( false );
 
