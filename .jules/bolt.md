@@ -158,6 +158,10 @@
 ## 2026-07-31 - Concurrent file property extraction during directory browse
 **Learning:** Awaiting file property extraction sequentially inside the enumeration loops (e.g., `await propertyBrowser.GetFilePropertyAsync(f)` in `foreach`) causes a significant performance bottleneck during directory traversal, as it processes one file at a time and ties up the thread pool.
 **Action:** Always prefer `Parallel.ForEachAsync` to execute independent IO-bound tasks concurrently, which is particularly beneficial when extracting properties for numerous files during directory traversal. This also avoids the memory bloat of collecting thousands of tasks in a single list.
+
+## 2026-08-01 - Avoid creating substring arrays when encoding path components
+**Learning:** During HTML/XML report generation, splitting file paths using `string.Split()` to URL-encode each segment creates unnecessary intermediate string arrays, especially expensive for wide directory trees.
+**Action:** Use a single `StringBuilder` with a loop tracking the start index, and map over `ReadOnlySpan<char>` via `path.AsSpan(start, length)` to evaluate segments without triggering heavy string allocations.
 ## 2026-07-28 - Unbounded Concurrency in File Parsing Causes Starvation
 **Learning:** Using `Task.WhenAll` to await an unbounded collection of highly concurrent tasks (e.g., recursive directory traversal) can lead to severe thread pool starvation, memory bloat, and file handle exhaustion because thousands of I/O operations are spawned simultaneously.
 **Action:** Replace naive unbounded `Task.WhenAll` loops with a throttled approach like `Parallel.ForEachAsync`, providing a `ParallelOptions` object with a defined `MaxDegreeOfParallelism` to bound the concurrency and prevent resource exhaustion.
