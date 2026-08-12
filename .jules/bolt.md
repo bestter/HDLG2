@@ -162,3 +162,9 @@
 ## 2026-08-01 - Avoid creating substring arrays when encoding path components
 **Learning:** During HTML/XML report generation, splitting file paths using `string.Split()` to URL-encode each segment creates unnecessary intermediate string arrays, especially expensive for wide directory trees.
 **Action:** Use a single `StringBuilder` with a loop tracking the start index, and map over `ReadOnlySpan<char>` via `path.AsSpan(start, length)` to evaluate segments without triggering heavy string allocations.
+## 2026-07-28 - Unbounded Concurrency in File Parsing Causes Starvation
+**Learning:** Using `Task.WhenAll` to await an unbounded collection of highly concurrent tasks (e.g., recursive directory traversal) can lead to severe thread pool starvation, memory bloat, and file handle exhaustion because thousands of I/O operations are spawned simultaneously.
+**Action:** Replace naive unbounded `Task.WhenAll` loops with a throttled approach like `Parallel.ForEachAsync`, providing a `ParallelOptions` object with a defined `MaxDegreeOfParallelism` to bound the concurrency and prevent resource exhaustion.
+## 2026-08-01 - Avoid guessing code from truncated terminal output
+**Learning:** When using `cat` or `grep`, output may be artificially truncated by the terminal buffer (e.g. at 1000 characters). Assuming variable names or logic (like `AddRange` calls) that are hidden by truncation leads to hallucinated plans that fail review and violate the Groundedness Rule.
+**Action:** Always use targeted line extraction commands like `sed -n '<start>,<end>p' <file>` to inspect the actual full logic of a method block if previous reads were truncated, prior to forming a plan.
