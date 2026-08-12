@@ -531,15 +531,36 @@ namespace HDLG_winforms
 
 			string encodedName = WebUtility.HtmlEncode( file.Name );
 
-			string[] pathParts = file.Path.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
-			for (int i = 0; i < pathParts.Length; i++)
+			// Performance optimization: Avoid Split(), array allocation, and string.Join() allocations
+			// by using a single-pass StringBuilder loop for generating the escaped file URI safely.
+			string filePath = file.Path;
+			System.Text.StringBuilder sb = new System.Text.StringBuilder( filePath.Length * 2 );
+			int lastSep = -1;
+			for (int i = 0; i <= filePath.Length; i++)
 			{
-				if (!pathParts[i].EndsWith(":", StringComparison.Ordinal))
+				if (i == filePath.Length || filePath[i] == Path.DirectorySeparatorChar || filePath[i] == Path.AltDirectorySeparatorChar)
 				{
-					pathParts[i] = Uri.EscapeDataString(pathParts[i]);
+					int segLen = i - (lastSep + 1);
+					if (segLen > 0)
+					{
+						if (filePath[i - 1] == ':')
+						{
+							sb.Append( filePath, lastSep + 1, segLen );
+						}
+						else
+						{
+							sb.Append( Uri.EscapeDataString( filePath.Substring( lastSep + 1, segLen ) ) );
+						}
+					}
+
+					if (i < filePath.Length)
+					{
+						sb.Append( '/' );
+					}
+					lastSep = i;
 				}
 			}
-			string encodedPath = string.Join("/", pathParts);
+			string encodedPath = sb.ToString( );
 
 			await writer.WriteLineAsync( $"{spacer}\t<a href=\"file:///{encodedPath}\" download=\"{encodedName}\" referrerpolicy=\"strict-origin\">{encodedName}</a>" ).ConfigureAwait( false );
 

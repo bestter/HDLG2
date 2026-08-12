@@ -158,3 +158,7 @@
 ## 2026-07-31 - Concurrent file property extraction during directory browse
 **Learning:** Awaiting file property extraction sequentially inside the enumeration loops (e.g., `await propertyBrowser.GetFilePropertyAsync(f)` in `foreach`) causes a significant performance bottleneck during directory traversal, as it processes one file at a time and ties up the thread pool.
 **Action:** Always prefer `Parallel.ForEachAsync` to execute independent IO-bound tasks concurrently, which is particularly beneficial when extracting properties for numerous files during directory traversal. This also avoids the memory bloat of collecting thousands of tasks in a single list.
+
+## 2026-07-28 - Avoid manual buffer URI encoding multiplier for non-ASCII characters
+**Learning:** When writing custom string escaping logic to avoid allocations (e.g., replacing `string.Split`), do not use a fixed multiplier (like `Length * 3`) to pre-allocate a `char[]` buffer for URL encoding. `Uri.EscapeDataString` can expand non-ASCII characters (such as emojis) to much more than 3 characters (up to 9), leading to an `IndexOutOfRangeException`.
+**Action:** Use a `StringBuilder` instead of a static array to safely handle unpredictable expansion lengths when manually URL encoding paths to prevent index out of bounds exceptions.
