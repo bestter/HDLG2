@@ -159,12 +159,19 @@
 **Learning:** Awaiting file property extraction sequentially inside the enumeration loops (e.g., `await propertyBrowser.GetFilePropertyAsync(f)` in `foreach`) causes a significant performance bottleneck during directory traversal, as it processes one file at a time and ties up the thread pool.
 **Action:** Always prefer `Parallel.ForEachAsync` to execute independent IO-bound tasks concurrently, which is particularly beneficial when extracting properties for numerous files during directory traversal. This also avoids the memory bloat of collecting thousands of tasks in a single list.
 
+## 2026-07-28 - Avoid manual buffer URI encoding multiplier for non-ASCII characters
+**Learning:** When writing custom string escaping logic to avoid allocations (e.g., replacing `string.Split`), do not use a fixed multiplier (like `Length * 3`) to pre-allocate a `char[]` buffer for URL encoding. `Uri.EscapeDataString` can expand non-ASCII characters (such as emojis) to much more than 3 characters (up to 9), leading to an `IndexOutOfRangeException`.
+**Action:** Use a `StringBuilder` instead of a static array to safely handle unpredictable expansion lengths when manually URL encoding paths to prevent index out of bounds exceptions.
+
 ## 2026-08-01 - Avoid creating substring arrays when encoding path components
 **Learning:** During HTML/XML report generation, splitting file paths using `string.Split()` to URL-encode each segment creates unnecessary intermediate string arrays, especially expensive for wide directory trees.
 **Action:** Use a single `StringBuilder` with a loop tracking the start index, and map over `ReadOnlySpan<char>` via `path.AsSpan(start, length)` to evaluate segments without triggering heavy string allocations.
+
 ## 2026-07-28 - Unbounded Concurrency in File Parsing Causes Starvation
 **Learning:** Using `Task.WhenAll` to await an unbounded collection of highly concurrent tasks (e.g., recursive directory traversal) can lead to severe thread pool starvation, memory bloat, and file handle exhaustion because thousands of I/O operations are spawned simultaneously.
 **Action:** Replace naive unbounded `Task.WhenAll` loops with a throttled approach like `Parallel.ForEachAsync`, providing a `ParallelOptions` object with a defined `MaxDegreeOfParallelism` to bound the concurrency and prevent resource exhaustion.
+
 ## 2026-08-01 - Avoid guessing code from truncated terminal output
 **Learning:** When using `cat` or `grep`, output may be artificially truncated by the terminal buffer (e.g. at 1000 characters). Assuming variable names or logic (like `AddRange` calls) that are hidden by truncation leads to hallucinated plans that fail review and violate the Groundedness Rule.
 **Action:** Always use targeted line extraction commands like `sed -n '<start>,<end>p' <file>` to inspect the actual full logic of a method block if previous reads were truncated, prior to forming a plan.
+
