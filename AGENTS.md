@@ -2,8 +2,8 @@
 
 Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
-**Version** : 1.5.0.0  
-**Dernière mise à jour** : 13 août 2026 — Table NuGet alignée sur les csproj ; orchestration d'export unifiée (`RunExportAsync` / `PerformDirectoryBrowseAsync`) ; projet Benchmark ; tests JSON d'arbre imbriqué.
+**Version** : 1.4.0.0
+**Dernière mise à jour** : 27 juillet 2026 — Vérification sécurisée des répertoires restreints (`IsReparsePoint` dans `BrowserForm`), correction du mécanisme de temporisation (`WaitAsync` dans `FilePropertyBrowser`), harmonisation et fiabilisation de la suite de tests unitaires (`BrowserFormLoadTests`).
 **Propriétaire** : Martin Labelle (@bestter)
 
 ---
@@ -53,13 +53,13 @@ Avant toute modification, suis toujours cet ordre :
 - **Langage principal** : C# (.NET 10)
 - **Framework cible** : `net10.0-windows10.0.26100.0`
 - **Licence** : GNU General Public License v3.0 (GPLv3)
-- **Objectif** : Fournir une interface graphique utilisateur (GUI) permettant de parcourir le contenu d'un répertoire (et ses sous-répertoires) et de générer un listing structuré au format **XML**, **HTML** ou **JSON**, avec extraction des propriétés étendues des fichiers (images, documents Word/Excel, PDF, MP3).
+- **Objectif** : Fournir une interface graphique utilisateur (GUI) permettant de parcourir le contenu d'un répertoire (et ses sous-répertoires) et de générer un listing structuré au format **XML** ou **HTML**, avec extraction des propriétés étendues des fichiers (images, documents Word/Excel, PDF, MP3).
 
 ---
 
 ## 📁 Structure de la Solution
 
-La solution `HDLG.sln` contient **quatre projets** :
+La solution `HDLG.sln` contient **trois projets** :
 
 ### Projet 1 : `HDLG winforms` (Application WinForms principale)
 
@@ -70,11 +70,11 @@ La solution `HDLG.sln` contient **quatre projets** :
 | **`AppBranding.cs`** | Centralise le markup SVG inline (exports HTML), le pied de page HTML, et le chargement des assets logo/icône (`Assets/hdlg-logo.png`, `Assets/hdlg-icon.ico`). |
 | **`AppLogoRenderer.cs`** | Rendu bitmap de secours du monogramme (géométrie alignée sur le SVG) si les assets empaquetés sont absents. |
 | **`Assets/`** | Sources SVG (`hdlg-logo.svg`, `hdlg-app-icon.svg`) et exports PNG/ICO générés via `scripts/GenerateAppLogoAssets.ps1` (Inkscape). |
-| **`MainWindow.cs`** | Fenêtre principale (`KryptonForm`). Un seul chemin UI (`RunExportAsync`) pour XML / HTML / JSON : dialogue, progression, verrouillage des boutons, exceptions. Un seul helper (`PerformDirectoryBrowseAsync`) pour `BrowseAsync` + sauvegarde + timings. Les trois boutons passent uniquement le dialogue, l'extension et le délégué `SaveAs*`. La checkbox sous-répertoires est lue sur le thread UI avant `Task.Run`. |
+| **`MainWindow.cs`** | Fenêtre principale (`KryptonForm`). Permet de sélectionner un répertoire, lancer le parcours en XML ou HTML via `Task.Run`, ouvrir l'UI Explorer, afficher les temps de performance (browse, save, total). |
 | **`MainWindow.Designer.cs`** | Layout WinForms de la fenêtre principale (contrôles Krypton : `KryptonHeaderGroup`, `KryptonButton`, `KryptonProgressBar`, etc.). |
 | **`BrowserForm.cs`** | Formulaire de navigation arborescente (`KryptonTreeView`) avec chargement paresseux (lazy loading) des répertoires/fichiers. Affiche les propriétés d'un fichier sélectionné dans un `KryptonListView`. |
 | **`BrowserForm.Designer.cs`** | Layout WinForms de l'explorateur (contrôles Krypton, `KryptonSplitContainer`). |
-| **`DirectoryBrowser.cs`** | Cœur logique de l'export. Contient `SaveAsXMLAsync()` (génération XML via `XmlWriter`), `SaveAsHTMLAsync()` (génération HTML self-contained avec CSS embarqué ; polices système uniquement, sans Google Fonts externes pour offline/sécurité) et `SaveAsJSONAsync()` (enveloppe async + `FlushAsync` ; la marche synchrone de l'arbre est dans `WriteJsonDocument`, JSON compact via `Utf8JsonWriter`, modèle PascalCase aligné sur l'XML, arbre sous `Root`). |
+| **`DirectoryBrowser.cs`** | Cœur logique de l'export. Contient `SaveAsXMLAsync()` (génération XML via `XmlWriter`) et `SaveAsHTMLAsync()` (génération HTML self-contained avec CSS embarqué ; polices système uniquement, sans Google Fonts externes pour offline/sécurité). |
 | **`Directory.cs`** | Modèle de données (legacy) représentant un répertoire. Implémente `IEquatable`, `IComparable`. Parcourt récursivement les sous-répertoires et fichiers. |
 | **`HdlgDirectory.cs`** | Modèle de données (version refactorisée) d'un répertoire. Même rôle que `Directory.cs` mais avec un code plus propre (utilisation de `IReadOnlyList`, `ArgumentNullException.ThrowIfNull`, etc.). |
 | **`File.cs`** | Modèle de données (legacy) d'un fichier. Contient les métadonnées (nom, chemin, extension, taille, date de création, propriétés étendues). |
@@ -97,18 +97,11 @@ La solution `HDLG.sln` contient **quatre projets** :
 | **`Mp3PropertyGetter.cs`** | Extraction de propriétés de fichiers MP3 (via `TagLibSharp`). |
 | **`FilePropertyGetterStatistic.cs`** | Wrapper autour d'un `IFilePropertyGetter` pour mesurer le temps d'exécution et compter les fichiers traités. |
 
-### Projet 3 : `Benchmark` (Micro-benchmarks de parcours)
+### Projet 3 : `HDLG.Tests` (Tests unitaires – xUnit)
 
 | Fichier | Rôle |
 |---|---|
-| **`Program.cs`** | Mesure le chemin `HdlgDirectory.BrowseAsync` (warmup + itérations chronométrées). |
-| **`Benchmark.csproj`** | Exe `net10.0-windows10.0.26100.0`, plateformes `AnyCPU;x64`. Dépend de `Serilog` 4.4.0 et référence les deux projets de production. |
-
-### Projet 4 : `HDLG.Tests` (Tests unitaires – xUnit)
-
-| Fichier | Rôle |
-|---|---|
-| **`DirectoryBrowserTests.cs`** | Tests de `DirectoryBrowser` : validation des paramètres (null/empty), génération XML (structure, balises attendues), génération HTML (DOCTYPE, structure, contenu) et génération JSON (contrat compact, `Root`, types natifs, clés originales, compteurs, arbre imbriqué, booléen natif). Utilise des fichiers temporaires nettoyés via `IDisposable`. |
+| **`DirectoryBrowserTests.cs`** | Tests de `DirectoryBrowser` : validation des paramètres (null/empty), génération XML (structure, balises attendues) et génération HTML (DOCTYPE, structure, contenu). Utilise des fichiers temporaires nettoyés via `IDisposable`. |
 | **`FilePropertyBrowserTests.cs`** | Tests de `FilePropertyBrowser` : validation du constructeur (null logger, null getters), délégation correcte aux `IFilePropertyGetter` via mocks Moq, combinaison de propriétés de multiples getters, rejet des fichiers trop volumineux, comportement timeout, et vérification des statistiques de logging. |
 | **`HdlgDirectoryTests.cs`** | Tests de `HdlgDirectory` : construction avec propriétés valides, validation des paramètres null, parcours avec/sans sous-répertoires, et vérification de l'égalité par chemin. Utilise des répertoires temporaires sur le système de fichiers. |
 | **`PropertyGetterTests.cs`** | Tests des implémentations `IFilePropertyGetter` : `ImagePropertyGetter`, `Mp3PropertyGetter`, `PdfPropertyGetter`. Vérifie `AddLogger()`, la validation null, `IsSupportedFile()` via `[Theory]`/`[InlineData]`, et le rejet des images trop volumineuses. |
@@ -116,14 +109,12 @@ La solution `HDLG.sln` contient **quatre projets** :
 | **`ExcelPropertyGetterTests.cs`** | Tests dédiés de `ExcelPropertyGetter` : extraction des propriétés, gestion des fichiers invalides/manquants, et journalisation Serilog. |
 | **`FilePropertyGetterStatisticTests.cs`** | Tests de `FilePropertyGetterStatistic` : validation des statistiques d'exécution d'un getter (temps écoulé, nombre de fichiers traités). |
 | **`HdlgFileTests.cs`** | Tests de `HdlgFile` : validation de la construction, propriétés, calculs de taille et extension. |
-| **`PerformanceCountTests.cs`** | Tests de `PerformanceCount.Empty` (TimeSpans à `MinValue`). |
-| **`BrowserFormLoadTests.cs`** | Tests STA de chargement de `BrowserForm` (énumération, nœuds, gestion des accès refusés). |
 | **`OpenWithDefaultProgramTests.cs`** | Tests de `MainWindow.OpenWithDefaultProgram` (sécurité : validation des extensions dangereuses pour prévenir l'injection de processus). |
 | **`AppUiBootstrapTests.cs`** | Tests du bootstrap UI Krypton (palette globale `Microsoft365BlueLightMode`, retrait watermark). |
 | **`AppBrandingTests.cs`** | Tests du markup SVG inline et du pied de page HTML généré. |
 | **`AppLogoRendererTests.cs`** | Tests de chargement des assets logo/icône empaquetés. |
 | **`WinFormsUiTestCollection.cs`** | Collection xUnit sérialisée pour éviter les conflits GDI+ entre tests WinForms. |
-| **`WinFormsUiTests.cs`** | Tests UI structurels (thread STA) : instanciation des formulaires et présence des contrôles Krypton clés (`MainWindow` dont `btnStartJson`, `BrowserForm`, `Credit`). |
+| **`WinFormsUiTests.cs`** | Tests UI structurels (thread STA) : instanciation des formulaires et présence des contrôles Krypton clés (`MainWindow`, `BrowserForm`, `Credit`). |
 
 ---
 
@@ -133,19 +124,19 @@ La solution `HDLG.sln` contient **quatre projets** :
 
 | Package | Version | Usage |
 |---|---|---|
-| `Microsoft.Extensions.Hosting` | 10.0.11 | Hébergement et injection de dépendances (transitive : DependencyInjection + Logging) |
+| `Microsoft.Extensions.Hosting` | 10.0.9 | Hébergement et injection de dépendances (transitive : DependencyInjection + Logging) |
 | `Serilog.Sinks.File` | 7.0.0 | Journalisation vers fichiers |
-| `Krypton.Toolkit` | 105.26.7.201 | Thème et contrôles WinForms modernes (Fluent / Microsoft 365) |
+| `Krypton.Toolkit` | 105.26.4.110 | Thème et contrôles WinForms modernes (Fluent / Microsoft 365) |
 
 ### `HdlgFileProperty`
 
 | Package | Version | Usage |
 |---|---|---|
 | `DocumentFormat.OpenXml` | 3.5.1 | Lecture de documents Office (Word, Excel) |
-| `PdfPig` | 0.1.15 | Lecture de propriétés PDF |
-| `Serilog` | 4.4.0 | Logging |
+| `PdfPig` | 0.1.14 | Lecture de propriétés PDF |
+| `Serilog` | 4.3.1 | Logging |
 | `SixLabors.ImageSharp` | 3.1.12 | Traitement d'images |
-| `System.Drawing.Common` | 10.0.11 | API graphique Windows |
+| `System.Drawing.Common` | 10.0.8 | API graphique Windows |
 | `TagLibSharp` | 2.3.0 | Lecture de métadonnées audio (MP3) |
 
 ### `HDLG.Tests`
@@ -154,19 +145,13 @@ La solution `HDLG.sln` contient **quatre projets** :
 | -----------------------------| ---------| ----------------------------------------|
 | `coverlet.collector`        | 10.0.1  | Collecte de couverture de code         |
 | `FluentAssertions`          | 8.10.0  | Assertions lisibles et expressives     |
-| `Microsoft.AspNetCore.TestHost` | 10.0.11 | Hébergement de test ASP.NET Core (référencé par le projet de tests) |
-| `Microsoft.NET.Test.Sdk`    | 18.8.1  | Infrastructure de test .NET            |
-| `Serilog`                   | 4.4.0   | Logging dans les tests                 |
+| `Microsoft.AspNetCore.TestHost` | 10.0.8 | Hébergement de test ASP.NET Core (référencé par le projet de tests) |
+| `Microsoft.NET.Test.Sdk`    | 18.5.1  | Infrastructure de test .NET            |
+| `Serilog`                   | 4.3.1   | Logging dans les tests                 |
 | `TagLibSharp`               | 2.3.0   | Création de fixtures audio pour les tests |
 | `Moq`                       | 4.20.72 | Mocking d'interfaces pour tests isolés |
 | `xunit.v3`                  | 3.2.2   | Framework de tests unitaires (v3)      |
 | `xunit.runner.visualstudio` | 3.1.5   | Runner Visual Studio pour xUnit        |
-
-### `Benchmark`
-
-| Package | Version | Usage |
-|---|---|---|
-| `Serilog` | 4.4.0 | Logging du micro-benchmark de `BrowseAsync` |
 
 ---
 
@@ -182,7 +167,7 @@ Pour toute modification de l'interface utilisateur :
 
 4. **Injection de dépendances** : Les formulaires reçoivent leurs dépendances via le constructeur (DI configurée dans `Program.cs`). Ne jamais instancier manuellement les services.
 
-5. **Opérations longues** : Utiliser `Task.Run` + `ConfigureAwait(true)` pour les tâches de parcours et d'export afin de ne pas bloquer le thread UI. Lire les contrôles WinForms (chemin, checkbox sous-répertoires) sur le thread UI **avant** `Task.Run`. La barre de progression utilise `KryptonProgressBar` en mode `Marquee` pendant le traitement. Ne pas cloner un quatrième handler d'export : étendre `RunExportAsync`.
+5. **Opérations longues** : Utiliser `Task.Run` + `ConfigureAwait(true)` pour les tâches de parcours et d'export afin de ne pas bloquer le thread UI. La barre de progression utilise `KryptonProgressBar` en mode `Marquee` pendant le traitement.
 
 6. **Palette visuelle** : Alignée sur `hdlg.css` (fond `#F8FAFC`, accent `#0284C8`, texte `#0F172A`).
 
@@ -195,28 +180,27 @@ Pour toute modification de l'interface utilisateur :
 1. **Parcours récursif de répertoires** : Navigation dans un répertoire sélectionné et ses sous-répertoires (optionnel via checkbox).
 2. **Export XML** : Génération asynchrone d'un fichier XML structuré (`XmlWriter`) contenant l'arborescence complète avec métadonnées.
 3. **Export HTML** : Génération asynchrone d'un fichier HTML self-contained avec CSS embarqué (polices système, sans Google Fonts pour offline et mitigation XSS), table des matières avec ancres navigables, et liens `file:///` vers les fichiers.
-4. **Export JSON** : Génération asynchrone d'un fichier JSON compact (`Utf8JsonWriter`) miroir PascalCase de l'XML (chemin racine `Directory`, arbre `Root`, tableaux/objets vides toujours émis, types natifs).
-5. **Extraction de propriétés étendues** : Pour chaque fichier, extraction automatique des métadonnées spécifiques selon le type (dimensions d'image, auteur Word/Excel, tags MP3, etc.).
-6. **Navigation arborescente** (`BrowserForm`) : Exploration interactive du système de fichiers avec lazy loading et affichage des propriétés.
-7. **Métriques de performance** : Mesure et affichage des temps de parcours, sauvegarde et total.
-8. **Logging structuré** : Journalisation via Serilog dans `%LOCALAPPDATA%\HDLG\logs\log.txt` (rolling quotidien).
-9. **Gestion d'exceptions globale** : Intercepteurs pour les exceptions du thread UI et des threads d'arrière-plan.
-10. **Protection anti-DoS (extraction de propriétés)** : Limites de taille de fichier (100 Mo), timeout par getter (30 s), et plafond de dimensions image (32 768 px) pour mitiger les attaques par déni de service lors du parsing de fichiers non fiables.
-11. **Interface modernisée (v1.4)** : `MainWindow` en layout dashboard (sections Source Directory / Export), bouton About intégré, `BrowserForm` et `Credit` harmonisés via Krypton Toolkit. Grille Export 2×2 depuis v1.5 (XML, HTML, JSON, UI Explorer).
-12. **Branding HDLG** : Monogramme original dans About, icône application, et pied de page des exports HTML (SVG inline self-contained).
+4. **Extraction de propriétés étendues** : Pour chaque fichier, extraction automatique des métadonnées spécifiques selon le type (dimensions d'image, auteur Word/Excel, tags MP3, etc.).
+5. **Navigation arborescente** (`BrowserForm`) : Exploration interactive du système de fichiers avec lazy loading et affichage des propriétés.
+6. **Métriques de performance** : Mesure et affichage des temps de parcours, sauvegarde et total.
+7. **Logging structuré** : Journalisation via Serilog dans `%LOCALAPPDATA%\HDLG\logs\log.txt` (rolling quotidien).
+8. **Gestion d'exceptions globale** : Intercepteurs pour les exceptions du thread UI et des threads d'arrière-plan.
+9. **Protection anti-DoS (extraction de propriétés)** : Limites de taille de fichier (100 Mo), timeout par getter (30 s), et plafond de dimensions image (32 768 px) pour mitiger les attaques par déni de service lors du parsing de fichiers non fiables.
+10. **Interface modernisée (v1.4)** : `MainWindow` en layout dashboard (sections Source Directory / Export), bouton About intégré, `BrowserForm` et `Credit` harmonisés via Krypton Toolkit.
+11. **Branding HDLG** : Monogramme original dans About, icône application, et pied de page des exports HTML (SVG inline self-contained).
 
 ---
 
 ## 🛠️ Directives de Développement (Pour les agents)
 
-- **Architecture** : La solution suit un modèle à deux couches : l'application WinForms (`HDLG winforms`) qui gère l'UI et l'orchestration, et la bibliothèque (`HdlgFileProperty`) qui gère l'extraction de propriétés. Cette séparation doit être maintenue. Le projet `Benchmark` mesure uniquement `BrowseAsync` ; il ne doit pas devenir un troisième cœur métier.
+- **Architecture** : La solution suit un modèle à deux couches : l'application WinForms (`HDLG winforms`) qui gère l'UI et l'orchestration, et la bibliothèque (`HdlgFileProperty`) qui gère l'extraction de propriétés. Cette séparation doit être maintenue.
 - **Pattern Strategy** : L'extraction de propriétés utilise le pattern Strategy via l'interface `IFilePropertyGetter`. Pour ajouter le support d'un nouveau type de fichier, créer une nouvelle implémentation de cette interface dans le projet `HdlgFileProperty` et l'enregistrer dans le DI de `Program.cs`.
 - **Modèles en doublon** : Il existe actuellement deux versions de modèles (`Directory.cs`/`File.cs` et `HdlgDirectory.cs`/`HdlgFile.cs`). Les versions `Hdlg*` sont la version refactorisée et doivent être privilégiées pour tout nouveau développement.
 - **Logging** : Utiliser exclusivement Serilog via l'injection du `Logger`. Ne pas créer de nouvelles instances de logger en dehors de `Program.cs`.
 - **Build** : Le projet se compile via `dotnet build HDLG.sln`. Un fichier `build.bat` est fourni à la racine pour simplifier la commande.
 - **CI/CD** : GitHub Actions (`.github/workflows/dotnet-desktop.yml`) exécute le build (via msbuild) sur push/PR vers `main` en configurations Debug et Release (tests commentés dans le workflow). Dependabot est activé pour les mises à jour NuGet (pas d'écosystème GitHub Actions configuré dans dependabot.yml).
 - **Tests** : Le projet `HDLG.Tests` (xUnit) contient les tests unitaires de la solution. Les tests utilisent **FluentAssertions** pour des assertions expressives et **Moq** pour le mocking d'interfaces. Pour exécuter les tests : `dotnet test HDLG.sln`. Tout nouveau code doit être accompagné de tests unitaires correspondants dans ce projet.
-- **Encodage des fichiers** : Les fichiers `.cs` de `HDLG winforms` et `HdlgFileProperty` utilisent des **tabulations** (`indent_style = tab`, `tab_width = 4`) et les fins de ligne **CRLF**. `HDLG.Tests` utilise actuellement une indentation de **4 espaces** — **respecte le fichier que tu modifies**.
+- **Encodage des fichiers** : Les fichiers `.cs` et `.vb` utilisent des **tabulations** pour l'indentation (`indent_style = tab`, `tab_width = 4`) et les fins de ligne **CRLF** (`end_of_line = crlf`).
 
 ## 🐙 Conventions Git et Historique
 

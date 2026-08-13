@@ -22,7 +22,6 @@ namespace HDLG_winforms
 			tableLayoutPanelStart = new TableLayoutPanel();
 			btnStartXml = new Krypton.Toolkit.KryptonButton();
 			btnStartHtml = new Krypton.Toolkit.KryptonButton();
-			btnStartJson = new Krypton.Toolkit.KryptonButton();
 			btnStartUi = new Krypton.Toolkit.KryptonButton();
 			progressBar1 = new Krypton.Toolkit.KryptonProgressBar();
 			statusStrip1 = new Krypton.Toolkit.KryptonStatusStrip();
@@ -34,7 +33,6 @@ namespace HDLG_winforms
 			saveContentFileDialog = new SaveFileDialog();
 			saveFileDialog1 = new SaveFileDialog();
 			saveFileDialogHtml = new SaveFileDialog();
-			saveFileDialogJson = new SaveFileDialog();
 			panelRoot.SuspendLayout();
 			panelHeader.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)headerGroupDirectory).BeginInit();
@@ -62,10 +60,10 @@ namespace HDLG_winforms
 			panelRoot.Padding = new Padding(24, 20, 24, 16);
 			panelRoot.RowCount = 4;
 			panelRoot.RowStyles.Add(new RowStyle(SizeType.Absolute, 56F));
-			panelRoot.RowStyles.Add(new RowStyle(SizeType.Percent, 40F));
-			panelRoot.RowStyles.Add(new RowStyle(SizeType.Percent, 40F));
+			panelRoot.RowStyles.Add(new RowStyle(SizeType.Percent, 45F));
+			panelRoot.RowStyles.Add(new RowStyle(SizeType.Percent, 35F));
 			panelRoot.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
-			panelRoot.Size = new Size(884, 576);
+			panelRoot.Size = new Size(884, 520);
 			panelRoot.TabIndex = 0;
 			//
 			// panelHeader
@@ -103,7 +101,7 @@ namespace HDLG_winforms
 			headerGroupDirectory.Dock = DockStyle.Fill;
 			headerGroupDirectory.Location = new Point(27, 79);
 			headerGroupDirectory.Name = "headerGroupDirectory";
-			headerGroupDirectory.Size = new Size(830, 196);
+			headerGroupDirectory.Size = new Size(830, 180);
 			headerGroupDirectory.TabIndex = 1;
 			headerGroupDirectory.ValuesPrimary.Heading = "Source Directory";
 			headerGroupDirectory.ValuesPrimary.Description = "Choose a folder to scan and optionally include subdirectories.";
@@ -154,9 +152,9 @@ namespace HDLG_winforms
 			// headerGroupExport
 			//
 			headerGroupExport.Dock = DockStyle.Fill;
-			headerGroupExport.Location = new Point(27, 281);
+			headerGroupExport.Location = new Point(27, 259);
 			headerGroupExport.Name = "headerGroupExport";
-			headerGroupExport.Size = new Size(830, 196);
+			headerGroupExport.Size = new Size(830, 140);
 			headerGroupExport.TabIndex = 2;
 			headerGroupExport.ValuesPrimary.Heading = "Export";
 			headerGroupExport.ValuesPrimary.Description = "Generate a listing or explore files interactively.";
@@ -164,21 +162,20 @@ namespace HDLG_winforms
 			//
 			// tableLayoutPanelStart
 			//
-			tableLayoutPanelStart.ColumnCount = 2;
-			tableLayoutPanelStart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-			tableLayoutPanelStart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+			tableLayoutPanelStart.ColumnCount = 3;
+			tableLayoutPanelStart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
+			tableLayoutPanelStart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
+			tableLayoutPanelStart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.34F));
 			tableLayoutPanelStart.Controls.Add(btnStartXml, 0, 0);
 			tableLayoutPanelStart.Controls.Add(btnStartHtml, 1, 0);
-			tableLayoutPanelStart.Controls.Add(btnStartJson, 0, 1);
-			tableLayoutPanelStart.Controls.Add(btnStartUi, 1, 1);
+			tableLayoutPanelStart.Controls.Add(btnStartUi, 2, 0);
 			tableLayoutPanelStart.Dock = DockStyle.Fill;
 			tableLayoutPanelStart.Location = new Point(0, 0);
 			tableLayoutPanelStart.Name = "tableLayoutPanelStart";
-			tableLayoutPanelStart.Padding = new Padding(12, 12, 12, 12);
-			tableLayoutPanelStart.RowCount = 2;
-			tableLayoutPanelStart.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-			tableLayoutPanelStart.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-			tableLayoutPanelStart.Size = new Size(828, 146);
+			tableLayoutPanelStart.Padding = new Padding(12, 16, 12, 12);
+			tableLayoutPanelStart.RowCount = 1;
+			tableLayoutPanelStart.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+			tableLayoutPanelStart.Size = new Size(828, 90);
 			tableLayoutPanelStart.TabIndex = 0;
 			//
 			// btnStartXml
@@ -195,6 +192,7 @@ namespace HDLG_winforms
 			// btnStartHtml
 			//
 			btnStartHtml.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+			btnStartHtml.ButtonStyle = Krypton.Toolkit.ButtonStyle.Cluster;
 			btnStartHtml.Location = new Point(279, 19);
 			btnStartHtml.Margin = new Padding(3, 3, 6, 3);
 			btnStartHtml.Name = "btnStartHtml";
@@ -203,24 +201,13 @@ namespace HDLG_winforms
 			btnStartHtml.Values.Text = "Export HTML";
 			btnStartHtml.Click += BtnStartHtml_Click;
 			//
-			// btnStartJson
-			//
-			btnStartJson.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-			btnStartJson.Location = new Point(15, 79);
-			btnStartJson.Margin = new Padding(3, 3, 6, 3);
-			btnStartJson.Name = "btnStartJson";
-			btnStartJson.Size = new Size(396, 52);
-			btnStartJson.TabIndex = 3;
-			btnStartJson.Values.Text = "Export JSON";
-			btnStartJson.Click += BtnStartJson_Click;
-			//
 			// btnStartUi
 			//
 			btnStartUi.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-			btnStartUi.Location = new Point(423, 79);
+			btnStartUi.Location = new Point(543, 19);
 			btnStartUi.Margin = new Padding(3, 3, 3, 3);
 			btnStartUi.Name = "btnStartUi";
-			btnStartUi.Size = new Size(390, 52);
+			btnStartUi.Size = new Size(270, 58);
 			btnStartUi.TabIndex = 2;
 			btnStartUi.Values.Text = "UI Explorer";
 			btnStartUi.Click += BtnStartUi_Click;
@@ -228,7 +215,7 @@ namespace HDLG_winforms
 			// progressBar1
 			//
 			progressBar1.Dock = DockStyle.Fill;
-			progressBar1.Location = new Point(27, 483);
+			progressBar1.Location = new Point(27, 399);
 			progressBar1.Name = "progressBar1";
 			progressBar1.Size = new Size(830, 26);
 			progressBar1.TabIndex = 3;
@@ -241,7 +228,7 @@ namespace HDLG_winforms
 			toolStripStatusLabelSaveTime,
 			toolStripStatusLabelTotalTime,
 			toolStripStatusLabelException});
-			statusStrip1.Location = new Point(0, 576);
+			statusStrip1.Location = new Point(0, 520);
 			statusStrip1.Name = "statusStrip1";
 			statusStrip1.Size = new Size(884, 24);
 			statusStrip1.TabIndex = 1;
@@ -283,21 +270,16 @@ namespace HDLG_winforms
 			saveFileDialogHtml.Filter = "HTML files|*.html|All files|*.*";
 			saveFileDialogHtml.FileOk += SaveFileDialogHtml_FileOk;
 			//
-			// saveFileDialogJson
-			//
-			saveFileDialogJson.DefaultExt = "json";
-			saveFileDialogJson.Filter = "JSON files|*.json|All files|*.*";
-			//
 			// MainWindow
 			//
 			AutoScaleDimensions = new SizeF(7F, 17F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(884, 600);
+			ClientSize = new Size(884, 544);
 			Controls.Add(panelRoot);
 			Controls.Add(statusStrip1);
 			Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
 			Icon = (Icon)resources.GetObject("$this.Icon");
-			MinimumSize = new Size(720, 520);
+			MinimumSize = new Size(720, 480);
 			Name = "MainWindow";
 			StartPosition = FormStartPosition.CenterScreen;
 			Text = "HTML Directory List Generator";
@@ -335,7 +317,6 @@ namespace HDLG_winforms
 		private TableLayoutPanel tableLayoutPanelStart;
 		private Krypton.Toolkit.KryptonButton btnStartXml;
 		private Krypton.Toolkit.KryptonButton btnStartHtml;
-		private Krypton.Toolkit.KryptonButton btnStartJson;
 		private Krypton.Toolkit.KryptonButton btnStartUi;
 		private Krypton.Toolkit.KryptonProgressBar progressBar1;
 		private Krypton.Toolkit.KryptonStatusStrip statusStrip1;
@@ -347,6 +328,5 @@ namespace HDLG_winforms
 		private SaveFileDialog saveContentFileDialog;
 		private SaveFileDialog saveFileDialog1;
 		private SaveFileDialog saveFileDialogHtml;
-		private SaveFileDialog saveFileDialogJson;
 	}
 }
