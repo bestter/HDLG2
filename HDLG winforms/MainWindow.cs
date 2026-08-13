@@ -86,6 +86,7 @@ namespace HDLG_winforms
 			toolStripStatusLabelException.Text = string.Empty;
 			saveContentFileDialog.InitialDirectory = Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments );
 			saveFileDialogHtml.InitialDirectory = Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments );
+			saveFileDialogJson.InitialDirectory = Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments );
 		}
 
 		private async void BtnStart_Click (object sender, EventArgs e)
@@ -113,6 +114,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 					{
 						btnStartXml.Enabled = false;
 						btnStartHtml.Enabled = false;
+						btnStartJson.Enabled = false;
 						if (btnStartUi != null) btnStartUi.Enabled = false;
 						UseWaitCursor = true;
 						Logger.Information( "Start browse with {SelectedDirectory}", selectedDirectory );
@@ -158,6 +160,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			{
 				btnStartXml.Enabled = true;
 				btnStartHtml.Enabled = true;
+				btnStartJson.Enabled = true;
 				if (btnStartUi != null) btnStartUi.Enabled = true;
 				UseWaitCursor = false;
 			}
@@ -426,6 +429,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 					{
 						btnStartXml.Enabled = false;
 						btnStartHtml.Enabled = false;
+						btnStartJson.Enabled = false;
 						if (btnStartUi != null) btnStartUi.Enabled = false;
 						UseWaitCursor = true;
 						Logger.Information( "Start browse with {SelectedDirectory}", selectedDirectory );
@@ -468,6 +472,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			{
 				btnStartXml.Enabled = true;
 				btnStartHtml.Enabled = true;
+				btnStartJson.Enabled = true;
 				if (btnStartUi != null) btnStartUi.Enabled = true;
 				UseWaitCursor = false;
 			}
@@ -510,6 +515,109 @@ toolStripStatusLabelTotalTime.Visible = false;
 		private void SaveFileDialogHtml_FileOk (object sender, CancelEventArgs e)
 		{
 
+		}
+
+		private async void BtnStartJson_Click (object sender, EventArgs e)
+		{
+			try
+			{
+				progressBar1.Value = 0;
+				toolStripStatusLabelBrowseTime.Text = string.Empty;
+				toolStripStatusLabelSaveTime.Text = string.Empty;
+				toolStripStatusLabelTotalTime.Text = string.Empty;
+				toolStripStatusLabelException.Text = string.Empty;
+
+				if (!string.IsNullOrWhiteSpace( selectedDirectory ))
+				{
+					DirectoryInfo di = new( selectedDirectory );
+					saveFileDialogJson.FileName = $"{di.Name}.json";
+					var result = saveFileDialogJson.ShowDialog( );
+					if (result == DialogResult.OK)
+					{
+						btnStartXml.Enabled = false;
+						btnStartHtml.Enabled = false;
+						btnStartJson.Enabled = false;
+						if (btnStartUi != null) btnStartUi.Enabled = false;
+						UseWaitCursor = true;
+						Logger.Information( "Start browse with {SelectedDirectory}", selectedDirectory );
+
+						progressBar1.Style = ProgressBarStyle.Marquee;
+
+						var perf = await Task.Run( () => PerformDirectoryBrowseJsonAsync( selectedDirectory, saveFileDialogJson.FileName ) ).ConfigureAwait( true );
+
+						progressBar1.Style = ProgressBarStyle.Blocks;
+						progressBar1.Value = 100;
+
+						UpdateUIWithPerformance( perf );
+						OpenWithDefaultProgram( saveFileDialogJson.FileName );
+					}
+				}
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				toolStripStatusLabelException.Text = "Access Denied";
+				Logger.Warning( ex, "Access denied in {MethodName}", nameof( BtnStartJson_Click ) );
+			}
+			catch (System.Security.SecurityException ex)
+			{
+				toolStripStatusLabelException.Text = "Access Denied";
+				Logger.Warning( ex, "Security exception in {MethodName}", nameof( BtnStartJson_Click ) );
+			}
+			catch (IOException ex)
+			{
+				toolStripStatusLabelException.Text = "An IO error occurred";
+				Logger.Error( ex, "IO Error in {MethodName}", nameof( BtnStartJson_Click ) );
+			}
+#pragma warning disable CA1031 // Do not catch general exception types
+			catch (Exception ex)
+			{
+				toolStripStatusLabelException.Text = "An unexpected error occurred";
+				Logger.Error( ex, "Error in {MethodName}", nameof( BtnStartJson_Click ) );
+			}
+#pragma warning restore CA1031 // Do not catch general exception types
+			finally
+			{
+				btnStartXml.Enabled = true;
+				btnStartHtml.Enabled = true;
+				btnStartJson.Enabled = true;
+				if (btnStartUi != null) btnStartUi.Enabled = true;
+				UseWaitCursor = false;
+			}
+		}
+
+		private async Task<PerformanceCount> PerformDirectoryBrowseJsonAsync (string selecteDirectory, string saveFilePath)
+		{
+			Logger.Debug( "{MethodName} started at {StartTime:T}", nameof( PerformDirectoryBrowseJsonAsync ), DateTime.Now );
+			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
+			{
+				Logger.Information( "{SelectedDirectory}", selecteDirectory );
+				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
+				Stopwatch stopwatch = Stopwatch.StartNew( );
+
+				Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
+				await directory.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
+				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.BrowseAsync ), directory.Name );
+				TimeSpan browseTime = stopwatch.Elapsed;
+				propertyBrowser.LogGetterStatistics( );
+
+				DirectoryBrowser db = new( Logger );
+				Logger.Debug( "Ready to start {MethodName}", nameof( DirectoryBrowser.SaveAsJSONAsync ) );
+
+				await db.SaveAsJSONAsync( saveFilePath, directory ).ConfigureAwait( false );
+
+				Logger.Debug( "{MethodName} done", nameof( DirectoryBrowser.SaveAsJSONAsync ) );
+				stopwatch.Stop( );
+
+				TimeSpan saveTime = stopwatch.Elapsed - browseTime;
+				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
+				Logger.Information( "Done at {EndTime:T}", DateTime.Now );
+				return result;
+			}
+			else
+			{
+				Logger.Information( "No {SelectedDirectoryParamName}", nameof( selecteDirectory ) );
+				return PerformanceCount.Empty;
+			}
 		}
 
 		private void BtnStartUi_Click (object sender, EventArgs e)

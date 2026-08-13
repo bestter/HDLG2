@@ -11,6 +11,7 @@ using Serilog;
 using System.Globalization;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Xml;
 
 namespace HDLG_winforms
@@ -658,6 +659,161 @@ namespace HDLG_winforms
 			}
 			await writer.WriteLineAsync( spacer + "\t</ol>" ).ConfigureAwait( false );
 			await writer.WriteLineAsync( spacer + "</div>" ).ConfigureAwait( false );
+		}
+
+		#endregion
+
+		#region JSON
+
+		/// <summary>
+		/// Export directory content as compact JSON
+		/// </summary>
+		/// <param name="filePath">Where to save the data</param>
+		/// <param name="directory">Scanned directory tree</param>
+		/// <returns></returns>
+		/// <exception cref="ArgumentException"></exception>
+		public async Task SaveAsJSONAsync (string filePath, HdlgDirectory directory)
+		{
+			if (string.IsNullOrWhiteSpace( filePath ))
+			{
+				throw new ArgumentException( $"'{nameof( filePath )}' ne peut pas avoir une valeur null ou être un espace blanc.", nameof( filePath ) );
+			}
+
+			ArgumentNullException.ThrowIfNull( directory );
+
+			FileInfo fileInfo = new( filePath );
+			using FileStream fileStream = new( fileInfo.FullName, FileMode.Create, FileAccess.Write, FileShare.None );
+			using Utf8JsonWriter writer = new( fileStream, new JsonWriterOptions { Indented = false } );
+
+			string? version = typeof( DirectoryBrowser ).Assembly.GetName( ).Version?.ToString( );
+
+			writer.WriteStartObject( );
+			writer.WriteString( "Version", version );
+			writer.WriteString( "Directory", directory.Path );
+			writer.WriteString( "DateTime", DateTime.Now.ToString( "O", CultureInfo.InvariantCulture ) );
+			writer.WriteNumber( "DirectoriesCount", directory.TotalDirectories );
+			writer.WriteNumber( "FilesCount", directory.TotalFiles );
+			writer.WritePropertyName( "Root" );
+			await WriteJsonDirectoryAsync( writer, directory ).ConfigureAwait( false );
+			writer.WriteEndObject( );
+
+			await writer.FlushAsync( ).ConfigureAwait( false );
+		}
+
+		/// <summary>
+		/// Write a directory object (Name, Path, CreationTime, Directories, Files).
+		/// </summary>
+		private async Task WriteJsonDirectoryAsync (Utf8JsonWriter writer, HdlgDirectory directory)
+		{
+			log.Debug( "In {Method} {Type} {Directory}", nameof( WriteJsonDirectoryAsync ), nameof( HdlgDirectory ), directory );
+
+			writer.WriteStartObject( );
+			writer.WriteString( "Name", directory.Name );
+			writer.WriteString( "Path", directory.Path );
+			writer.WriteString( "CreationTime", directory.CreationTime.ToString( "O", CultureInfo.InvariantCulture ) );
+
+			writer.WritePropertyName( "Directories" );
+			writer.WriteStartArray( );
+			for (int i = 0; i < directory.Directories.Count; i++)
+			{
+				await WriteJsonDirectoryAsync( writer, directory.Directories [i] ).ConfigureAwait( false );
+			}
+			writer.WriteEndArray( );
+
+			writer.WritePropertyName( "Files" );
+			writer.WriteStartArray( );
+			for (int i = 0; i < directory.Files.Count; i++)
+			{
+				WriteJsonFile( writer, directory.Files [i] );
+			}
+			writer.WriteEndArray( );
+
+			writer.WriteEndObject( );
+			await Task.CompletedTask.ConfigureAwait( false );
+		}
+
+		/// <summary>
+		/// Write a file object including ExtentedProperties (always present, possibly empty).
+		/// </summary>
+		private void WriteJsonFile (Utf8JsonWriter writer, HdlgFile file)
+		{
+			if (writer is null)
+			{
+				throw new ArgumentNullException( nameof( writer ) );
+			}
+
+			log.Verbose( "{Method} {File}", nameof( WriteJsonFile ), file );
+
+			writer.WriteStartObject( );
+			writer.WriteString( "Name", file.Name );
+			writer.WriteString( "Path", file.Path );
+			writer.WriteString( "Extension", file.Extension );
+			writer.WriteNumber( "Size", file.Size );
+			writer.WriteString( "CreationTime", file.CreationTime.ToString( "O", CultureInfo.InvariantCulture ) );
+
+			writer.WritePropertyName( "ExtentedProperties" );
+			writer.WriteStartObject( );
+			if (file.Properties != null && file.Properties.Count > 0)
+			{
+				if (file.Properties is Dictionary<string, IConvertible> dictProperties)
+				{
+					foreach (var property in dictProperties)
+					{
+						WriteJsonProperty( writer, property.Key, property.Value );
+					}
+				}
+				else
+				{
+					foreach (var property in file.Properties)
+					{
+						WriteJsonProperty( writer, property.Key, property.Value );
+					}
+				}
+			}
+			writer.WriteEndObject( );
+			writer.WriteEndObject( );
+		}
+
+		private static void WriteJsonProperty (Utf8JsonWriter writer, string key, IConvertible? value)
+		{
+			if (string.IsNullOrWhiteSpace( key ) || value == null)
+			{
+				return;
+			}
+
+			writer.WritePropertyName( key );
+			WriteJsonConvertibleValue( writer, value );
+		}
+
+		private static void WriteJsonConvertibleValue (Utf8JsonWriter writer, IConvertible value)
+		{
+			switch (value)
+			{
+				case DateTime dtValue:
+					writer.WriteStringValue( dtValue.ToString( "O", CultureInfo.InvariantCulture ) );
+					break;
+				case bool boolValue:
+					writer.WriteBooleanValue( boolValue );
+					break;
+				case byte or sbyte or short or ushort or int or uint or long:
+					writer.WriteNumberValue( Convert.ToInt64( value, CultureInfo.InvariantCulture ) );
+					break;
+				case ulong ulongValue:
+					writer.WriteNumberValue( ulongValue );
+					break;
+				case float floatValue:
+					writer.WriteNumberValue( floatValue );
+					break;
+				case double doubleValue:
+					writer.WriteNumberValue( doubleValue );
+					break;
+				case decimal decimalValue:
+					writer.WriteNumberValue( decimalValue );
+					break;
+				default:
+					writer.WriteStringValue( value.ToString( CultureInfo.InvariantCulture ) );
+					break;
+			}
 		}
 
 		#endregion

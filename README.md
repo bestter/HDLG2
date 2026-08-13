@@ -2,10 +2,10 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![.NET Version](https://img.shields.io/badge/.NET-10.0-blue)
-![Version](https://img.shields.io/badge/Version-1.4.0-blue)
+![Version](https://img.shields.io/badge/Version-1.5.0-blue)
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey)
 
-**HTML Directory List Generator (HDLG2)** is a lightweight, high-performance desktop application built with C# and Windows Forms on .NET 10. It allows users to recursively scan any system directory and export the contents into beautifully structured **HTML** or highly queryable **XML** files, including detailed extraction of extended metadata for media and documents.
+**HTML Directory List Generator (HDLG2)** is a lightweight, high-performance desktop application built with C# and Windows Forms on .NET 10. It allows users to recursively scan any system directory and export the contents into beautifully structured **HTML**, highly queryable **XML**, or compact **JSON** files, including detailed extraction of extended metadata for media and documents.
 
 ---
 
@@ -18,6 +18,7 @@
   - Quick-click `file:///` pathways to directly open indexed items.
   - Branded footer with inline SVG logo and generator attribution.
 - 📊 **Structured XML Export**: Employs clean, high-performance streaming writers (`XmlWriter`) for easy data migration and integration.
+- 📦 **Structured JSON Export**: Compact, streaming `Utf8JsonWriter` output mirroring the XML data model (PascalCase names, native numbers, `Root` tree, `ExtentedProperties`).
 - 🔍 **Deep Metadata Extraction**: Automatically parses and extracts domain-specific properties:
   - **Images**: Dimensions (Width and Height) and camera model (using *ImageSharp*).
   - **Word & Excel**: Document title, creator, and creation date (using *OpenXML*).
@@ -76,7 +77,7 @@ dotnet test HDLG.sln
 ```
 
 The `HDLG.Tests` project covers:
-- **DirectoryBrowserTests** — XML and HTML export validation (parameter guards, output structure).
+- **DirectoryBrowserTests** — XML, HTML, and JSON export validation (parameter guards, output structure).
 - **FilePropertyBrowserTests** — Property extraction orchestration (getter delegation, multi-getter combination, oversized-file rejection, timeout behavior, statistics logging).
 - **FilePropertyGetterStatisticTests** — Execution statistics validation for getters (elapsed time, file count).
 - **HdlgDirectoryTests** — Directory model construction, recursive browse behavior, and equality semantics.
