@@ -261,12 +261,11 @@ toolStripStatusLabelTotalTime.Visible = false;
 				{
 					using Process fileopener = new( );
 					string explorerPath = System.IO.Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "explorer.exe" );
-						fileopener.StartInfo = new ProcessStartInfo( explorerPath )
+					fileopener.StartInfo = new ProcessStartInfo( explorerPath, $"\"{p}\"" )
 					{
 						UseShellExecute = false,
 						WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
 					};
-						fileopener.StartInfo.ArgumentList.Add( p );
 					fileopener.Start( );
 				}, fullPath =>
 				{

@@ -75,18 +75,14 @@ namespace HDLG_winforms
 				if (_showError != null) _showError( "An IO error occurred while loading the directory." );
 				else MessageBox.Show( this, "An IO error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
-			catch (NotSupportedException ex)
+#pragma warning disable CA1031 // Do not catch general exception types
+			catch (Exception ex)
 			{
-				logger.Error( ex, "Format error loading root directory in BrowserForm" );
-				if (_showError != null) _showError( "An unexpected format error occurred while loading the directory." );
-				else MessageBox.Show( this, "An unexpected format error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+				logger.Error( ex, "Error loading root directory in BrowserForm" );
+				if (_showError != null) _showError( "An unexpected error occurred while loading the directory." );
+				else MessageBox.Show( this, "An unexpected error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
-			catch (ArgumentException ex)
-			{
-				logger.Error( ex, "Argument error loading root directory in BrowserForm" );
-				if (_showError != null) _showError( "An unexpected argument error occurred while loading the directory." );
-				else MessageBox.Show( this, "An unexpected argument error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
-			}
+#pragma warning restore CA1031 // Do not catch general exception types
 		}
 
 		private class NodeInfo
@@ -171,12 +167,11 @@ namespace HDLG_winforms
 						}
 					}
 
-					// Performance optimization: Allocate a single array sized exactly for the sum of directories and files
-					// to eliminate multiple array allocations and minimize the number of AddRange calls.
-					var _allNodes = new TreeNode [dirCount + fileCount];
+					var _dirNodes = new TreeNode [dirCount];
+					var _fileNodes = new TreeNode [fileCount];
 
 					int dirIndex = 0;
-					int fileIndex = dirCount;
+					int fileIndex = 0;
 
 					for (int i = 0; i < fsInfos.Length; i++)
 					{
@@ -188,18 +183,19 @@ namespace HDLG_winforms
 							var node = new TreeNode( dir.Name );
 							node.Tag = new NodeInfo { IsDirectory = true, Path = dir.FullName };
 							node.Nodes.Add( new TreeNode( "Loading..." ) );
-							_allNodes [dirIndex++] = node;
+							_dirNodes [dirIndex++] = node;
 						}
 						else if (fsInfo is FileInfo file)
 						{
 							var node = new TreeNode( file.Name );
 							node.Tag = new NodeInfo { IsDirectory = false, Path = file.FullName };
-							_allNodes [fileIndex++] = node;
+							_fileNodes [fileIndex++] = node;
 						}
 					}
 
 					e.Node.TreeView?.BeginUpdate( );
-					e.Node.Nodes.AddRange( _allNodes );
+					e.Node.Nodes.AddRange( _dirNodes );
+					e.Node.Nodes.AddRange( _fileNodes );
 					e.Node.TreeView?.EndUpdate( );
 				}
 				catch (UnauthorizedAccessException ex)
@@ -217,16 +213,13 @@ namespace HDLG_winforms
 					logger.Error( ex, "IO Error loading directory: {Path}", info.Path );
 					AddErrorNode( e.Node, "IO Error" );
 				}
-				catch (NotSupportedException ex)
+#pragma warning disable CA1031 // Do not catch general exception types
+				catch (Exception ex)
 				{
-					logger.Error( ex, "Format error loading directory: {Path}", info.Path );
-					AddErrorNode( e.Node, "Format Error" );
+					logger.Error( ex, "Error loading directory: {Path}", info.Path );
+					AddErrorNode( e.Node, "Error" );
 				}
-				catch (ArgumentException ex)
-				{
-					logger.Error( ex, "Argument error loading directory: {Path}", info.Path );
-					AddErrorNode( e.Node, "Argument Error" );
-				}
+#pragma warning restore CA1031 // Do not catch general exception types
 				finally
 				{
 					Cursor = Cursors.Default;
@@ -385,22 +378,16 @@ namespace HDLG_winforms
 					AddPropertyToListView( "Error", "An IO error occurred." );
 				}
 			}
-			catch (NotSupportedException ex)
+#pragma warning disable CA1031 // Do not catch general exception types
+			catch (Exception ex)
 			{
 				if (treeView1.SelectedNode == e.Node)
 				{
-					logger.Error( ex, "Format error reading properties for file: {Path}", info.Path );
-					AddPropertyToListView( "Error", "A format error occurred." );
+					logger.Error( ex, "Error reading properties for file: {Path}", info.Path );
+					AddPropertyToListView( "Error", "An unexpected error occurred." );
 				}
 			}
-			catch (ArgumentException ex)
-			{
-				if (treeView1.SelectedNode == e.Node)
-				{
-					logger.Error( ex, "Argument error reading properties for file: {Path}", info.Path );
-					AddPropertyToListView( "Error", "An argument error occurred." );
-				}
-			}
+#pragma warning restore CA1031 // Do not catch general exception types
 			finally
 			{
 				if (treeView1.SelectedNode == e.Node)
@@ -428,45 +415,7 @@ namespace HDLG_winforms
 			{
 				if (IsPathWithinRoot( info.Path ))
 				{
-					try
-					{
-						MainWindow.OpenWithDefaultProgram( info.Path );
-					}
-					catch (InvalidOperationException ex)
-					{
-						logger.Warning( ex, "Security block opening file: {Path}", info.Path );
-						MessageBox.Show( this, ex.Message, "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
-					}
-					catch (FileNotFoundException ex)
-					{
-						logger.Warning( ex, "File not found: {Path}", info.Path );
-						MessageBox.Show( this, "The file could not be found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
-					}
-					catch (UnauthorizedAccessException ex)
-					{
-						logger.Warning( ex, "Access denied opening file: {Path}", info.Path );
-						MessageBox.Show( this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
-					}
-					catch (SecurityException ex)
-					{
-						logger.Warning( ex, "Security exception opening file: {Path}", info.Path );
-						MessageBox.Show( this, "Error: Access Denied.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
-					}
-					catch (System.ComponentModel.Win32Exception ex)
-					{
-						logger.Error( ex, "Win32 error opening file: {Path}", info.Path );
-						MessageBox.Show( this, "Could not open the file. It might not have an associated application.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
-					}
-					catch (NotSupportedException ex)
-					{
-						logger.Error( ex, "Format error opening file: {Path}", info.Path );
-						MessageBox.Show( this, "Could not open the file due to an unsupported format.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
-					}
-					catch (ArgumentException ex)
-					{
-						logger.Error( ex, "Argument error opening file: {Path}", info.Path );
-						MessageBox.Show( this, "Could not open the file due to an invalid argument.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
-					}
+					MainWindow.OpenWithDefaultProgram( info.Path );
 				}
 				else
 				{

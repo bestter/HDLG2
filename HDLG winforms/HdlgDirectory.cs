@@ -54,10 +54,6 @@ namespace HDLG_winforms
 		/// </summary>
 		private readonly ILogger log;
 
-		internal Func<IEnumerable<FileSystemInfo>>? _enumerateFileSystemInfosHook;
-		internal Func<IEnumerable<FileInfo>>? _enumerateFilesHook;
-
-
 		public HdlgDirectory (string path, bool isTopDirectory, bool browseSubdirectory, ILogger log) : this( new DirectoryInfo( path ), isTopDirectory, browseSubdirectory, log )
 		{
 
@@ -118,7 +114,7 @@ namespace HDLG_winforms
 				{
 					// Performance optimization: Iterate via enumerator directly to avoid GetFileSystemInfos() array allocation bloat
 					// and List<T> capacity over-allocation which can cause severe memory bloat on large directories.
-					await Parallel.ForEachAsync( (_enumerateFileSystemInfosHook?.Invoke() ?? directoryInfo.EnumerateFileSystemInfos()), parallelOptions, async (info, token) =>
+					await Parallel.ForEachAsync( directoryInfo.EnumerateFileSystemInfos( ), parallelOptions, async (info, token) =>
 					{
 						if (info is DirectoryInfo d)
 						{
@@ -157,7 +153,7 @@ namespace HDLG_winforms
 				{
 					// Performance optimization: Iterate via enumerator directly to avoid GetFiles() array allocation bloat
 					// and List<T> capacity over-allocation which can cause severe memory bloat on large directories.
-					await Parallel.ForEachAsync( (_enumerateFilesHook?.Invoke() ?? directoryInfo.EnumerateFiles()), parallelOptions, async (f, token) =>
+					await Parallel.ForEachAsync( directoryInfo.EnumerateFiles( ), parallelOptions, async (f, token) =>
 					{
 						await ProcessFileAsync( f ).ConfigureAwait( false );
 					} ).ConfigureAwait( false );
@@ -177,12 +173,13 @@ namespace HDLG_winforms
 			TotalDirectories = directories.Count;
 			TotalFiles = files.Count;
 
-			// Performance optimization: Throttle recursive directory browsing using Parallel.ForEachAsync
-			// instead of an unbounded Task.WhenAll to prevent thread pool starvation and file handle exhaustion.
-			await Parallel.ForEachAsync( directories, parallelOptions, async (dir, token) =>
+			var tasks = new Task [directories.Count];
+			for (int i = 0; i < directories.Count; i++)
 			{
-				await dir.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
-			} ).ConfigureAwait( false );
+				tasks [i] = directories [i].BrowseAsync( propertyBrowser );
+			}
+
+			await Task.WhenAll( tasks ).ConfigureAwait( false );
 
 			for (int i = 0; i < directories.Count; i++)
 			{
