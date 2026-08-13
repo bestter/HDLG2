@@ -175,3 +175,6 @@
 **Learning:** When using `cat` or `grep`, output may be artificially truncated by the terminal buffer (e.g. at 1000 characters). Assuming variable names or logic (like `AddRange` calls) that are hidden by truncation leads to hallucinated plans that fail review and violate the Groundedness Rule.
 **Action:** Always use targeted line extraction commands like `sed -n '<start>,<end>p' <file>` to inspect the actual full logic of a method block if previous reads were truncated, prior to forming a plan.
 
+## 2026-08-01 - Cache parent paths during recursive directory generation
+**Learning:** When recursively traversing or rendering hierarchical structures (e.g., directory trees) in C#, repeatedly processing the full absolute path at each level using methods like `Uri.EscapeDataString()` creates unnecessary overhead. Because the absolute path length grows with depth, this causes $O(depth^2)$ string operations and allocations.
+**Action:** Always pass the processed parent state (like a URL-encoded parent path) down to child recursive calls. This allows child nodes to simply concatenate the parent state with their local name, reducing string operations to $O(depth)$ and avoiding redundant full-path calculations.
