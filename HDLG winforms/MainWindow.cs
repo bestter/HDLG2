@@ -176,41 +176,58 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private async Task<PerformanceCount> PerformDirectoryBrowseXmlAsync (string selecteDirectory, string saveFilePath)
+		private async Task<PerformanceCount> PerformDirectoryBrowseAsync (
+			string selectedDirectoryPath,
+			string saveFilePath,
+			Func<DirectoryBrowser, HdlgDirectory, string, Task> save)
 		{
-			Logger.Debug( "{MethodName} started at {StartTime:T}", nameof( PerformDirectoryBrowseXmlAsync ), DateTime.Now );
-			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
+			Logger.Debug( "{MethodName} started at {StartTime:T}", nameof( PerformDirectoryBrowseAsync ), DateTime.Now );
+			if (string.IsNullOrWhiteSpace( selectedDirectoryPath ))
 			{
-				Logger.Information( "{SelectedDirectory}", selecteDirectory );
-				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
-				Stopwatch stopwatch = Stopwatch.StartNew( );
-
-				Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
-				await directory.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
-				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.BrowseAsync ), directory.Name );
-				TimeSpan browseTime = stopwatch.Elapsed;
-				propertyBrowser.LogGetterStatistics( );
-
-				DirectoryBrowser db = new( Logger );
-				Logger.Debug( "Ready to start {MethodName}", nameof( DirectoryBrowser.SaveAsXMLAsync ) );
-
-				await db.SaveAsXMLAsync( saveFilePath, directory ).ConfigureAwait( false );
-
-				Logger.Debug( "{MethodName} done", nameof( DirectoryBrowser.SaveAsXMLAsync ) );
-				stopwatch.Stop( );
-
-				TimeSpan saveTime = stopwatch.Elapsed - browseTime;
-
-				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
-
-				Logger.Information( "Done at {EndTime:T}", DateTime.Now );
-				return result;
-			}
-			else
-			{
-				Logger.Information( "No {SelectedDirectoryParamName}", nameof( selecteDirectory ) );
+				Logger.Information( "No {SelectedDirectoryParamName}", nameof( selectedDirectoryPath ) );
 				return PerformanceCount.Empty;
 			}
+
+			Logger.Information( "{SelectedDirectory}", selectedDirectoryPath );
+			HdlgDirectory directory = new( selectedDirectoryPath, true, cbBrowseSubDirectory.Checked, Logger );
+			Stopwatch stopwatch = Stopwatch.StartNew( );
+
+			Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
+			await directory.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
+			Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.BrowseAsync ), directory.Name );
+			TimeSpan browseTime = stopwatch.Elapsed;
+			propertyBrowser.LogGetterStatistics( );
+
+			DirectoryBrowser db = new( Logger );
+			await save( db, directory, saveFilePath ).ConfigureAwait( false );
+			stopwatch.Stop( );
+
+			var result = new PerformanceCount( )
+			{
+				BrowseTime = browseTime,
+				SaveTime = stopwatch.Elapsed - browseTime,
+				TotalTime = stopwatch.Elapsed
+			};
+			Logger.Information( "Done at {EndTime:T}", DateTime.Now );
+			return result;
+		}
+
+		private Task<PerformanceCount> PerformDirectoryBrowseXmlAsync (string selectedDirectoryPath, string saveFilePath)
+		{
+			return PerformDirectoryBrowseAsync( selectedDirectoryPath, saveFilePath,
+				(browser, directory, path) => browser.SaveAsXMLAsync( path, directory ) );
+		}
+
+		private Task<PerformanceCount> PerformDirectoryBrowseHtmlAsync (string selectedDirectoryPath, string saveFilePath)
+		{
+			return PerformDirectoryBrowseAsync( selectedDirectoryPath, saveFilePath,
+				(browser, directory, path) => browser.SaveAsHTMLAsync( path, directory ) );
+		}
+
+		private Task<PerformanceCount> PerformDirectoryBrowseJsonAsync (string selectedDirectoryPath, string saveFilePath)
+		{
+			return PerformDirectoryBrowseAsync( selectedDirectoryPath, saveFilePath,
+				(browser, directory, path) => browser.SaveAsJSONAsync( path, directory ) );
 		}
 
 		/// <summary>
@@ -478,40 +495,6 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private async Task<PerformanceCount> PerformDirectoryBrowseHtmlAsync (string selecteDirectory, string saveFilePath)
-		{
-			Debug.Write( $"{nameof( PerformDirectoryBrowseHtmlAsync )} started at {DateTime.Now:T}" );
-			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
-			{
-				Logger.Information( "{SelectedDirectory}", selecteDirectory );
-				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
-				Stopwatch stopwatch = Stopwatch.StartNew( );
-				Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
-				await directory.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
-				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.BrowseAsync ), directory.Name );
-				TimeSpan browseTime = stopwatch.Elapsed;
-				propertyBrowser.LogGetterStatistics( );
-
-				DirectoryBrowser db = new( Logger );
-				Logger.Debug( "Ready to start {MethodName}", nameof( DirectoryBrowser.SaveAsHTMLAsync ) );
-
-				await db.SaveAsHTMLAsync( saveFilePath, directory ).ConfigureAwait( false );
-
-				Logger.Debug( "{MethodName} done", nameof( DirectoryBrowser.SaveAsHTMLAsync ) );
-				stopwatch.Stop( );
-				TimeSpan saveTime = stopwatch.Elapsed - browseTime;
-
-				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
-				Logger.Information( "Done at {EndTime:T}", DateTime.Now );
-				return result;
-			}
-			else
-			{
-				Logger.Information( "No {SelectedDirectoryParamName}", nameof( selecteDirectory ) );
-				return PerformanceCount.Empty;
-			}
-		}
-
 		private void SaveFileDialogHtml_FileOk (object sender, CancelEventArgs e)
 		{
 
@@ -582,41 +565,6 @@ toolStripStatusLabelTotalTime.Visible = false;
 				btnStartJson.Enabled = true;
 				if (btnStartUi != null) btnStartUi.Enabled = true;
 				UseWaitCursor = false;
-			}
-		}
-
-		private async Task<PerformanceCount> PerformDirectoryBrowseJsonAsync (string selectedDirectory, string saveFilePath)
-		{
-			Logger.Debug( "{MethodName} started at {StartTime:T}", nameof( PerformDirectoryBrowseJsonAsync ), DateTime.Now );
-			if (!string.IsNullOrWhiteSpace( selectedDirectory ))
-			{
-				Logger.Information( "{SelectedDirectory}", selectedDirectory );
-				HdlgDirectory directory = new( selectedDirectory, true, cbBrowseSubDirectory.Checked, Logger );
-				Stopwatch stopwatch = Stopwatch.StartNew( );
-
-				Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
-				await directory.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
-				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.BrowseAsync ), directory.Name );
-				TimeSpan browseTime = stopwatch.Elapsed;
-				propertyBrowser.LogGetterStatistics( );
-
-				DirectoryBrowser db = new( Logger );
-				Logger.Debug( "Ready to start {MethodName}", nameof( DirectoryBrowser.SaveAsJSONAsync ) );
-
-				await db.SaveAsJSONAsync( saveFilePath, directory ).ConfigureAwait( false );
-
-				Logger.Debug( "{MethodName} done", nameof( DirectoryBrowser.SaveAsJSONAsync ) );
-				stopwatch.Stop( );
-
-				TimeSpan saveTime = stopwatch.Elapsed - browseTime;
-				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
-				Logger.Information( "Done at {EndTime:T}", DateTime.Now );
-				return result;
-			}
-			else
-			{
-				Logger.Information( "No {SelectedDirectoryParamName}", nameof( selectedDirectory ) );
-				return PerformanceCount.Empty;
 			}
 		}
 
