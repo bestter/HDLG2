@@ -684,7 +684,16 @@ namespace HDLG_winforms
 			FileInfo fileInfo = new( filePath );
 			using FileStream fileStream = new( fileInfo.FullName, FileMode.Create, FileAccess.Write, FileShare.None );
 			using Utf8JsonWriter writer = new( fileStream, new JsonWriterOptions { Indented = false } );
+			WriteJsonDocument( writer, directory );
+			await writer.FlushAsync( ).ConfigureAwait( false );
+		}
 
+		/// <summary>
+		/// Walks the directory tree synchronously into <paramref name="writer"/>.
+		/// Callers that must not block the UI should run <see cref="SaveAsJSONAsync"/> on a worker thread.
+		/// </summary>
+		private void WriteJsonDocument (Utf8JsonWriter writer, HdlgDirectory directory)
+		{
 			string? version = typeof( DirectoryBrowser ).Assembly.GetName( ).Version?.ToString( );
 
 			writer.WriteStartObject( );
@@ -696,8 +705,6 @@ namespace HDLG_winforms
 			writer.WritePropertyName( "Root" );
 			WriteJsonDirectory( writer, directory );
 			writer.WriteEndObject( );
-
-			await writer.FlushAsync( ).ConfigureAwait( false );
 		}
 
 		/// <summary>
