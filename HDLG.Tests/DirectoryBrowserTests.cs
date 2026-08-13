@@ -297,6 +297,8 @@ namespace HDLG.Tests
         [Fact]
         public async Task SaveAsJSONAsync_ValidInputs_GeneratesCompactJsonFile()
         {
+            var browser = new HdlgFileProperty.FilePropertyBrowser(loggerMock.Object);
+            await testDirectory.BrowseAsync(browser);
             await directoryBrowser.SaveAsJSONAsync(tempJsonFilePath, testDirectory);
 
             System.IO.File.Exists(tempJsonFilePath).Should().BeTrue();
@@ -315,6 +317,9 @@ namespace HDLG.Tests
             tree.GetProperty("Path").GetString().Should().Be(testDirectory.Path);
             tree.GetProperty("Directories").ValueKind.Should().Be(JsonValueKind.Array);
             tree.GetProperty("Files").ValueKind.Should().Be(JsonValueKind.Array);
+            tree.GetProperty("Files").EnumerateArray()
+                .Select(f => f.GetProperty("Name").GetString())
+                .Should().Contain("file1.txt");
         }
 
         [Fact]
@@ -391,6 +396,54 @@ namespace HDLG.Tests
                 if (System.IO.File.Exists(jsonPath))
                     System.IO.File.Delete(jsonPath);
             }
+        }
+
+        [Fact]
+        public async Task SaveAsJSONAsync_BrowsedTree_WritesFilesCountsAndNestedDirectories()
+        {
+            var subDirPath = Path.Combine(baseDirectoryPath, "child");
+            System.IO.Directory.CreateDirectory(subDirPath);
+            System.IO.File.WriteAllText(Path.Combine(subDirPath, "nested.txt"), "n");
+
+            var properties = new System.Collections.Generic.Dictionary<string, IConvertible>
+            {
+                { "Flag", true },
+            };
+
+            var browserMock = new Mock<HdlgFileProperty.FilePropertyBrowser>(
+                loggerMock.Object,
+                Array.Empty<HdlgFileProperty.IFilePropertyGetter>());
+            browserMock
+                .Setup(b => b.GetFilePropertyAsync(It.Is<FileInfo>(f => f != null && f.Name == "file1.txt")))
+                .ReturnsAsync(properties);
+            browserMock
+                .Setup(b => b.GetFilePropertyAsync(It.Is<FileInfo>(f => f != null && f.Name != "file1.txt")))
+                .ReturnsAsync((IReadOnlyDictionary<string, IConvertible>?)null);
+
+            var dir = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+            await dir.BrowseAsync(browserMock.Object);
+
+            await directoryBrowser.SaveAsJSONAsync(tempJsonFilePath, dir);
+
+            using var doc = JsonDocument.Parse(await System.IO.File.ReadAllTextAsync(tempJsonFilePath));
+            JsonElement root = doc.RootElement;
+            root.GetProperty("DirectoriesCount").GetInt64().Should().Be(dir.TotalDirectories);
+            root.GetProperty("FilesCount").GetInt64().Should().Be(dir.TotalFiles);
+
+            JsonElement tree = root.GetProperty("Root");
+            tree.GetProperty("Files").EnumerateArray()
+                .Select(f => f.GetProperty("Name").GetString())
+                .Should().Contain("file1.txt");
+
+            JsonElement file1 = tree.GetProperty("Files").EnumerateArray()
+                .Single(f => f.GetProperty("Name").GetString() == "file1.txt");
+            file1.GetProperty("ExtentedProperties").GetProperty("Flag").GetBoolean().Should().BeTrue();
+
+            JsonElement child = tree.GetProperty("Directories").EnumerateArray()
+                .Single(d => d.GetProperty("Name").GetString() == "child");
+            child.GetProperty("Files").EnumerateArray()
+                .Select(f => f.GetProperty("Name").GetString())
+                .Should().Contain("nested.txt");
         }
     }
 }
