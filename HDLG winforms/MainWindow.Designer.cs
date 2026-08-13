@@ -195,7 +195,6 @@ namespace HDLG_winforms
 			// btnStartHtml
 			//
 			btnStartHtml.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-			btnStartHtml.ButtonStyle = Krypton.Toolkit.ButtonStyle.Cluster;
 			btnStartHtml.Location = new Point(279, 19);
 			btnStartHtml.Margin = new Padding(3, 3, 6, 3);
 			btnStartHtml.Name = "btnStartHtml";
