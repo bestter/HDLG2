@@ -9,7 +9,7 @@ namespace Benchmark
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Console.WriteLine("Starting benchmark...");
 
@@ -31,7 +31,7 @@ namespace Benchmark
 
             // Warmup
             var warmupDir = new HdlgDirectory(testDir, true, true, Log.Logger);
-            warmupDir.Browse(propertyBrowser);
+            await warmupDir.BrowseAsync(propertyBrowser);
 
             int iterations = 10;
             long totalMs = 0;
@@ -40,7 +40,7 @@ namespace Benchmark
             {
                 var dir = new HdlgDirectory(testDir, true, true, Log.Logger);
                 var sw = Stopwatch.StartNew();
-                dir.Browse(propertyBrowser);
+                await dir.BrowseAsync(propertyBrowser);
                 sw.Stop();
                 totalMs += sw.ElapsedMilliseconds;
                 Console.WriteLine($"Iteration {i}: {sw.ElapsedMilliseconds} ms (Dirs: {dir.TotalDirectories}, Files: {dir.TotalFiles})");

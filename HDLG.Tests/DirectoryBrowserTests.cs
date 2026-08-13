@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
@@ -18,6 +19,7 @@ namespace HDLG.Tests
         private readonly DirectoryBrowser directoryBrowser;
         private readonly string tempXmlFilePath;
         private readonly string tempHtmlFilePath;
+        private readonly string tempJsonFilePath;
         private readonly HdlgDirectory testDirectory;
         private readonly string baseDirectoryPath;
 
@@ -28,6 +30,7 @@ namespace HDLG.Tests
 
             tempXmlFilePath = Path.Combine(Path.GetTempPath(), "test_" + Guid.NewGuid().ToString() + ".xml");
             tempHtmlFilePath = Path.Combine(Path.GetTempPath(), "test_" + Guid.NewGuid().ToString() + ".html");
+            tempJsonFilePath = Path.Combine(Path.GetTempPath(), "test_" + Guid.NewGuid().ToString() + ".json");
 
             baseDirectoryPath = Path.Combine(Path.GetTempPath(), "DirectoryBrowserTests_" + Guid.NewGuid().ToString());
             System.IO.Directory.CreateDirectory(baseDirectoryPath);
@@ -44,6 +47,9 @@ namespace HDLG.Tests
 
             if (System.IO.File.Exists(tempHtmlFilePath))
                 System.IO.File.Delete(tempHtmlFilePath);
+
+            if (System.IO.File.Exists(tempJsonFilePath))
+                System.IO.File.Delete(tempJsonFilePath);
 
             if (System.IO.Directory.Exists(baseDirectoryPath))
                 System.IO.Directory.Delete(baseDirectoryPath, true);
@@ -273,6 +279,171 @@ namespace HDLG.Tests
                 if (System.IO.File.Exists(htmlPath))
                     System.IO.File.Delete(htmlPath);
             }
+        }
+
+        [Fact]
+        public async Task SaveAsJSONAsync_NullFilePath_ThrowsArgumentException()
+        {
+            await Assert.ThrowsAsync<ArgumentException>(() => directoryBrowser.SaveAsJSONAsync(null!, testDirectory));
+            await Assert.ThrowsAsync<ArgumentException>(() => directoryBrowser.SaveAsJSONAsync("", testDirectory));
+        }
+
+        [Fact]
+        public async Task SaveAsJSONAsync_NullDirectory_ThrowsArgumentNullException()
+        {
+            await Assert.ThrowsAsync<ArgumentNullException>(() => directoryBrowser.SaveAsJSONAsync(tempJsonFilePath, null!));
+        }
+
+        [Fact]
+        public async Task SaveAsJSONAsync_ValidInputs_GeneratesCompactJsonFile()
+        {
+            var browser = new HdlgFileProperty.FilePropertyBrowser(loggerMock.Object);
+            await testDirectory.BrowseAsync(browser);
+            await directoryBrowser.SaveAsJSONAsync(tempJsonFilePath, testDirectory);
+
+            System.IO.File.Exists(tempJsonFilePath).Should().BeTrue();
+            var json = await System.IO.File.ReadAllTextAsync(tempJsonFilePath);
+            json.Should().NotContain("\n  ");
+            using var doc = JsonDocument.Parse(json);
+            JsonElement root = doc.RootElement;
+            root.TryGetProperty("Hdlg", out _).Should().BeFalse();
+            root.GetProperty("Version").GetString().Should().NotBeNullOrWhiteSpace();
+            root.GetProperty("Directory").GetString().Should().Be(testDirectory.Path);
+            root.GetProperty("DateTime").GetString().Should().NotBeNullOrWhiteSpace();
+            root.GetProperty("DirectoriesCount").ValueKind.Should().Be(JsonValueKind.Number);
+            root.GetProperty("FilesCount").ValueKind.Should().Be(JsonValueKind.Number);
+            JsonElement tree = root.GetProperty("Root");
+            tree.GetProperty("Name").GetString().Should().Be(testDirectory.Name);
+            tree.GetProperty("Path").GetString().Should().Be(testDirectory.Path);
+            tree.GetProperty("Directories").ValueKind.Should().Be(JsonValueKind.Array);
+            tree.GetProperty("Files").ValueKind.Should().Be(JsonValueKind.Array);
+            tree.GetProperty("Files").EnumerateArray()
+                .Select(f => f.GetProperty("Name").GetString())
+                .Should().Contain("file1.txt");
+        }
+
+        [Fact]
+        public async Task SaveAsJSONAsync_FileLocked_ThrowsIOException()
+        {
+            using var fileStream = new FileStream(tempJsonFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            await Assert.ThrowsAsync<IOException>(() => directoryBrowser.SaveAsJSONAsync(tempJsonFilePath, testDirectory));
+        }
+
+        [Fact]
+        public async Task SaveAsJSONAsync_FilesWithProperties_UsesOriginalKeysAndNativeTypes()
+        {
+            var testFilePath = Path.Combine(baseDirectoryPath, "photo.jpg");
+            System.IO.File.WriteAllText(testFilePath, "dummy");
+
+            var properties = new System.Collections.Generic.Dictionary<string, IConvertible>
+            {
+                { "Camera Model", "Nikon" },
+                { "Width", 1920 },
+                { "Taken", new DateTime(2020, 1, 2, 3, 4, 5, DateTimeKind.Unspecified) },
+                { "   ", "skip-me" },
+            };
+
+            var browserMock = new Mock<HdlgFileProperty.FilePropertyBrowser>(loggerMock.Object, Array.Empty<HdlgFileProperty.IFilePropertyGetter>());
+            browserMock
+                .Setup(b => b.GetFilePropertyAsync(It.Is<FileInfo>(f => f != null && f.FullName == testFilePath)))
+                .ReturnsAsync(properties);
+            browserMock
+                .Setup(b => b.GetFilePropertyAsync(It.Is<FileInfo>(f => f != null && f.FullName != testFilePath)))
+                .ReturnsAsync((IReadOnlyDictionary<string, IConvertible>?)null);
+
+            var dir = new HdlgDirectory(baseDirectoryPath, true, false, loggerMock.Object);
+            await dir.BrowseAsync(browserMock.Object);
+
+            var jsonPath = Path.Combine(Path.GetTempPath(), "test_json_props_" + Guid.NewGuid().ToString() + ".json");
+            try
+            {
+                await directoryBrowser.SaveAsJSONAsync(jsonPath, dir);
+
+                using var doc = JsonDocument.Parse(await System.IO.File.ReadAllTextAsync(jsonPath));
+                JsonElement files = doc.RootElement.GetProperty("Root").GetProperty("Files");
+                files.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
+
+                JsonElement photo = default;
+                foreach (JsonElement file in files.EnumerateArray())
+                {
+                    if (file.GetProperty("Name").GetString() == "photo.jpg")
+                    {
+                        photo = file;
+                        break;
+                    }
+                }
+                photo.ValueKind.Should().Be(JsonValueKind.Object);
+
+                photo.GetProperty("Size").ValueKind.Should().Be(JsonValueKind.Number);
+                JsonElement ext = photo.GetProperty("ExtentedProperties");
+                ext.TryGetProperty("Camera Model", out JsonElement camera).Should().BeTrue();
+                camera.GetString().Should().Be("Nikon");
+                ext.TryGetProperty("Camera_x0020_Model", out _).Should().BeFalse();
+                ext.GetProperty("Width").GetInt32().Should().Be(1920);
+                ext.GetProperty("Taken").GetString().Should().Be(new DateTime(2020, 1, 2, 3, 4, 5, DateTimeKind.Unspecified).ToString("O", System.Globalization.CultureInfo.InvariantCulture));
+                ext.TryGetProperty("   ", out _).Should().BeFalse();
+
+                foreach (JsonElement file in files.EnumerateArray())
+                {
+                    if (file.GetProperty("Name").GetString() != "photo.jpg")
+                    {
+                        file.GetProperty("ExtentedProperties").EnumerateObject().Should().BeEmpty();
+                    }
+                }
+            }
+            finally
+            {
+                if (System.IO.File.Exists(jsonPath))
+                    System.IO.File.Delete(jsonPath);
+            }
+        }
+
+        [Fact]
+        public async Task SaveAsJSONAsync_BrowsedTree_WritesFilesCountsAndNestedDirectories()
+        {
+            var subDirPath = Path.Combine(baseDirectoryPath, "child");
+            System.IO.Directory.CreateDirectory(subDirPath);
+            System.IO.File.WriteAllText(Path.Combine(subDirPath, "nested.txt"), "n");
+
+            var properties = new System.Collections.Generic.Dictionary<string, IConvertible>
+            {
+                { "Flag", true },
+            };
+
+            var browserMock = new Mock<HdlgFileProperty.FilePropertyBrowser>(
+                loggerMock.Object,
+                Array.Empty<HdlgFileProperty.IFilePropertyGetter>());
+            browserMock
+                .Setup(b => b.GetFilePropertyAsync(It.Is<FileInfo>(f => f != null && f.Name == "file1.txt")))
+                .ReturnsAsync(properties);
+            browserMock
+                .Setup(b => b.GetFilePropertyAsync(It.Is<FileInfo>(f => f != null && f.Name != "file1.txt")))
+                .ReturnsAsync((IReadOnlyDictionary<string, IConvertible>?)null);
+
+            var dir = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+            await dir.BrowseAsync(browserMock.Object);
+
+            await directoryBrowser.SaveAsJSONAsync(tempJsonFilePath, dir);
+
+            using var doc = JsonDocument.Parse(await System.IO.File.ReadAllTextAsync(tempJsonFilePath));
+            JsonElement root = doc.RootElement;
+            root.GetProperty("DirectoriesCount").GetInt64().Should().Be(dir.TotalDirectories);
+            root.GetProperty("FilesCount").GetInt64().Should().Be(dir.TotalFiles);
+
+            JsonElement tree = root.GetProperty("Root");
+            tree.GetProperty("Files").EnumerateArray()
+                .Select(f => f.GetProperty("Name").GetString())
+                .Should().Contain("file1.txt");
+
+            JsonElement file1 = tree.GetProperty("Files").EnumerateArray()
+                .Single(f => f.GetProperty("Name").GetString() == "file1.txt");
+            file1.GetProperty("ExtentedProperties").GetProperty("Flag").GetBoolean().Should().BeTrue();
+
+            JsonElement child = tree.GetProperty("Directories").EnumerateArray()
+                .Single(d => d.GetProperty("Name").GetString() == "child");
+            child.GetProperty("Files").EnumerateArray()
+                .Select(f => f.GetProperty("Name").GetString())
+                .Should().Contain("nested.txt");
         }
     }
 }
