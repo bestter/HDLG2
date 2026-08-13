@@ -592,7 +592,7 @@ Commit message if done: `docs: sync AGENTS.md NuGet versions with project files`
 
 If not authorized: skip and leave a note in the session that Task 7 is still open.
 
-**Skipped pending owner authorization.** `AGENTS.md` / `ANTIGRAVITY.md` were not authorized; NuGet table not synced.
+Authorized 2026-08-13 (`Tu peux réécrire AGENTS.md`). NuGet table and related stale facts synced to csproj / current architecture. `ANTIGRAVITY.md` was not authorized and was left unchanged.
 
 ---
 

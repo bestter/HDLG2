@@ -1,6 +1,6 @@
 # Current plan
 
-**Status:** complete (Task 7 skipped — AGENTS.md not authorized)
+**Status:** complete (Task 7 done 2026-08-13 — AGENTS.md authorized)
 **Date:** 2026-08-12
 **Branch:** `Improvements20260812`
 **Plan:** `Documentation/plans/2026-08-12-address-json-export-review.md`

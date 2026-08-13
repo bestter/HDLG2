@@ -27,23 +27,24 @@
 - ⚡ **Performance Instrumentation**: Measures, records, and displays execution metrics (scantime, compilation, and save-time).
 - 🛡️ **DoS Hardening & Fault Tolerance**: Configurable safeguards in `FilePropertyLimits` — rejects files exceeding 100 MB, enforces a 30-second timeout per property getter in `FilePropertyBrowser`, caps image dimensions at 32 768 px via `ImagePropertyGetter` (with `DecoderOptions.MaxFrames = 1`), and uses safe attribute checks (`IsReparsePoint`) in `BrowserForm` to prevent permission denial crashes when enumerating restricted system items.
 - 🪵 **Structured Logging**: Rolling diagnostic logs written daily to `%LOCALAPPDATA%\HDLG\logs`.
-- 🎨 **Modern WinForms UI (v1.4)**: Fluent-style desktop interface powered by **Krypton.Toolkit** (Microsoft 365 Blue Light palette), with a dashboard layout on the main window and harmonized explorer/about dialogs.
+- 🎨 **Modern WinForms UI (v1.5)**: Fluent-style desktop interface powered by **Krypton.Toolkit** (Microsoft 365 Blue Light palette), with a dashboard layout on the main window, a 2×2 Export grid (XML / HTML / JSON / UI Explorer), and harmonized explorer/about dialogs.
 - 🏷️ **HDLG Monogram Branding**: Original geometric logo (Concept C, 2×2 layout, accent `#0284C8`) in the About dialog, application icon, and HTML export footer (inline SVG).
 
 ---
 
 ## 🏛️ Architecture Overview
 
-The solution consists of three primary layers:
+The solution consists of four projects:
 
 1. **`HDLG winforms` (Desktop GUI App)**: 
-   - Manages the Windows Forms layout, progress metrics, and output generation orchestrators.
+   - Manages the Windows Forms layout, progress metrics, and a single export runner (`RunExportAsync`) shared by XML, HTML, and JSON.
    - Built on `Microsoft.Extensions.Hosting` utilizing full Dependency Injection (DI) and robust background threading (`Task.Run`) to keep the UI perfectly responsive.
    - UI theme initialized via `AppUiBootstrap` using **Krypton.Toolkit** controls (`KryptonForm`, `KryptonHeaderGroup`, `KryptonTreeView`, etc.).
 2. **`HdlgFileProperty` (Extraction Engine)**:
    - Houses the core extraction strategy (`IFilePropertyGetter`), delegating specialized tasks to respective metadata engines based on MIME/file formats.
    - `FilePropertyBrowser` orchestrates getters with file-size checks and per-getter timeouts; `FilePropertyLimits` centralizes the configurable thresholds.
-3. **`HDLG.Tests` (Unit Tests)**:
+3. **`Benchmark`**: Console harness that times `HdlgDirectory.BrowseAsync` (warmup + measured iterations).
+4. **`HDLG.Tests` (Unit Tests)**:
    - xUnit v3-based test suite (`xunit.v3` + runner) with FluentAssertions and Moq, covering export engines, metadata extraction orchestration, directory model logic, property getter contracts, security helpers (e.g. OpenWithDefaultProgram), UI bootstrap, and structural WinForms UI tests.
 
 ---
@@ -77,7 +78,9 @@ dotnet test HDLG.sln
 ```
 
 The `HDLG.Tests` project covers:
-- **DirectoryBrowserTests** — XML, HTML, and JSON export validation (parameter guards, output structure).
+- **DirectoryBrowserTests** — XML, HTML, and JSON export validation (parameter guards, compact JSON contract, nested tree, counts, native bool properties).
+- **PerformanceCountTests** — `PerformanceCount.Empty` sentinel values.
+- **BrowserFormLoadTests** — STA load tests for the explorer form (enumeration and access-denied paths).
 - **FilePropertyBrowserTests** — Property extraction orchestration (getter delegation, multi-getter combination, oversized-file rejection, timeout behavior, statistics logging).
 - **FilePropertyGetterStatisticTests** — Execution statistics validation for getters (elapsed time, file count).
 - **HdlgDirectoryTests** — Directory model construction, recursive browse behavior, and equality semantics.
