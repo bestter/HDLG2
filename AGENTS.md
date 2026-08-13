@@ -124,9 +124,9 @@ La solution `HDLG.sln` contient **trois projets** :
 
 | Package | Version | Usage |
 |---|---|---|
-| `Microsoft.Extensions.Hosting` | 10.0.9 | Hébergement et injection de dépendances (transitive : DependencyInjection + Logging) |
+| `Microsoft.Extensions.Hosting` | 10.0.11 | Hébergement et injection de dépendances (transitive : DependencyInjection + Logging) |
 | `Serilog.Sinks.File` | 7.0.0 | Journalisation vers fichiers |
-| `Krypton.Toolkit` | 105.26.4.110 | Thème et contrôles WinForms modernes (Fluent / Microsoft 365) |
+| `Krypton.Toolkit` | 105.26.4.111 | Thème et contrôles WinForms modernes (Fluent / Microsoft 365) |
 
 ### `HdlgFileProperty`
 
@@ -134,8 +134,8 @@ La solution `HDLG.sln` contient **trois projets** :
 |---|---|---|
 | `DocumentFormat.OpenXml` | 3.5.1 | Lecture de documents Office (Word, Excel) |
 | `PdfPig` | 0.1.14 | Lecture de propriétés PDF |
-| `Serilog` | 4.3.1 | Logging |
-| `SixLabors.ImageSharp` | 3.1.12 | Traitement d'images |
+| `Serilog` | 4.4.0 | Logging |
+| `SixLabors.ImageSharp` | 3.1.13 | Traitement d'images |
 | `System.Drawing.Common` | 10.0.8 | API graphique Windows |
 | `TagLibSharp` | 2.3.0 | Lecture de métadonnées audio (MP3) |
 
@@ -145,9 +145,9 @@ La solution `HDLG.sln` contient **trois projets** :
 | -----------------------------| ---------| ----------------------------------------|
 | `coverlet.collector`        | 10.0.1  | Collecte de couverture de code         |
 | `FluentAssertions`          | 8.10.0  | Assertions lisibles et expressives     |
-| `Microsoft.AspNetCore.TestHost` | 10.0.8 | Hébergement de test ASP.NET Core (référencé par le projet de tests) |
-| `Microsoft.NET.Test.Sdk`    | 18.5.1  | Infrastructure de test .NET            |
-| `Serilog`                   | 4.3.1   | Logging dans les tests                 |
+| `Microsoft.AspNetCore.TestHost` | 10.0.11 | Hébergement de test ASP.NET Core (référencé par le projet de tests) |
+| `Microsoft.NET.Test.Sdk`    | 18.8.1  | Infrastructure de test .NET            |
+| `Serilog`                   | 4.4.0   | Logging dans les tests                 |
 | `TagLibSharp`               | 2.3.0   | Création de fixtures audio pour les tests |
 | `Moq`                       | 4.20.72 | Mocking d'interfaces pour tests isolés |
 | `xunit.v3`                  | 3.2.2   | Framework de tests unitaires (v3)      |

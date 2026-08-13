@@ -676,7 +676,7 @@ namespace HDLG_winforms
 		{
 			if (string.IsNullOrWhiteSpace( filePath ))
 			{
-				throw new ArgumentException( $"'{nameof( filePath )}' ne peut pas avoir une valeur null ou être un espace blanc.", nameof( filePath ) );
+				throw new ArgumentException( $"'{nameof( filePath )}' cannot be null or whitespace.", nameof( filePath ) );
 			}
 
 			ArgumentNullException.ThrowIfNull( directory );
@@ -694,7 +694,7 @@ namespace HDLG_winforms
 			writer.WriteNumber( "DirectoriesCount", directory.TotalDirectories );
 			writer.WriteNumber( "FilesCount", directory.TotalFiles );
 			writer.WritePropertyName( "Root" );
-			await WriteJsonDirectoryAsync( writer, directory ).ConfigureAwait( false );
+			WriteJsonDirectory( writer, directory );
 			writer.WriteEndObject( );
 
 			await writer.FlushAsync( ).ConfigureAwait( false );
@@ -703,9 +703,9 @@ namespace HDLG_winforms
 		/// <summary>
 		/// Write a directory object (Name, Path, CreationTime, Directories, Files).
 		/// </summary>
-		private async Task WriteJsonDirectoryAsync (Utf8JsonWriter writer, HdlgDirectory directory)
+		private void WriteJsonDirectory (Utf8JsonWriter writer, HdlgDirectory directory)
 		{
-			log.Debug( "In {Method} {Type} {Directory}", nameof( WriteJsonDirectoryAsync ), nameof( HdlgDirectory ), directory );
+			log.Debug( "In {Method} {Type} {Directory}", nameof( WriteJsonDirectory ), nameof( HdlgDirectory ), directory );
 
 			writer.WriteStartObject( );
 			writer.WriteString( "Name", directory.Name );
@@ -716,7 +716,7 @@ namespace HDLG_winforms
 			writer.WriteStartArray( );
 			for (int i = 0; i < directory.Directories.Count; i++)
 			{
-				await WriteJsonDirectoryAsync( writer, directory.Directories [i] ).ConfigureAwait( false );
+				WriteJsonDirectory( writer, directory.Directories [i] );
 			}
 			writer.WriteEndArray( );
 
@@ -729,7 +729,6 @@ namespace HDLG_winforms
 			writer.WriteEndArray( );
 
 			writer.WriteEndObject( );
-			await Task.CompletedTask.ConfigureAwait( false );
 		}
 
 		/// <summary>
@@ -755,19 +754,9 @@ namespace HDLG_winforms
 			writer.WriteStartObject( );
 			if (file.Properties != null && file.Properties.Count > 0)
 			{
-				if (file.Properties is Dictionary<string, IConvertible> dictProperties)
+				foreach (var property in file.Properties)
 				{
-					foreach (var property in dictProperties)
-					{
-						WriteJsonProperty( writer, property.Key, property.Value );
-					}
-				}
-				else
-				{
-					foreach (var property in file.Properties)
-					{
-						WriteJsonProperty( writer, property.Key, property.Value );
-					}
+					WriteJsonProperty( writer, property.Key, property.Value );
 				}
 			}
 			writer.WriteEndObject( );

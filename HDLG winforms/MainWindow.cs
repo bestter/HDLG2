@@ -585,13 +585,13 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private async Task<PerformanceCount> PerformDirectoryBrowseJsonAsync (string selecteDirectory, string saveFilePath)
+		private async Task<PerformanceCount> PerformDirectoryBrowseJsonAsync (string selectedDirectory, string saveFilePath)
 		{
 			Logger.Debug( "{MethodName} started at {StartTime:T}", nameof( PerformDirectoryBrowseJsonAsync ), DateTime.Now );
-			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
+			if (!string.IsNullOrWhiteSpace( selectedDirectory ))
 			{
-				Logger.Information( "{SelectedDirectory}", selecteDirectory );
-				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
+				Logger.Information( "{SelectedDirectory}", selectedDirectory );
+				HdlgDirectory directory = new( selectedDirectory, true, cbBrowseSubDirectory.Checked, Logger );
 				Stopwatch stopwatch = Stopwatch.StartNew( );
 
 				Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
@@ -615,7 +615,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 			else
 			{
-				Logger.Information( "No {SelectedDirectoryParamName}", nameof( selecteDirectory ) );
+				Logger.Information( "No {SelectedDirectoryParamName}", nameof( selectedDirectory ) );
 				return PerformanceCount.Empty;
 			}
 		}
