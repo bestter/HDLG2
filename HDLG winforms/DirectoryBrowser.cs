@@ -467,12 +467,26 @@ namespace HDLG_winforms
 		/// <param name="writer"></param>
 		/// <param name="directory"></param>
 		/// <returns></returns>
-		private async Task WritHtmlDirectoryAsync (TextWriter writer, HdlgDirectory directory, int depth)
+		private async Task WritHtmlDirectoryAsync (TextWriter writer, HdlgDirectory directory, int depth, string? parentUrlEncodedPath = null)
 		{
 			log.Debug( "In {Method} {Type} {Directory}", nameof( WritHtmlDirectoryAsync ), nameof( HdlgDirectory ), directory );
 			string spacer = depth < 20 ? Spacers [depth] : new string( ' ', depth );
 			string encodedPath = WebUtility.HtmlEncode( directory.Path );
-			string urlEncodedDirPath = GetUrlEncodedPath( directory.Path );
+
+			// Performance optimization: When recursing directories, do not redundantly parse and encode the full absolute path.
+			// Instead, concatenate the URL-encoded child name to the URL-encoded parent path.
+			string urlEncodedDirPath;
+			if (parentUrlEncodedPath == null)
+			{
+				urlEncodedDirPath = GetUrlEncodedPath( directory.Path );
+			}
+			else
+			{
+				urlEncodedDirPath = parentUrlEncodedPath.EndsWith('/')
+					? parentUrlEncodedPath + Uri.EscapeDataString(directory.Name)
+					: parentUrlEncodedPath + "/" + Uri.EscapeDataString(directory.Name);
+			}
+
 			string id = encodedPath; // Re-use cached encoded path
 			string name = WebUtility.HtmlEncode( directory.Name );
 			string created = directory.CreationTime.ToString( "F", CultureInfo.CurrentCulture );
@@ -493,7 +507,7 @@ namespace HDLG_winforms
 				for (int i = 0; i < directory.Directories.Count; i++)
 				{
 					HdlgDirectory d = directory.Directories [i];
-					await WritHtmlDirectoryAsync( writer, d, inDepth ).ConfigureAwait( false );
+					await WritHtmlDirectoryAsync( writer, d, inDepth, urlEncodedDirPath ).ConfigureAwait( false );
 				}
 				await writer.WriteLineAsync( spacer + "\t</div>" ).ConfigureAwait( false );
 			}
