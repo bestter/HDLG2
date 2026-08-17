@@ -488,6 +488,36 @@ namespace HDLG.Tests
             }
         }
 
+
+        [Fact]
+        public async Task Browse_UnauthorizedAccessExceptionOnFile_LogsWarning()
+        {
+            // Arrange
+            var testDirPath = Path.Combine(baseDirectoryPath, "UnauthorizedExceptionDir");
+            System.IO.Directory.CreateDirectory(testDirPath);
+            var dummyFilePath = Path.Combine(testDirPath, "dummy.txt");
+            System.IO.File.WriteAllText(dummyFilePath, "dummy content");
+
+            var mockPropertyGetter = new Mock<IFilePropertyGetter>();
+            var mockPropertyBrowser = new Mock<FilePropertyBrowser>(loggerMock.Object, new[] { mockPropertyGetter.Object });
+
+            mockPropertyBrowser.Setup(b => b.GetFilePropertyAsync(It.IsAny<FileInfo>()))
+                               .ThrowsAsync(new UnauthorizedAccessException("Mock unauthorized exception"));
+
+            var hdlgDirectory = new HdlgDirectory(testDirPath, true, false, loggerMock.Object);
+
+            // Act
+            await hdlgDirectory.BrowseAsync(mockPropertyBrowser.Object);
+
+            // Assert
+            loggerMock.Verify(
+                l => l.Warning(
+                    It.IsAny<UnauthorizedAccessException>(),
+                    "Access denied to file: {Path}",
+                    dummyFilePath),
+                Times.Once);
+        }
+
         [Fact]
         public async Task Browse_SecurityExceptionOnFile_LogsWarning()
         {

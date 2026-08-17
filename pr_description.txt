@@ -1,4 +1,0 @@
-💡 What: Passed down the `urlEncodedDirPath` in the `WritHtmlDirectoryAsync` recursive HTML generation method.
-🎯 Why: `GetUrlEncodedPath(directory.Path)` was being executed on the full absolute path at every directory depth level, resulting in O(depth²) string parsing and allocations. By caching the encoded parent string and passing it down, we only need to encode and concatenate the single child directory name at each step.
-📊 Impact: Reduces string allocations, CPU cycles, and garbage collection pressure significantly when exporting very deep directory structures. Changes time complexity for path encoding from O(depth²) to O(depth).
-🔬 Measurement: Verify by executing an HTML export on a deep directory structure (e.g. 20+ levels deep); memory allocation and CPU execution time in `WritHtmlDirectoryAsync` will be visibly reduced.
