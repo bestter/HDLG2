@@ -33,14 +33,14 @@ namespace HDLG_winforms
 		private static void OpenUrlSafe (string url)
 		{
 			if (string.IsNullOrWhiteSpace( url ) ||
-				(!url.StartsWith( "http://", StringComparison.OrdinalIgnoreCase ) &&
-				 !url.StartsWith( "https://", StringComparison.OrdinalIgnoreCase )) ||
+				!Uri.TryCreate( url, UriKind.Absolute, out Uri? uriResult ) ||
+				(uriResult.Scheme != Uri.UriSchemeHttp && uriResult.Scheme != Uri.UriSchemeHttps) ||
 				!Uri.IsWellFormedUriString( url, UriKind.Absolute ))
 			{
 				throw new InvalidOperationException( $"Opening URLs with scheme other than http/https is not allowed for security reasons. URL: {url}" );
 			}
 
-			if (Uri.TryCreate( url, UriKind.Absolute, out Uri? uriResult ))
+			if (uriResult != null)
 			{
 				DialogResult res = MessageBox.Show( $"You are about to open an external website:\n\n{url}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
 				if (res != DialogResult.Yes) return;
