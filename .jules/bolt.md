@@ -175,3 +175,6 @@
 **Learning:** When using `cat` or `grep`, output may be artificially truncated by the terminal buffer (e.g. at 1000 characters). Assuming variable names or logic (like `AddRange` calls) that are hidden by truncation leads to hallucinated plans that fail review and violate the Groundedness Rule.
 **Action:** Always use targeted line extraction commands like `sed -n '<start>,<end>p' <file>` to inspect the actual full logic of a method block if previous reads were truncated, prior to forming a plan.
 
+## 2026-08-16 - Optimize URL encoding for tree traversal
+**Learning:** Redundantly parsing and encoding full absolute paths during recursive HTML tree generation creates O(N^2) string allocations.
+**Action:** Pass down the parent's URL-encoded path and concatenate the encoded child name to reduce operations to O(N).
