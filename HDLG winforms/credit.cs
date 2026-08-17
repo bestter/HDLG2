@@ -32,37 +32,40 @@ namespace HDLG_winforms
 
 		private static void OpenUrlSafe (string url)
 		{
-			if (string.IsNullOrWhiteSpace( url ) ||
-				(!url.StartsWith( "http://", StringComparison.OrdinalIgnoreCase ) &&
-				 !url.StartsWith( "https://", StringComparison.OrdinalIgnoreCase )) ||
-				!Uri.IsWellFormedUriString( url, UriKind.Absolute ))
+			if (string.IsNullOrWhiteSpace( url ))
+			{
+				throw new InvalidOperationException( "The URL cannot be empty." );
+			}
+
+			if (!Uri.TryCreate( url, UriKind.Absolute, out Uri? uriResult ) ||
+				(uriResult.Scheme != Uri.UriSchemeHttp && uriResult.Scheme != Uri.UriSchemeHttps))
 			{
 				throw new InvalidOperationException( $"Opening URLs with scheme other than http/https is not allowed for security reasons. URL: {url}" );
 			}
 
-			if (Uri.TryCreate( url, UriKind.Absolute, out Uri? uriResult ))
-			{
-				DialogResult res = MessageBox.Show( $"You are about to open an external website:\n\n{url}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
-				if (res != DialogResult.Yes) return;
+			DialogResult res = MessageBox.Show( $"You are about to open an external website:\n\n{url}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
+			if (res != DialogResult.Yes) return;
 
-				string explorerPath = System.IO.Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "explorer.exe" );
-				ProcessStartInfo psInfo = new( explorerPath )
-				{
-					UseShellExecute = false,
-					WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
-				};
-				psInfo.ArgumentList.Add( uriResult.AbsoluteUri );
-				Process.Start( psInfo );
-			}
-			else
+			string explorerPath = System.IO.Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "explorer.exe" );
+			ProcessStartInfo psInfo = new( explorerPath )
 			{
-				throw new InvalidOperationException( $"Opening URLs with scheme other than http/https is not allowed for security reasons. URL: {url}" );
-			}
+				UseShellExecute = false,
+				WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
+			};
+			psInfo.ArgumentList.Add( uriResult.AbsoluteUri );
+			Process.Start( psInfo );
 		}
 
 		private void labelGPL_LinkClicked (object sender, EventArgs e)
 		{
-			OpenUrlSafe( "https://www.gnu.org/licenses/gpl-3.0.en.html" );
+			try
+			{
+				OpenUrlSafe( "https://www.gnu.org/licenses/gpl-3.0.en.html" );
+			}
+			catch (InvalidOperationException ex)
+			{
+				MessageBox.Show( this, ex.Message, "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
+			}
 		}
 
 
