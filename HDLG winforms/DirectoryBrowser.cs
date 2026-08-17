@@ -467,12 +467,12 @@ namespace HDLG_winforms
 		/// <param name="writer"></param>
 		/// <param name="directory"></param>
 		/// <returns></returns>
-		private async Task WritHtmlDirectoryAsync (TextWriter writer, HdlgDirectory directory, int depth)
+		private async Task WritHtmlDirectoryAsync (TextWriter writer, HdlgDirectory directory, int depth, string? urlEncodedDirPath = null)
 		{
 			log.Debug( "In {Method} {Type} {Directory}", nameof( WritHtmlDirectoryAsync ), nameof( HdlgDirectory ), directory );
 			string spacer = depth < 20 ? Spacers [depth] : new string( ' ', depth );
 			string encodedPath = WebUtility.HtmlEncode( directory.Path );
-			string urlEncodedDirPath = GetUrlEncodedPath( directory.Path );
+			urlEncodedDirPath ??= GetUrlEncodedPath( directory.Path );
 			string id = encodedPath; // Re-use cached encoded path
 			string name = WebUtility.HtmlEncode( directory.Name );
 			string created = directory.CreationTime.ToString( "F", CultureInfo.CurrentCulture );
@@ -493,7 +493,10 @@ namespace HDLG_winforms
 				for (int i = 0; i < directory.Directories.Count; i++)
 				{
 					HdlgDirectory d = directory.Directories [i];
-					await WritHtmlDirectoryAsync( writer, d, inDepth ).ConfigureAwait( false );
+					string childUrlEncodedPath = urlEncodedDirPath.EndsWith('/') ?
+						urlEncodedDirPath + Uri.EscapeDataString(d.Name) :
+						urlEncodedDirPath + "/" + Uri.EscapeDataString(d.Name);
+					await WritHtmlDirectoryAsync( writer, d, inDepth, childUrlEncodedPath ).ConfigureAwait( false );
 				}
 				await writer.WriteLineAsync( spacer + "\t</div>" ).ConfigureAwait( false );
 			}
