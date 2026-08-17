@@ -282,18 +282,7 @@ namespace HDLG_winforms
 		{
 			try
 			{
-				OpenWithDefaultProgram( path, p =>
-				{
-					using Process fileopener = new( );
-					string explorerPath = System.IO.Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "explorer.exe" );
-						fileopener.StartInfo = new ProcessStartInfo( explorerPath )
-					{
-						UseShellExecute = false,
-						WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
-					};
-						fileopener.StartInfo.ArgumentList.Add( p );
-					fileopener.Start( );
-				}, fullPath =>
+				OpenWithDefaultProgram( path, StartWithExplorer, fullPath =>
 				{
 					DialogResult res = MessageBox.Show( $"You are about to open the following file:\n\n{fullPath}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
 					return res == DialogResult.Yes;
@@ -303,6 +292,62 @@ namespace HDLG_winforms
 			{
 				MessageBox.Show( ex.Message, "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
 			}
+		}
+
+		private static void StartWithExplorer (string argument)
+		{
+			using Process fileopener = new( );
+			string explorerPath = System.IO.Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "explorer.exe" );
+			fileopener.StartInfo = new ProcessStartInfo( explorerPath )
+			{
+				UseShellExecute = false,
+				WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
+			};
+			fileopener.StartInfo.ArgumentList.Add( argument );
+			fileopener.Start( );
+		}
+
+		/// <summary>
+		/// Open an http or https URL with the default program after user confirmation.
+		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="uri"/> is null</exception>
+		/// <exception cref="InvalidOperationException">Thrown when the URI is not an absolute http/https URL</exception>
+		public static void OpenUrlSafe (Uri uri)
+		{
+			OpenUrlSafe( uri, StartWithExplorer, absoluteUri =>
+			{
+				DialogResult res = MessageBox.Show( $"You are about to open an external website:\n\n{absoluteUri}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
+				return res == DialogResult.Yes;
+			} );
+		}
+
+		/// <summary>
+		/// Testable URL open: scheme check, confirm with <see cref="Uri.AbsoluteUri"/>, then launch that same value.
+		/// </summary>
+		public static void OpenUrlSafe (Uri uri, Action<string> processStarter, Func<string, bool>? promptUser = null)
+		{
+			ArgumentNullException.ThrowIfNull( uri );
+			ArgumentNullException.ThrowIfNull( processStarter );
+
+			if (!uri.IsAbsoluteUri ||
+				(uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+			{
+				throw new InvalidOperationException( $"Opening URLs with scheme other than http/https is not allowed for security reasons. URL: {uri}" );
+			}
+
+			string absoluteUri = uri.AbsoluteUri;
+			Func<string, bool> actualPromptUser = promptUser ?? (shown =>
+			{
+				DialogResult res = MessageBox.Show( $"You are about to open an external website:\n\n{shown}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
+				return res == DialogResult.Yes;
+			});
+
+			if (!actualPromptUser( absoluteUri ))
+			{
+				return;
+			}
+
+			processStarter( absoluteUri );
 		}
 
 		/// <summary>
