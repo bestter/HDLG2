@@ -151,6 +151,12 @@ namespace HDLG_winforms
 				UpdateUIWithPerformance( perf );
 				OpenWithDefaultProgram( savePath );
 			}
+			catch (InvalidOperationException ex)
+			{
+				toolStripStatusLabelException.Text = "Security Block";
+				Logger.Warning( ex, "Security block in {MethodName}: {Path}", nameof( RunExportAsync ), dialog.FileName );
+				MessageBox.Show( this, ex.Message, "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
+			}
 			catch (UnauthorizedAccessException ex)
 			{
 				toolStripStatusLabelException.Text = "Access Denied";
