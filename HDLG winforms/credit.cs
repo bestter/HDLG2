@@ -31,36 +31,6 @@ namespace HDLG_winforms
 
 		}
 
-		private static void OpenUrlSafe (string url)
-		{
-			if (string.IsNullOrWhiteSpace( url ) ||
-				!Uri.TryCreate( url, UriKind.Absolute, out Uri? uriResult ) ||
-				(uriResult.Scheme != Uri.UriSchemeHttp && uriResult.Scheme != Uri.UriSchemeHttps) ||
-				!Uri.IsWellFormedUriString( url, UriKind.Absolute ))
-			{
-				throw new InvalidOperationException( $"Opening URLs with scheme other than http/https is not allowed for security reasons. URL: {url}" );
-			}
-
-			if (uriResult != null)
-			{
-				DialogResult res = MessageBox.Show( $"You are about to open an external website:\n\n{url}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
-				if (res != DialogResult.Yes) return;
-
-				string explorerPath = System.IO.Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "explorer.exe" );
-				ProcessStartInfo psInfo = new( explorerPath )
-				{
-					UseShellExecute = false,
-					WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
-				};
-				psInfo.ArgumentList.Add( uriResult.AbsoluteUri );
-				Process.Start( psInfo );
-			}
-			else
-			{
-				throw new InvalidOperationException( $"Opening URLs with scheme other than http/https is not allowed for security reasons. URL: {url}" );
-			}
-		}
-
 		private void labelGPL_LinkClicked (object sender, EventArgs e)
 		{
 			MainWindow.OpenUrlSafe( GplLicenseUri );
