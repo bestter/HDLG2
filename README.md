@@ -45,7 +45,7 @@ The solution consists of four projects:
    - `FilePropertyBrowser` orchestrates getters with file-size checks and per-getter timeouts; `FilePropertyLimits` centralizes the configurable thresholds.
 3. **`Benchmark`**: Console harness that times `HdlgDirectory.BrowseAsync` (warmup + measured iterations).
 4. **`HDLG.Tests` (Unit Tests)**:
-   - xUnit v3-based test suite (`xunit.v3` + runner) with FluentAssertions and Moq, covering export engines, metadata extraction orchestration, directory model logic, property getter contracts, security helpers (e.g. OpenWithDefaultProgram), UI bootstrap, and structural WinForms UI tests.
+   - xUnit v3-based test suite (`xunit.v3` + runner) with FluentAssertions and Moq, covering export engines, metadata extraction orchestration, directory model logic, property getter contracts, security helpers (e.g. OpenWithDefaultProgram, OpenUrlSafe), UI bootstrap, and structural WinForms UI tests.
 
 ---
 
@@ -89,6 +89,7 @@ The `HDLG.Tests` project covers:
 - **WordPropertyGetterTests** — Word document property extraction and error handling.
 - **ExcelPropertyGetterTests** — Excel workbook property extraction and error handling.
 - **OpenWithDefaultProgramTests** — Security validation for `MainWindow.OpenWithDefaultProgram` (dangerous extension blocklist to prevent process injection).
+- **OpenUrlSafeTests** — `MainWindow.OpenUrlSafe` rejects non-http(s) schemes and launches `Uri.AbsoluteUri` only after confirmation.
 - **AppUiBootstrapTests** — Validates Krypton global palette initialization and watermark removal.
 - **AppBrandingTests** — Validates inline SVG markup and HTML footer generation.
 - **AppLogoRendererTests** — Validates packaged logo/icon asset loading.

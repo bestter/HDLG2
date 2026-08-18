@@ -8,12 +8,13 @@ HTML Directory List Generator is distributed in the hope that it will be useful,
 You should have received a copy of the GNU General Public License along with HTML Directory List Generator. If not, see <https://www.gnu.org/licenses/>. 
  */
 using Krypton.Toolkit;
-using System.Diagnostics;
 
 namespace HDLG_winforms
 {
 	public partial class Credit : KryptonForm
 	{
+		private static readonly Uri GplLicenseUri = new( "https://www.gnu.org/licenses/gpl-3.0.en.html" );
+
 		public Credit ()
 		{
 			InitializeComponent( );
@@ -62,10 +63,7 @@ namespace HDLG_winforms
 
 		private void labelGPL_LinkClicked (object sender, EventArgs e)
 		{
-			OpenUrlSafe( "https://www.gnu.org/licenses/gpl-3.0.en.html" );
+			MainWindow.OpenUrlSafe( GplLicenseUri );
 		}
-
-
-
 	}
 }

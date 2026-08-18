@@ -3,7 +3,7 @@
 Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
 **Version** : 1.5.0.0  
-**Dernière mise à jour** : 13 août 2026 — Table NuGet alignée sur les csproj ; orchestration d'export unifiée (`RunExportAsync` / `PerformDirectoryBrowseAsync`) ; projet Benchmark ; tests JSON d'arbre imbriqué.
+**Dernière mise à jour** : 17 août 2026 — Ouverture d'URL http/https via `MainWindow.OpenUrlSafe(Uri)` (schéma parsé, lancement `explorer.exe` partagé avec `OpenWithDefaultProgram`) ; tests `OpenUrlSafeTests`.
 **Propriétaire** : Martin Labelle (@bestter)
 
 ---
@@ -70,7 +70,7 @@ La solution `HDLG.sln` contient **quatre projets** :
 | **`AppBranding.cs`** | Centralise le markup SVG inline (exports HTML), le pied de page HTML, et le chargement des assets logo/icône (`Assets/hdlg-logo.png`, `Assets/hdlg-icon.ico`). |
 | **`AppLogoRenderer.cs`** | Rendu bitmap de secours du monogramme (géométrie alignée sur le SVG) si les assets empaquetés sont absents. |
 | **`Assets/`** | Sources SVG (`hdlg-logo.svg`, `hdlg-app-icon.svg`) et exports PNG/ICO générés via `scripts/GenerateAppLogoAssets.ps1` (Inkscape). |
-| **`MainWindow.cs`** | Fenêtre principale (`KryptonForm`). Un seul chemin UI (`RunExportAsync`) pour XML / HTML / JSON : dialogue, progression, verrouillage des boutons, exceptions. Un seul helper (`PerformDirectoryBrowseAsync`) pour `BrowseAsync` + sauvegarde + timings. Les trois boutons passent uniquement le dialogue, l'extension et le délégué `SaveAs*`. La checkbox sous-répertoires est lue sur le thread UI avant `Task.Run`. |
+| **`MainWindow.cs`** | Fenêtre principale (`KryptonForm`). Un seul chemin UI (`RunExportAsync`) pour XML / HTML / JSON : dialogue, progression, verrouillage des boutons, exceptions. Un seul helper (`PerformDirectoryBrowseAsync`) pour `BrowseAsync` + sauvegarde + timings. Les trois boutons passent uniquement le dialogue, l'extension et le délégué `SaveAs*`. La checkbox sous-répertoires est lue sur le thread UI avant `Task.Run`. Ouverture sécurisée : `OpenWithDefaultProgram` (fichiers) et `OpenUrlSafe` (`Uri` http/https uniquement), tous deux via `StartWithExplorer`. |
 | **`MainWindow.Designer.cs`** | Layout WinForms de la fenêtre principale (contrôles Krypton : `KryptonHeaderGroup`, `KryptonButton`, `KryptonProgressBar`, etc.). |
 | **`BrowserForm.cs`** | Formulaire de navigation arborescente (`KryptonTreeView`) avec chargement paresseux (lazy loading) des répertoires/fichiers. Affiche les propriétés d'un fichier sélectionné dans un `KryptonListView`. |
 | **`BrowserForm.Designer.cs`** | Layout WinForms de l'explorateur (contrôles Krypton, `KryptonSplitContainer`). |
@@ -80,7 +80,7 @@ La solution `HDLG.sln` contient **quatre projets** :
 | **`File.cs`** | Modèle de données (legacy) d'un fichier. Contient les métadonnées (nom, chemin, extension, taille, date de création, propriétés étendues). |
 | **`HdlgFile.cs`** | Modèle de données (version refactorisée) d'un fichier. Version améliorée de `File.cs`. |
 | **`PerformanceCount.cs`** | Structure pour stocker les métriques de performance (temps de parcours, sauvegarde, total). |
-| **`credit.cs`** | Formulaire « About » (`KryptonForm`) affichant la version, la licence GPLv3, et le monogramme HDLG (`AppBranding.LoadLogoImage()`). |
+| **`credit.cs`** | Formulaire « About » (`KryptonForm`) affichant la version, la licence GPLv3, et le monogramme HDLG (`AppBranding.LoadLogoImage()`). Le lien GPL appelle `MainWindow.OpenUrlSafe(GplLicenseUri)`. |
 | **`hdlg.css`** | Feuille de style CSS embarquée dans les fichiers HTML générés (polices système uniquement pour self-containment ; version obsolète avec Google Fonts existe à la racine mais n'est pas utilisée). |
 
 ### Projet 2 : `HdlgFileProperty` (Bibliothèque d'extraction de propriétés)
@@ -119,6 +119,7 @@ La solution `HDLG.sln` contient **quatre projets** :
 | **`PerformanceCountTests.cs`** | Tests de `PerformanceCount.Empty` (TimeSpans à `MinValue`). |
 | **`BrowserFormLoadTests.cs`** | Tests STA de chargement de `BrowserForm` (énumération, nœuds, gestion des accès refusés). |
 | **`OpenWithDefaultProgramTests.cs`** | Tests de `MainWindow.OpenWithDefaultProgram` (sécurité : validation des extensions dangereuses pour prévenir l'injection de processus). |
+| **`OpenUrlSafeTests.cs`** | Tests de `MainWindow.OpenUrlSafe` : rejet des `Uri` null / relatifs / schémas non http(s), lancement de `AbsoluteUri` après confirmation, annulation du prompt. |
 | **`AppUiBootstrapTests.cs`** | Tests du bootstrap UI Krypton (palette globale `Microsoft365BlueLightMode`, retrait watermark). |
 | **`AppBrandingTests.cs`** | Tests du markup SVG inline et du pied de page HTML généré. |
 | **`AppLogoRendererTests.cs`** | Tests de chargement des assets logo/icône empaquetés. |
