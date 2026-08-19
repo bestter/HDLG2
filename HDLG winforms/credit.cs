@@ -33,7 +33,24 @@ namespace HDLG_winforms
 
 		private void labelGPL_LinkClicked (object sender, EventArgs e)
 		{
-			MainWindow.OpenUrlSafe( GplLicenseUri );
+			try
+			{
+				MainWindow.OpenUrlSafe( GplLicenseUri );
+			}
+			catch (InvalidOperationException ex)
+			{
+				MessageBox.Show( this, ex.Message, "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
+			}
+			catch (System.ComponentModel.Win32Exception)
+			{
+				MessageBox.Show( this, "Could not open the link. It might not have an associated application.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+			}
+#pragma warning disable CA1031 // Do not catch general exception types
+			catch (Exception)
+			{
+				MessageBox.Show( this, "An unexpected error occurred while opening the link.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+			}
+#pragma warning restore CA1031 // Do not catch general exception types
 		}
 	}
 }
