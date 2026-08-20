@@ -775,9 +775,21 @@ namespace HDLG_winforms
 			writer.WriteStartObject( );
 			if (file.Properties != null && file.Properties.Count > 0)
 			{
-				foreach (var property in file.Properties)
+				// Performance optimization: Type-check and cast IReadOnlyDictionary to Dictionary to allow
+				// the foreach loop to use the struct-based enumerator, preventing interface boxing allocations.
+				if (file.Properties is Dictionary<string, IConvertible> dictProperties)
 				{
-					WriteJsonProperty( writer, property.Key, property.Value );
+					foreach (var property in dictProperties)
+					{
+						WriteJsonProperty( writer, property.Key, property.Value );
+					}
+				}
+				else
+				{
+					foreach (var property in file.Properties)
+					{
+						WriteJsonProperty( writer, property.Key, property.Value );
+					}
 				}
 			}
 			writer.WriteEndObject( );
