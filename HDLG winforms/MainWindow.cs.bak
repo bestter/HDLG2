@@ -8,19 +8,16 @@ HTML Directory List Generator is distributed in the hope that it will be useful,
 You should have received a copy of the GNU General Public License along with HTML Directory List Generator. If not, see <https://www.gnu.org/licenses/>. 
  */
 using HdlgFileProperty;
-using Krypton.Toolkit;
 using Serilog;
 using Serilog.Core;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Reflection;
 
 namespace HDLG_winforms
 {
-	[System.Diagnostics.CodeAnalysis.SuppressMessage( "Localization", "CA1303:Do not pass literals as localized parameters" )]
-	public partial class MainWindow : KryptonForm
+	public partial class MainWindow : Form
 	{
 		#region PropertyGetter
 		public ImagePropertyGetter ImagePropertyGetter;
@@ -44,8 +41,6 @@ namespace HDLG_winforms
 		public MainWindow (ImagePropertyGetter imagePropertyGetter, WordPropertyGetter wordPropertyGetter, ExcelPropertyGetter excelPropertyGetter, PdfPropertyGetter pdfPropertyGetter, Mp3PropertyGetter mp3PropertyGetter, ILogger logger)
 		{
 			InitializeComponent( );
-			Icon = AppBranding.LoadApplicationIcon( );
-			AppUiBootstrap.RemoveFormBranding( this );
 			ImagePropertyGetter = imagePropertyGetter;
 			WordPropertyGetter = wordPropertyGetter;
 			ExcelPropertyGetter = excelPropertyGetter;
@@ -67,7 +62,7 @@ namespace HDLG_winforms
 			}
 			else
 			{
-				selectedDirectoryLabel.Text = "No directory selected";
+				selectedDirectoryLabel.Text = string.Empty;
 				selectedDirectory = null;
 			}
 		}
@@ -75,11 +70,9 @@ namespace HDLG_winforms
 		private void MainWindow_Load (object sender, EventArgs e)
 		{
 			AssemblyName an = typeof( MainWindow ).Assembly.GetName( );
-			string version = an.Version?.ToString( ) ?? string.Empty;
-			Text = $"{an.Name} {version}";
-			lblAppTitle.Values.Text = $"HTML Directory List Generator {version}";
+			Text = $"{an.Name} {an.Version?.ToString( )}";
 			selectedDirectory = null;
-			selectedDirectoryLabel.Text = "No directory selected";
+			selectedDirectoryLabel.Text = string.Empty;
 			toolStripStatusLabelBrowseTime.Text = string.Empty;
 			toolStripStatusLabelSaveTime.Text = string.Empty;
 			toolStripStatusLabelTotalTime.Text = string.Empty;
@@ -121,14 +114,14 @@ toolStripStatusLabelTotalTime.Visible = false;
 						progressBar1.Style = ProgressBarStyle.Marquee;
 
 						// Exécuter le travail dans un thread de fond sans bloquer l'UI
-						var perf = await Task.Run( () => PerformDirectoryBrowseXmlAsync( selectedDirectory, saveContentFileDialog.FileName ) ).ConfigureAwait( true );
+						var perf = await Task.Run(() => PerformDirectoryBrowseXmlAsync(selectedDirectory, saveContentFileDialog.FileName)).ConfigureAwait(true);
 
 						progressBar1.Style = ProgressBarStyle.Blocks;
 						progressBar1.Value = 100;
 
 						// Mettre à jour l'UI après le traitement
-						UpdateUIWithPerformance( perf );
-						OpenWithDefaultProgram( saveContentFileDialog.FileName );
+						UpdateUIWithPerformance(perf);
+						OpenWithDefaultProgram(saveContentFileDialog.FileName);
 					}
 				}
 			}
@@ -142,18 +135,13 @@ toolStripStatusLabelTotalTime.Visible = false;
 				toolStripStatusLabelException.Text = "Access Denied";
 				Logger.Warning( ex, "Security exception in {MethodName}", nameof( BtnStart_Click ) );
 			}
-			catch (IOException ex)
-			{
-				toolStripStatusLabelException.Text = "An IO error occurred";
-				Logger.Error( ex, "IO Error in {MethodName}", nameof( BtnStart_Click ) );
-			}
-#pragma warning disable CA1031 // Do not catch general exception types
+#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
 			catch (Exception ex)
+#pragma warning restore CA1031
 			{
-				toolStripStatusLabelException.Text = "An unexpected error occurred";
-				Logger.Error( ex, "Error in {MethodName}", nameof( BtnStart_Click ) );
+				toolStripStatusLabelException.Text = ex.Message;
+				Logger.Fatal( ex, "Error in {MethodName}", nameof( BtnStart_Click ) );
 			}
-#pragma warning restore CA1031 // Do not catch general exception types
 			finally
 			{
 				btnStartXml.Enabled = true;
@@ -163,7 +151,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private void UpdateUIWithPerformance (PerformanceCount perf)
+		private void UpdateUIWithPerformance(PerformanceCount perf)
 		{
 			if (perf.TotalTime != TimeSpan.MinValue)
 			{
@@ -173,19 +161,23 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private async Task<PerformanceCount> PerformDirectoryBrowseXmlAsync (string selecteDirectory, string saveFilePath)
+		private async Task<PerformanceCount> PerformDirectoryBrowseXmlAsync(string selecteDirectory, string saveFilePath)
 		{
 			Logger.Debug( "{MethodName} started at {StartTime:T}", nameof( PerformDirectoryBrowseXmlAsync ), DateTime.Now );
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
 			{
 				Logger.Information( "{SelectedDirectory}", selecteDirectory );
 				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
+#if DEBUG
 				Stopwatch stopwatch = Stopwatch.StartNew( );
+#endif
 
-				Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
-				await directory.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
-				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.BrowseAsync ), directory.Name );
+				Logger.Debug( "Ready to start {MethodName}", nameof( directory.Browse ) );
+				directory.Browse( propertyBrowser );
+				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.Browse ), directory.Name );
+#if DEBUG
 				TimeSpan browseTime = stopwatch.Elapsed;
+#endif
 				propertyBrowser.LogGetterStatistics( );
 
 				DirectoryBrowser db = new( Logger );
@@ -194,11 +186,15 @@ toolStripStatusLabelTotalTime.Visible = false;
 				await db.SaveAsXMLAsync( saveFilePath, directory ).ConfigureAwait( false );
 
 				Logger.Debug( "{MethodName} done", nameof( DirectoryBrowser.SaveAsXMLAsync ) );
+#if DEBUG
 				stopwatch.Stop( );
 
 				TimeSpan saveTime = stopwatch.Elapsed - browseTime;
 
 				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
+#else
+				var result = new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
+#endif
 
 				Logger.Information( "Done at {EndTime:T}", DateTime.Now );
 				return result;
@@ -206,7 +202,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			else
 			{
 				Logger.Information( "No {SelectedDirectoryParamName}", nameof( selecteDirectory ) );
-				return PerformanceCount.Empty;
+				return new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
 			}
 		}
 
@@ -215,34 +211,10 @@ toolStripStatusLabelTotalTime.Visible = false;
 		/// </summary>
 		private static readonly HashSet<string> DangerousExtensions = new( StringComparer.OrdinalIgnoreCase )
 		{
-			// Executables, scripts, and shell hosts
-			".exe", ".bat", ".cmd", ".ps1", ".ps1xml", ".psc1", ".psd1", ".vbs", ".vbe", ".vb", ".js", ".jse", ".py", ".pyw", ".sh", ".bash",
-			".wsf", ".wsh", ".ws", ".wsc", ".sct", ".scr", ".com", ".msi", ".msp", ".pif", ".hta", ".cpl",
-			".jar", ".jnlp", ".reg", ".lnk", ".msc", ".scf", ".shb", ".shs",
-			// Native libraries and drivers (ShellExecute / rundll32 / registration vectors)
-			".dll", ".ocx", ".sys", ".drv",
-			// Setup, configuration, and deployment manifests
-			".inf", ".application", ".appref-ms", ".appx", ".msix", ".msixbundle", ".xbap", ".cab", ".diagcab",
-			// Shortcuts, search handlers, and web/active content launchers
-			".url", ".website", ".search-ms", ".settingcontent-ms", ".library-ms", ".mht", ".mhtml", ".chm", ".hlp",
-			// Disk images, themes, gadgets, and sandbox/workflow artifacts
-			".iso", ".img", ".vhd", ".vhdx", ".theme", ".themepack", ".gadget", ".wsb", ".workflow",
-			// Office and other code-bearing add-ins
-			".xll",
-		};
-
-		/// <summary>
-		/// Safe file extensions that can be opened directly without prompting the user.
-		/// </summary>
-		private static readonly HashSet<string> SafeExtensions = new( StringComparer.OrdinalIgnoreCase )
-		{
-			".txt", ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".rtf", ".csv",
-			".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".svg", ".ico",
-			".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac",
-			".mp4", ".avi", ".mkv", ".mov", ".wmv", ".webm", ".flv",
-			".html", ".htm", ".xml", ".json", ".yaml", ".yml", ".md", ".log",
-			".zip", ".rar", ".7z", ".tar", ".gz", ".bz2",
-			".cs", ".cpp", ".h", ".c", ".java", ".ts", ".jsx", ".tsx", ".css"
+			".exe", ".bat", ".cmd", ".ps1", ".vbs", ".js", ".wsf", ".scr", ".com", ".msi", ".pif", ".hta", ".cpl",
+			".jar", ".reg", ".lnk", ".msc", ".vbe", ".jse", ".scf", ".ws", ".wsh",
+			".iso", ".img", ".vhd", ".vhdx", ".url", ".appref-ms", ".theme", ".themepack",
+			".application", ".settingcontent-ms", ".library-ms", ".appx", ".msix", ".msixbundle", ".msp", ".chm"
 		};
 
 		/// <summary>
@@ -253,141 +225,37 @@ toolStripStatusLabelTotalTime.Visible = false;
 		/// <exception cref="ArgumentException">Thrown when path is null or whitespace</exception>
 		/// <exception cref="FileNotFoundException">Thrown when the file does not exist</exception>
 		/// <exception cref="InvalidOperationException">Thrown when the file has a dangerous extension</exception>
-		public static void OpenWithDefaultProgram (string path)
+		public static void OpenWithDefaultProgram(string path)
 		{
-			try
+			OpenWithDefaultProgram(path, p =>
 			{
-				OpenWithDefaultProgram( path, p =>
+				using Process fileopener = new( );
+				fileopener.StartInfo = new ProcessStartInfo( p )
 				{
-					using Process fileopener = new( );
-					string explorerPath = System.IO.Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "explorer.exe" );
-					fileopener.StartInfo = new ProcessStartInfo( explorerPath, $"\"{p}\"" )
-					{
-						UseShellExecute = false,
-						WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
-					};
-					fileopener.Start( );
-				}, fullPath =>
-				{
-					DialogResult res = MessageBox.Show( $"You are about to open the following file:\n\n{fullPath}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
-					return res == DialogResult.Yes;
-				} );
-			}
-			catch (InvalidOperationException ex) when (ex.Message.Contains( "changed since you reviewed it", StringComparison.Ordinal ))
-			{
-				MessageBox.Show( ex.Message, "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
-			}
+					UseShellExecute = true,
+					WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
+				};
+				fileopener.Start( );
+			});
 		}
 
-		/// <summary>
-		/// Snapshot of file metadata captured before user confirmation to detect TOCTOU swaps.
-		/// </summary>
-		private readonly struct FileOpenSnapshot
-		{
-			public long Length { get; init; }
-
-			public DateTime LastWriteTimeUtc { get; init; }
-		}
-
-		private static ReadOnlySpan<char> GetNormalizedExtensionSpan (ReadOnlySpan<char> fullPath)
-		{
-			return System.IO.Path.GetExtension( fullPath.TrimEnd( " .".AsSpan( ) ) );
-		}
-
-		private static ReadOnlySpan<char> ResolveExtensionSpan (string fullPath, bool afterUserConfirmation, Func<string, bool, string>? resolveExtension, out string? allocatedExtension)
-		{
-			if (resolveExtension != null)
-			{
-				allocatedExtension = resolveExtension( fullPath, afterUserConfirmation );
-				return allocatedExtension.AsSpan( );
-			}
-
-			allocatedExtension = null;
-			return GetNormalizedExtensionSpan( fullPath.AsSpan( ) );
-		}
-
-		private static FileOpenSnapshot CaptureFileSnapshot (string fullPath)
-		{
-			FileInfo fileInfo = new( fullPath );
-			return new FileOpenSnapshot
-			{
-				Length = fileInfo.Length,
-				LastWriteTimeUtc = fileInfo.LastWriteTimeUtc,
-			};
-		}
-
-		private static void EnsureExtensionAllowed (ReadOnlySpan<char> extension)
-		{
-			if (DangerousExtensions.GetAlternateLookup<ReadOnlySpan<char>>( ).Contains( extension ))
-			{
-				throw new InvalidOperationException( $"Opening files with extension '{extension.ToString( )}' is not allowed for security reasons." );
-			}
-
-			if (!SafeExtensions.GetAlternateLookup<ReadOnlySpan<char>>( ).Contains( extension ))
-			{
-				throw new InvalidOperationException( $"Opening files with unknown extension '{extension.ToString( )}' is not allowed for security reasons." );
-			}
-		}
-
-		private static void EnsureFileSnapshotUnchanged (string fullPath, FileOpenSnapshot snapshotBeforePrompt)
-		{
-			if (!System.IO.File.Exists( fullPath ))
-			{
-				throw new FileNotFoundException( "The specified file was no longer found.", fullPath );
-			}
-
-			FileOpenSnapshot snapshotAfterPrompt = CaptureFileSnapshot( fullPath );
-			if (snapshotAfterPrompt.Length != snapshotBeforePrompt.Length
-				|| snapshotAfterPrompt.LastWriteTimeUtc != snapshotBeforePrompt.LastWriteTimeUtc)
-			{
-				throw new InvalidOperationException( "The file has changed since you reviewed it. Opening was cancelled for security reasons." );
-			}
-		}
-
-		public static void OpenWithDefaultProgram (string path, Action<string> processStarter, Func<string, bool>? promptUser = null, Func<string, bool, string>? resolveExtension = null)
+		public static void OpenWithDefaultProgram(string path, Action<string> processStarter)
 		{
 			ArgumentNullException.ThrowIfNull( processStarter );
 			ArgumentException.ThrowIfNullOrWhiteSpace( path );
 
-			string fullPath = System.IO.Path.GetFullPath( path );
-
-			if (!System.IO.File.Exists( fullPath ))
+			if (!System.IO.File.Exists( path ))
 			{
-				throw new FileNotFoundException( "The specified file was not found.", fullPath );
+				throw new FileNotFoundException( "The specified file was not found.", path );
 			}
 
-			ReadOnlySpan<char> extensionSpan = ResolveExtensionSpan( fullPath, afterUserConfirmation: false, resolveExtension, out string? allocatedExt1 );
-
-			if (DangerousExtensions.GetAlternateLookup<ReadOnlySpan<char>>( ).Contains( extensionSpan ))
+			string extension = System.IO.Path.GetExtension( path.TrimEnd(' ', '.') );
+			if (DangerousExtensions.Contains( extension ))
 			{
-				throw new InvalidOperationException( $"Opening files with extension '{extensionSpan.ToString( )}' is not allowed for security reasons." );
+				throw new InvalidOperationException( $"Opening files with extension '{extension}' is not allowed for security reasons." );
 			}
 
-			if (!SafeExtensions.GetAlternateLookup<ReadOnlySpan<char>>( ).Contains( extensionSpan ))
-			{
-				throw new InvalidOperationException( $"Opening files with unknown extension '{extensionSpan.ToString( )}' is not allowed for security reasons." );
-			}
-
-			FileOpenSnapshot snapshotBeforePrompt = CaptureFileSnapshot( fullPath );
-
-			Func<string, bool> actualPromptUser = promptUser ?? (fPath =>
-			{
-				DialogResult res = MessageBox.Show( $"You are about to open the following file:\n\n{fPath}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
-				return res == DialogResult.Yes;
-			});
-
-			if (!actualPromptUser( fullPath ))
-			{
-				return;
-			}
-
-			// Re-validate after user confirmation to mitigate TOCTOU (file swap while the dialog is open).
-			ReadOnlySpan<char> extensionAfterConfirmation = ResolveExtensionSpan( fullPath, afterUserConfirmation: true, resolveExtension, out string? allocatedExt2 );
-
-			EnsureExtensionAllowed( extensionAfterConfirmation );
-			EnsureFileSnapshotUnchanged( fullPath, snapshotBeforePrompt );
-
-			processStarter( fullPath );
+			processStarter( path );
 		}
 
 		/// <summary>
@@ -431,13 +299,13 @@ toolStripStatusLabelTotalTime.Visible = false;
 
 						progressBar1.Style = ProgressBarStyle.Marquee;
 
-						var perf = await Task.Run( () => PerformDirectoryBrowseHtmlAsync( selectedDirectory, saveFileDialogHtml.FileName ) ).ConfigureAwait( true );
+						var perf = await Task.Run(() => PerformDirectoryBrowseHtmlAsync(selectedDirectory, saveFileDialogHtml.FileName)).ConfigureAwait(true);
 
 						progressBar1.Style = ProgressBarStyle.Blocks;
 						progressBar1.Value = 100;
 
-						UpdateUIWithPerformance( perf );
-						OpenWithDefaultProgram( saveFileDialogHtml.FileName );
+						UpdateUIWithPerformance(perf);
+						OpenWithDefaultProgram(saveFileDialogHtml.FileName);
 					}
 				}
 			}
@@ -451,18 +319,13 @@ toolStripStatusLabelTotalTime.Visible = false;
 				toolStripStatusLabelException.Text = "Access Denied";
 				Logger.Warning( ex, "Security exception in {MethodName}", nameof( BtnStartHtml_Click ) );
 			}
-			catch (IOException ex)
-			{
-				toolStripStatusLabelException.Text = "An IO error occurred";
-				Logger.Error( ex, "IO Error in {MethodName}", nameof( BtnStartHtml_Click ) );
-			}
-#pragma warning disable CA1031 // Do not catch general exception types
+#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
 			catch (Exception ex)
+#pragma warning restore CA1031
 			{
-				toolStripStatusLabelException.Text = "An unexpected error occurred";
-				Logger.Error( ex, "Error in {MethodName}", nameof( BtnStartHtml_Click ) );
+				toolStripStatusLabelException.Text = ex.Message;
+				Logger.Fatal( ex, "Error in {MethodName}", nameof( BtnStartHtml_Click ) );
 			}
-#pragma warning restore CA1031 // Do not catch general exception types
 			finally
 			{
 				btnStartXml.Enabled = true;
@@ -472,7 +335,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private async Task<PerformanceCount> PerformDirectoryBrowseHtmlAsync (string selecteDirectory, string saveFilePath)
+		private async Task<PerformanceCount> PerformDirectoryBrowseHtmlAsync(string selecteDirectory, string saveFilePath)
 		{
 			Debug.Write( $"{nameof( PerformDirectoryBrowseHtmlAsync )} started at {DateTime.Now:T}" );
 			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
@@ -480,9 +343,9 @@ toolStripStatusLabelTotalTime.Visible = false;
 				Logger.Information( "{SelectedDirectory}", selecteDirectory );
 				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
 				Stopwatch stopwatch = Stopwatch.StartNew( );
-				Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
-				await directory.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
-				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.BrowseAsync ), directory.Name );
+				Logger.Debug( "Ready to start {MethodName}", nameof( directory.Browse ) );
+				directory.Browse( propertyBrowser );
+				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.Browse ), directory.Name );
 				TimeSpan browseTime = stopwatch.Elapsed;
 				propertyBrowser.LogGetterStatistics( );
 
@@ -502,7 +365,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 			else
 			{
 				Logger.Information( "No {SelectedDirectoryParamName}", nameof( selecteDirectory ) );
-				return PerformanceCount.Empty;
+				return new PerformanceCount( ) { BrowseTime = TimeSpan.MinValue, SaveTime = TimeSpan.MinValue, TotalTime = TimeSpan.MinValue };
 			}
 		}
 
@@ -528,37 +391,30 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 			catch (UnauthorizedAccessException ex)
 			{
+				UseWaitCursor = false;
 				toolStripStatusLabelException.Text = "Access Denied";
 				Logger.Warning( ex, "Access denied opening UI Explorer" );
 				MessageBox.Show( this, "Error: Access Denied", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 			catch (System.Security.SecurityException ex)
 			{
+				UseWaitCursor = false;
 				toolStripStatusLabelException.Text = "Access Denied";
 				Logger.Warning( ex, "Security exception opening UI Explorer" );
 				MessageBox.Show( this, "Error: Access Denied", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
-			catch (IOException ex)
-			{
-				toolStripStatusLabelException.Text = "An IO error occurred";
-				Logger.Error( ex, "IO Error opening UI Explorer" );
-				MessageBox.Show( this, "An IO error occurred", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
-			}
-#pragma warning disable CA1031 // Do not catch general exception types
+#pragma warning disable CA1031 // Ne pas attraper les types d'exception généraux
 			catch (Exception ex)
-			{
-				toolStripStatusLabelException.Text = "An unexpected error occurred";
-				Logger.Error( ex, "Error opening UI Explorer" );
-				MessageBox.Show( this, "An unexpected error occurred", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
-			}
-#pragma warning restore CA1031 // Do not catch general exception types
-			finally
+#pragma warning restore CA1031
 			{
 				UseWaitCursor = false;
+				toolStripStatusLabelException.Text = ex.Message;
+				Logger.Fatal( ex, "Error opening UI Explorer" );
+				MessageBox.Show( this, "Error: Access Denied", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 		}
 
-		private void BtnAbout_Click (object sender, EventArgs e)
+		private void CreditToolStripMenuItem_Click (object sender, EventArgs e)
 		{
 			using Credit credit = new Credit( );
 			credit.ShowDialog( this );

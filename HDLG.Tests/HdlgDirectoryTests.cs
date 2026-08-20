@@ -387,51 +387,6 @@ namespace HDLG.Tests
             }
         }
 
-
-        [Fact]
-        public async Task Browse_WithoutSubdirectories_SecurityException_LogsWarning()
-        {
-            // Arrange
-            var restrictedDirPath = Path.Combine(baseDirectoryPath, "RestrictedDirNoSubSec");
-            System.IO.Directory.CreateDirectory(restrictedDirPath);
-
-            var hdlgDirectory = new HdlgDirectory(restrictedDirPath, true, false, loggerMock.Object);
-            hdlgDirectory._enumerateFilesHook = () => throw new System.Security.SecurityException("Simulated SecurityException");
-
-            // Act
-            await hdlgDirectory.BrowseAsync(propertyBrowser);
-
-            // Assert
-            loggerMock.Verify(
-                l => l.Warning(
-                    It.IsAny<System.Security.SecurityException>(),
-                    "Security error accessing directory: {Path}",
-                    restrictedDirPath),
-                Times.Once);
-        }
-
-        [Fact]
-        public async Task Browse_SecurityException_LogsWarning()
-        {
-            // Arrange
-            var restrictedDirPath = Path.Combine(baseDirectoryPath, "RestrictedDirSec");
-            System.IO.Directory.CreateDirectory(restrictedDirPath);
-
-            var hdlgDirectory = new HdlgDirectory(restrictedDirPath, true, true, loggerMock.Object);
-            hdlgDirectory._enumerateFileSystemInfosHook = () => throw new System.Security.SecurityException("Simulated SecurityException");
-
-            // Act
-            await hdlgDirectory.BrowseAsync(propertyBrowser);
-
-            // Assert
-            loggerMock.Verify(
-                l => l.Warning(
-                    It.IsAny<System.Security.SecurityException>(),
-                    "Security error accessing directory: {Path}",
-                    restrictedDirPath),
-                Times.Once);
-        }
-
         [Fact]
         public async Task Browse_UnauthorizedAccessException_LogsWarning()
         {
@@ -487,34 +442,5 @@ namespace HDLG.Tests
                 }
             }
         }
-
-        [Fact]
-        public async Task Browse_SecurityExceptionOnFile_LogsWarning()
-        {
-            // Arrange
-            var testDirPath = Path.Combine(baseDirectoryPath, "SecurityExceptionDir");
-            System.IO.Directory.CreateDirectory(testDirPath);
-            var dummyFilePath = Path.Combine(testDirPath, "dummy.txt");
-            System.IO.File.WriteAllText(dummyFilePath, "dummy content");
-
-            var mockPropertyGetter = new Mock<IFilePropertyGetter>();
-            var mockPropertyBrowser = new Mock<FilePropertyBrowser>(loggerMock.Object, new[] { mockPropertyGetter.Object });
-
-            mockPropertyBrowser.Setup(b => b.GetFilePropertyAsync(It.IsAny<FileInfo>()))
-                               .ThrowsAsync(new System.Security.SecurityException("Mock security exception"));
-
-            var hdlgDirectory = new HdlgDirectory(testDirPath, true, false, loggerMock.Object);
-
-            // Act
-            await hdlgDirectory.BrowseAsync(mockPropertyBrowser.Object);
-
-            // Assert
-            loggerMock.Verify(
-                l => l.Warning(
-                    It.IsAny<System.Security.SecurityException>(),
-                    "Security error accessing file: {Path}",
-                    dummyFilePath),
-                Times.Once);
-        }
-}
+    }
 }

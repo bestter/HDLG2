@@ -11,7 +11,6 @@ using Serilog;
 using System.Globalization;
 using System.Net;
 using System.Text;
-using System.Text.Json;
 using System.Xml;
 
 namespace HDLG_winforms
@@ -467,26 +466,11 @@ namespace HDLG_winforms
 		/// <param name="writer"></param>
 		/// <param name="directory"></param>
 		/// <returns></returns>
-		private async Task WritHtmlDirectoryAsync (TextWriter writer, HdlgDirectory directory, int depth, string? parentUrlEncodedPath = null)
+		private async Task WritHtmlDirectoryAsync (TextWriter writer, HdlgDirectory directory, int depth)
 		{
 			log.Debug( "In {Method} {Type} {Directory}", nameof( WritHtmlDirectoryAsync ), nameof( HdlgDirectory ), directory );
 			string spacer = depth < 20 ? Spacers [depth] : new string( ' ', depth );
 			string encodedPath = WebUtility.HtmlEncode( directory.Path );
-
-			// Performance optimization: When recursing directories, do not redundantly parse and encode the full absolute path.
-			// Instead, concatenate the URL-encoded child name to the URL-encoded parent path.
-			string urlEncodedDirPath;
-			if (parentUrlEncodedPath == null)
-			{
-				urlEncodedDirPath = GetUrlEncodedPath( directory.Path );
-			}
-			else
-			{
-				urlEncodedDirPath = parentUrlEncodedPath.EndsWith('/')
-					? parentUrlEncodedPath + Uri.EscapeDataString(directory.Name)
-					: parentUrlEncodedPath + "/" + Uri.EscapeDataString(directory.Name);
-			}
-
 			string id = encodedPath; // Re-use cached encoded path
 			string name = WebUtility.HtmlEncode( directory.Name );
 			string created = directory.CreationTime.ToString( "F", CultureInfo.CurrentCulture );
@@ -507,7 +491,7 @@ namespace HDLG_winforms
 				for (int i = 0; i < directory.Directories.Count; i++)
 				{
 					HdlgDirectory d = directory.Directories [i];
-					await WritHtmlDirectoryAsync( writer, d, inDepth, urlEncodedDirPath ).ConfigureAwait( false );
+					await WritHtmlDirectoryAsync( writer, d, inDepth ).ConfigureAwait( false );
 				}
 				await writer.WriteLineAsync( spacer + "\t</div>" ).ConfigureAwait( false );
 			}
@@ -518,50 +502,12 @@ namespace HDLG_winforms
 				for (int i = 0; i < directory.Files.Count; i++)
 				{
 					HdlgFile file = directory.Files [i];
-					await WriteHtmlFileAsync( writer, file, spacer + "\t", urlEncodedDirPath ).ConfigureAwait( false );
+					await WriteHtmlFileAsync( writer, file, spacer + "\t" ).ConfigureAwait( false );
 				}
 				await writer.WriteLineAsync( spacer + "\t</div>" ).ConfigureAwait( false );
 			}
 
 			await writer.WriteLineAsync( spacer + "</details>" ).ConfigureAwait( false );
-		}
-
-		private static string GetUrlEncodedPath(string path)
-		{
-			if (string.IsNullOrEmpty(path))
-				return string.Empty;
-
-			var sb = new System.Text.StringBuilder(path.Length + 16);
-			int startIndex = 0;
-
-			for (int i = 0; i <= path.Length; i++)
-			{
-				if (i == path.Length || path[i] == Path.DirectorySeparatorChar || path[i] == Path.AltDirectorySeparatorChar)
-				{
-					if (i > startIndex)
-					{
-						if (path[i - 1] == ':')
-						{
-							sb.Append(path, startIndex, i - startIndex);
-						}
-						else
-						{
-							// Note: AsSpan cannot be directly used with Uri.EscapeDataString in this framework version without allocating a string first anyway, but suppressing CA1846 by adding a #pragma or we can just leave it since it's just a warning. Let's fix the warning anyway to be clean.
-#pragma warning disable CA1846
-							sb.Append(Uri.EscapeDataString(path.Substring(startIndex, i - startIndex)));
-#pragma warning restore CA1846
-						}
-					}
-
-					if (i < path.Length)
-					{
-						sb.Append('/');
-					}
-					startIndex = i + 1;
-				}
-			}
-
-			return sb.ToString();
 		}
 
 		/// <summary>
@@ -571,7 +517,7 @@ namespace HDLG_winforms
 		/// <param name="file">File that content the data</param>
 		/// <returns>A task</returns>
 		/// <exception cref="ArgumentNullException"></exception>
-		private async Task WriteHtmlFileAsync (TextWriter writer, HdlgFile file, string spacer, string urlEncodedDirPath)
+		private async Task WriteHtmlFileAsync (TextWriter writer, HdlgFile file, string spacer)
 		{
 			if (writer is null)
 			{
@@ -585,10 +531,7 @@ namespace HDLG_winforms
 
 			string encodedName = WebUtility.HtmlEncode( file.Name );
 
-			// Performance optimization: Combine pre-encoded directory path with file name instead of splitting full path per file
-			string encodedPath = urlEncodedDirPath.EndsWith('/')
-				? urlEncodedDirPath + Uri.EscapeDataString(file.Name)
-				: urlEncodedDirPath + "/" + Uri.EscapeDataString(file.Name);
+			string encodedPath = GetUrlEncodedPath(file.Path);
 
 			await writer.WriteLineAsync( $"{spacer}\t<a href=\"file:///{encodedPath}\" download=\"{encodedName}\" referrerpolicy=\"strict-origin\">{encodedName}</a>" ).ConfigureAwait( false );
 
@@ -677,155 +620,43 @@ namespace HDLG_winforms
 
 		#endregion
 
-		#region JSON
 
-		/// <summary>
-		/// Export directory content as compact JSON
-		/// </summary>
-		/// <param name="filePath">Where to save the data</param>
-		/// <param name="directory">Scanned directory tree</param>
-		/// <returns></returns>
-		/// <exception cref="ArgumentException"></exception>
-		public async Task SaveAsJSONAsync (string filePath, HdlgDirectory directory)
+		private static string GetUrlEncodedPath(string path)
 		{
-			if (string.IsNullOrWhiteSpace( filePath ))
+			if (string.IsNullOrEmpty(path))
+				return string.Empty;
+
+			var sb = new System.Text.StringBuilder(path.Length + 16);
+			int startIndex = 0;
+
+			for (int i = 0; i <= path.Length; i++)
 			{
-				throw new ArgumentException( $"'{nameof( filePath )}' cannot be null or whitespace.", nameof( filePath ) );
-			}
-
-			ArgumentNullException.ThrowIfNull( directory );
-
-			FileInfo fileInfo = new( filePath );
-			using FileStream fileStream = new( fileInfo.FullName, FileMode.Create, FileAccess.Write, FileShare.None );
-			using Utf8JsonWriter writer = new( fileStream, new JsonWriterOptions { Indented = false } );
-			WriteJsonDocument( writer, directory );
-			await writer.FlushAsync( ).ConfigureAwait( false );
-		}
-
-		/// <summary>
-		/// Walks the directory tree synchronously into <paramref name="writer"/>.
-		/// Callers that must not block the UI should run <see cref="SaveAsJSONAsync"/> on a worker thread.
-		/// </summary>
-		private void WriteJsonDocument (Utf8JsonWriter writer, HdlgDirectory directory)
-		{
-			string? version = typeof( DirectoryBrowser ).Assembly.GetName( ).Version?.ToString( );
-
-			writer.WriteStartObject( );
-			writer.WriteString( "Version", version );
-			writer.WriteString( "Directory", directory.Path );
-			writer.WriteString( "DateTime", DateTime.Now.ToString( "O", CultureInfo.InvariantCulture ) );
-			writer.WriteNumber( "DirectoriesCount", directory.TotalDirectories );
-			writer.WriteNumber( "FilesCount", directory.TotalFiles );
-			writer.WritePropertyName( "Root" );
-			WriteJsonDirectory( writer, directory );
-			writer.WriteEndObject( );
-		}
-
-		/// <summary>
-		/// Write a directory object (Name, Path, CreationTime, Directories, Files).
-		/// </summary>
-		private void WriteJsonDirectory (Utf8JsonWriter writer, HdlgDirectory directory)
-		{
-			log.Debug( "In {Method} {Type} {Directory}", nameof( WriteJsonDirectory ), nameof( HdlgDirectory ), directory );
-
-			writer.WriteStartObject( );
-			writer.WriteString( "Name", directory.Name );
-			writer.WriteString( "Path", directory.Path );
-			writer.WriteString( "CreationTime", directory.CreationTime.ToString( "O", CultureInfo.InvariantCulture ) );
-
-			writer.WritePropertyName( "Directories" );
-			writer.WriteStartArray( );
-			for (int i = 0; i < directory.Directories.Count; i++)
-			{
-				WriteJsonDirectory( writer, directory.Directories [i] );
-			}
-			writer.WriteEndArray( );
-
-			writer.WritePropertyName( "Files" );
-			writer.WriteStartArray( );
-			for (int i = 0; i < directory.Files.Count; i++)
-			{
-				WriteJsonFile( writer, directory.Files [i] );
-			}
-			writer.WriteEndArray( );
-
-			writer.WriteEndObject( );
-		}
-
-		/// <summary>
-		/// Write a file object including ExtentedProperties (always present, possibly empty).
-		/// </summary>
-		private void WriteJsonFile (Utf8JsonWriter writer, HdlgFile file)
-		{
-			if (writer is null)
-			{
-				throw new ArgumentNullException( nameof( writer ) );
-			}
-
-			log.Verbose( "{Method} {File}", nameof( WriteJsonFile ), file );
-
-			writer.WriteStartObject( );
-			writer.WriteString( "Name", file.Name );
-			writer.WriteString( "Path", file.Path );
-			writer.WriteString( "Extension", file.Extension );
-			writer.WriteNumber( "Size", file.Size );
-			writer.WriteString( "CreationTime", file.CreationTime.ToString( "O", CultureInfo.InvariantCulture ) );
-
-			writer.WritePropertyName( "ExtentedProperties" );
-			writer.WriteStartObject( );
-			if (file.Properties != null && file.Properties.Count > 0)
-			{
-				foreach (var property in file.Properties)
+				if (i == path.Length || path[i] == Path.DirectorySeparatorChar || path[i] == Path.AltDirectorySeparatorChar)
 				{
-					WriteJsonProperty( writer, property.Key, property.Value );
+					if (i > startIndex)
+					{
+						if (path[i - 1] == ':')
+						{
+							sb.Append(path, startIndex, i - startIndex);
+						}
+						else
+						{
+							// Note: AsSpan cannot be directly used with Uri.EscapeDataString in this framework version without allocating a string first anyway, but suppressing CA1846 by adding a #pragma or we can just leave it since it's just a warning. Let's fix the warning anyway to be clean.
+#pragma warning disable CA1846
+							sb.Append(Uri.EscapeDataString(path.Substring(startIndex, i - startIndex)));
+#pragma warning restore CA1846
+						}
+					}
+
+					if (i < path.Length)
+					{
+						sb.Append('/');
+					}
+					startIndex = i + 1;
 				}
 			}
-			writer.WriteEndObject( );
-			writer.WriteEndObject( );
+
+			return sb.ToString();
 		}
-
-		private static void WriteJsonProperty (Utf8JsonWriter writer, string key, IConvertible? value)
-		{
-			if (string.IsNullOrWhiteSpace( key ) || value == null)
-			{
-				return;
-			}
-
-			writer.WritePropertyName( key );
-			WriteJsonConvertibleValue( writer, value );
-		}
-
-		private static void WriteJsonConvertibleValue (Utf8JsonWriter writer, IConvertible value)
-		{
-			switch (value)
-			{
-				case DateTime dtValue:
-					writer.WriteStringValue( dtValue.ToString( "O", CultureInfo.InvariantCulture ) );
-					break;
-				case bool boolValue:
-					writer.WriteBooleanValue( boolValue );
-					break;
-				case byte or sbyte or short or ushort or int or uint or long:
-					writer.WriteNumberValue( Convert.ToInt64( value, CultureInfo.InvariantCulture ) );
-					break;
-				case ulong ulongValue:
-					writer.WriteNumberValue( ulongValue );
-					break;
-				case float floatValue:
-					writer.WriteNumberValue( floatValue );
-					break;
-				case double doubleValue:
-					writer.WriteNumberValue( doubleValue );
-					break;
-				case decimal decimalValue:
-					writer.WriteNumberValue( decimalValue );
-					break;
-				default:
-					writer.WriteStringValue( value.ToString( CultureInfo.InvariantCulture ) );
-					break;
-			}
-		}
-
-		#endregion
 	}
 }

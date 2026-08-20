@@ -46,12 +46,11 @@ namespace HDLG_winforms
 				if (res != DialogResult.Yes) return;
 
 				string explorerPath = System.IO.Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "explorer.exe" );
-				ProcessStartInfo psInfo = new( explorerPath )
+				ProcessStartInfo psInfo = new( explorerPath, $"\"{uriResult.AbsoluteUri}\"" )
 				{
 					UseShellExecute = false,
 					WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
 				};
-				psInfo.ArgumentList.Add( uriResult.AbsoluteUri );
 				Process.Start( psInfo );
 			}
 			else
