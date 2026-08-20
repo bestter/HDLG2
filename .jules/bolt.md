@@ -178,3 +178,7 @@
 ## 2026-08-16 - Optimize URL encoding for tree traversal
 **Learning:** Redundantly parsing and encoding full absolute paths during recursive HTML tree generation creates O(N^2) string allocations.
 **Action:** Pass down the parent's URL-encoded path and concatenate the encoded child name to reduce operations to O(N).
+
+## 2026-08-18 - Prevent interface boxing during JSON properties export
+**Learning:** Iterating over `IReadOnlyDictionary<string, IConvertible>` using `foreach` causes the runtime to box the underlying `Dictionary` struct enumerator into an `IEnumerator<T>` object on the heap, generating garbage collection pressure. This happens frequently when saving properties for thousands of files during a JSON export.
+**Action:** In C# hot loops over properties arrays exposed via interfaces (such as during file or node serialization), type-check and explicitly cast the collection to its concrete type `if (file.Properties is Dictionary<string, IConvertible> dictProperties)` to use the struct-based enumerator without boxing overhead.
