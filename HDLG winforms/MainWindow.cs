@@ -151,6 +151,18 @@ namespace HDLG_winforms
 				UpdateUIWithPerformance( perf );
 				OpenWithDefaultProgram( savePath );
 			}
+			catch (InvalidOperationException ex) when (ex.Message.Contains( "security reasons", StringComparison.OrdinalIgnoreCase ))
+			{
+				toolStripStatusLabelException.Text = "Security block";
+				Logger.Warning( ex, "Security block in {MethodName}", nameof( RunExportAsync ) );
+				MessageBox.Show( this, ex.Message, "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
+			}
+			catch (System.ComponentModel.Win32Exception ex)
+			{
+				toolStripStatusLabelException.Text = "No associated application";
+				Logger.Error( ex, "Win32 error in {MethodName}", nameof( RunExportAsync ) );
+				MessageBox.Show( this, "Could not open the file. It might not have an associated application.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+			}
 			catch (UnauthorizedAccessException ex)
 			{
 				toolStripStatusLabelException.Text = "Access Denied";

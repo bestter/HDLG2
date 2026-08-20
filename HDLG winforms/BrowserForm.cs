@@ -432,7 +432,7 @@ namespace HDLG_winforms
 					{
 						MainWindow.OpenWithDefaultProgram( info.Path );
 					}
-					catch (InvalidOperationException ex)
+					catch (InvalidOperationException ex) when (ex.Message.Contains( "security reasons", StringComparison.OrdinalIgnoreCase ))
 					{
 						logger.Warning( ex, "Security block opening file: {Path}", info.Path );
 						MessageBox.Show( this, ex.Message, "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
