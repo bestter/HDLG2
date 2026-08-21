@@ -16,11 +16,10 @@
 * Utilise les définitions locales (types, interfaces) avant de chercher à indexer les bibliothèques externes.
 
 ## 5. Conventions de Tests
-* Les tests unitaires se trouvent dans le projet `HDLG.Tests` (xUnit). `DirectoryBrowserTests` valide les exports XML, HTML et JSON.
+* Les tests unitaires se trouvent dans le projet `HDLG.Tests` (xUnit).
 * Utilise **FluentAssertions** pour les assertions et **Moq** pour le mocking d'interfaces.
 * Nettoie toujours les fichiers et répertoires temporaires via `IDisposable`.
 * Tout nouveau code doit être accompagné de tests unitaires. Ne crée pas de tests si la tâche ne concerne que de la documentation ou de la configuration.
 * Les tests UI WinForms (`WinFormsUiTests`) s'exécutent sur thread **STA** et vérifient la structure des contrôles Krypton sans interaction graphique utilisateur.
-* Les tests d'ouverture d'URL (`OpenUrlSafeTests`) injectent `processStarter` et `promptUser` : pas d'`explorer.exe` réel, pas de `MessageBox`.
 * Les tests branding/logo (`AppBrandingTests`, `AppLogoRendererTests`) utilisent la collection sérialisée `WinFormsUiTestCollection`.
 * Après modification des SVG dans `HDLG winforms/Assets/`, régénérer PNG/ICO via `scripts/GenerateAppLogoAssets.ps1` (Inkscape requis).
