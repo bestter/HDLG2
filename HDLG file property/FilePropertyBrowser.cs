@@ -64,7 +64,6 @@ namespace HdlgFileProperty
         public virtual async Task<IReadOnlyDictionary<string, IConvertible>?> GetFilePropertyAsync(FileInfo fileInfo)
         {
             ArgumentNullException.ThrowIfNull(fileInfo);
-            string path = fileInfo.FullName;
             System.Threading.Interlocked.Increment(ref _totalNumberOfFiles);
 
             IReadOnlyDictionary<string, IConvertible>? firstProperties = null;

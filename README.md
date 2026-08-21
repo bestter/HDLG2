@@ -2,10 +2,10 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![.NET Version](https://img.shields.io/badge/.NET-10.0-blue)
-![Version](https://img.shields.io/badge/Version-1.4.0-blue)
+![Version](https://img.shields.io/badge/Version-1.5.0-blue)
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey)
 
-**HTML Directory List Generator (HDLG2)** is a lightweight, high-performance desktop application built with C# and Windows Forms on .NET 10. It allows users to recursively scan any system directory and export the contents into beautifully structured **HTML** or highly queryable **XML** files, including detailed extraction of extended metadata for media and documents.
+**HTML Directory List Generator (HDLG2)** is a lightweight, high-performance desktop application built with C# and Windows Forms on .NET 10. It allows users to recursively scan any system directory and export the contents into beautifully structured **HTML**, highly queryable **XML**, or compact **JSON** files, including detailed extraction of extended metadata for media and documents.
 
 ---
 
@@ -18,6 +18,7 @@
   - Quick-click `file:///` pathways to directly open indexed items.
   - Branded footer with inline SVG logo and generator attribution.
 - 📊 **Structured XML Export**: Employs clean, high-performance streaming writers (`XmlWriter`) for easy data migration and integration.
+- 📦 **Structured JSON Export**: Compact, streaming `Utf8JsonWriter` output mirroring the XML data model (PascalCase names, native numbers, `Root` tree, `ExtentedProperties`).
 - 🔍 **Deep Metadata Extraction**: Automatically parses and extracts domain-specific properties:
   - **Images**: Dimensions (Width and Height) and camera model (using *ImageSharp*).
   - **Word & Excel**: Document title, creator, and creation date (using *OpenXML*).
@@ -26,24 +27,25 @@
 - ⚡ **Performance Instrumentation**: Measures, records, and displays execution metrics (scantime, compilation, and save-time).
 - 🛡️ **DoS Hardening & Fault Tolerance**: Configurable safeguards in `FilePropertyLimits` — rejects files exceeding 100 MB, enforces a 30-second timeout per property getter in `FilePropertyBrowser`, caps image dimensions at 32 768 px via `ImagePropertyGetter` (with `DecoderOptions.MaxFrames = 1`), and uses safe attribute checks (`IsReparsePoint`) in `BrowserForm` to prevent permission denial crashes when enumerating restricted system items.
 - 🪵 **Structured Logging**: Rolling diagnostic logs written daily to `%LOCALAPPDATA%\HDLG\logs`.
-- 🎨 **Modern WinForms UI (v1.4)**: Fluent-style desktop interface powered by **Krypton.Toolkit** (Microsoft 365 Blue Light palette), with a dashboard layout on the main window and harmonized explorer/about dialogs.
+- 🎨 **Modern WinForms UI (v1.5)**: Fluent-style desktop interface powered by **Krypton.Toolkit** (Microsoft 365 Blue Light palette), with a dashboard layout on the main window, a 2×2 Export grid (XML / HTML / JSON / UI Explorer), and harmonized explorer/about dialogs.
 - 🏷️ **HDLG Monogram Branding**: Original geometric logo (Concept C, 2×2 layout, accent `#0284C8`) in the About dialog, application icon, and HTML export footer (inline SVG).
 
 ---
 
 ## 🏛️ Architecture Overview
 
-The solution consists of three primary layers:
+The solution consists of four projects:
 
 1. **`HDLG winforms` (Desktop GUI App)**: 
-   - Manages the Windows Forms layout, progress metrics, and output generation orchestrators.
+   - Manages the Windows Forms layout, progress metrics, and a single export runner (`RunExportAsync`) shared by XML, HTML, and JSON.
    - Built on `Microsoft.Extensions.Hosting` utilizing full Dependency Injection (DI) and robust background threading (`Task.Run`) to keep the UI perfectly responsive.
    - UI theme initialized via `AppUiBootstrap` using **Krypton.Toolkit** controls (`KryptonForm`, `KryptonHeaderGroup`, `KryptonTreeView`, etc.).
 2. **`HdlgFileProperty` (Extraction Engine)**:
    - Houses the core extraction strategy (`IFilePropertyGetter`), delegating specialized tasks to respective metadata engines based on MIME/file formats.
    - `FilePropertyBrowser` orchestrates getters with file-size checks and per-getter timeouts; `FilePropertyLimits` centralizes the configurable thresholds.
-3. **`HDLG.Tests` (Unit Tests)**:
-   - xUnit v3-based test suite (`xunit.v3` + runner) with FluentAssertions and Moq, covering export engines, metadata extraction orchestration, directory model logic, property getter contracts, security helpers (e.g. OpenWithDefaultProgram), UI bootstrap, and structural WinForms UI tests.
+3. **`Benchmark`**: Console harness that times `HdlgDirectory.BrowseAsync` (warmup + measured iterations).
+4. **`HDLG.Tests` (Unit Tests)**:
+   - xUnit v3-based test suite (`xunit.v3` + runner) with FluentAssertions and Moq, covering export engines, metadata extraction orchestration, directory model logic, property getter contracts, security helpers (e.g. OpenWithDefaultProgram, OpenUrlSafe), UI bootstrap, and structural WinForms UI tests.
 
 ---
 
@@ -76,7 +78,9 @@ dotnet test HDLG.sln
 ```
 
 The `HDLG.Tests` project covers:
-- **DirectoryBrowserTests** — XML and HTML export validation (parameter guards, output structure).
+- **DirectoryBrowserTests** — XML, HTML, and JSON export validation (parameter guards, compact JSON contract, nested tree, counts, native bool properties).
+- **PerformanceCountTests** — `PerformanceCount.Empty` sentinel values.
+- **BrowserFormLoadTests** — STA load tests for the explorer form (enumeration and access-denied paths).
 - **FilePropertyBrowserTests** — Property extraction orchestration (getter delegation, multi-getter combination, oversized-file rejection, timeout behavior, statistics logging).
 - **FilePropertyGetterStatisticTests** — Execution statistics validation for getters (elapsed time, file count).
 - **HdlgDirectoryTests** — Directory model construction, recursive browse behavior, and equality semantics.
@@ -85,6 +89,7 @@ The `HDLG.Tests` project covers:
 - **WordPropertyGetterTests** — Word document property extraction and error handling.
 - **ExcelPropertyGetterTests** — Excel workbook property extraction and error handling.
 - **OpenWithDefaultProgramTests** — Security validation for `MainWindow.OpenWithDefaultProgram` (dangerous extension blocklist to prevent process injection).
+- **OpenUrlSafeTests** — `MainWindow.OpenUrlSafe` rejects non-http(s) schemes and launches `Uri.AbsoluteUri` only after confirmation.
 - **AppUiBootstrapTests** — Validates Krypton global palette initialization and watermark removal.
 - **AppBrandingTests** — Validates inline SVG markup and HTML footer generation.
 - **AppLogoRendererTests** — Validates packaged logo/icon asset loading.

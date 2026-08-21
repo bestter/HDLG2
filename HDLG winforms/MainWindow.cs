@@ -86,81 +86,118 @@ namespace HDLG_winforms
 			toolStripStatusLabelException.Text = string.Empty;
 			saveContentFileDialog.InitialDirectory = Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments );
 			saveFileDialogHtml.InitialDirectory = Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments );
+			saveFileDialogJson.InitialDirectory = Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments );
 		}
 
-		private async void BtnStart_Click (object sender, EventArgs e)
+		private void ResetExportStatusLabels ()
+		{
+			progressBar1.Value = 0;
+			toolStripStatusLabelBrowseTime.Text = string.Empty;
+			toolStripStatusLabelSaveTime.Text = string.Empty;
+			toolStripStatusLabelTotalTime.Text = string.Empty;
+			toolStripStatusLabelException.Text = string.Empty;
+
+#if !DEBUG
+			toolStripStatusLabelBrowseTime.Visible = false;
+			toolStripStatusLabelSaveTime.Visible = false;
+			toolStripStatusLabelTotalTime.Visible = false;
+#endif
+		}
+
+		private void SetExportControlsEnabled (bool enabled)
+		{
+			btnStartXml.Enabled = enabled;
+			btnStartHtml.Enabled = enabled;
+			btnStartJson.Enabled = enabled;
+			if (btnStartUi != null)
+			{
+				btnStartUi.Enabled = enabled;
+			}
+		}
+
+		private async Task RunExportAsync (
+			SaveFileDialog dialog,
+			string extensionWithDot,
+			Func<DirectoryBrowser, HdlgDirectory, string, Task> save)
 		{
 			try
 			{
-				progressBar1.Value = 0;
-				toolStripStatusLabelBrowseTime.Text = string.Empty;
-				toolStripStatusLabelSaveTime.Text = string.Empty;
-				toolStripStatusLabelTotalTime.Text = string.Empty;
-				toolStripStatusLabelException.Text = string.Empty;
+				ResetExportStatusLabels( );
 
-#if !DEBUG
-toolStripStatusLabelBrowseTime.Visible = false;
-toolStripStatusLabelSaveTime.Visible = false;
-toolStripStatusLabelTotalTime.Visible = false;
-#endif
-
-				if (!string.IsNullOrWhiteSpace( selectedDirectory ))
+				if (string.IsNullOrWhiteSpace( selectedDirectory ))
 				{
-					DirectoryInfo di = new( selectedDirectory );
-					saveContentFileDialog.FileName = $"{di.Name}.xml";
-					var result = saveContentFileDialog.ShowDialog( );
-					if (result == DialogResult.OK)
-					{
-						btnStartXml.Enabled = false;
-						btnStartHtml.Enabled = false;
-						if (btnStartUi != null) btnStartUi.Enabled = false;
-						UseWaitCursor = true;
-						Logger.Information( "Start browse with {SelectedDirectory}", selectedDirectory );
-
-						// Use an indeterminate progress bar if supported, or leave it at 0
-						progressBar1.Style = ProgressBarStyle.Marquee;
-
-						// Exécuter le travail dans un thread de fond sans bloquer l'UI
-						var perf = await Task.Run( () => PerformDirectoryBrowseXmlAsync( selectedDirectory, saveContentFileDialog.FileName ) ).ConfigureAwait( true );
-
-						progressBar1.Style = ProgressBarStyle.Blocks;
-						progressBar1.Value = 100;
-
-						// Mettre à jour l'UI après le traitement
-						UpdateUIWithPerformance( perf );
-						OpenWithDefaultProgram( saveContentFileDialog.FileName );
-					}
+					return;
 				}
+
+				DirectoryInfo di = new( selectedDirectory );
+				dialog.FileName = $"{di.Name}{extensionWithDot}";
+				if (dialog.ShowDialog( ) != DialogResult.OK)
+				{
+					return;
+				}
+
+				SetExportControlsEnabled( false );
+				UseWaitCursor = true;
+				Logger.Information( "Start browse with {SelectedDirectory}", selectedDirectory );
+				progressBar1.Style = ProgressBarStyle.Marquee;
+
+				string directoryPath = selectedDirectory;
+				string savePath = dialog.FileName;
+				bool browseSubDirectory = cbBrowseSubDirectory.Checked;
+				var perf = await Task.Run( () => PerformDirectoryBrowseAsync( directoryPath, savePath, browseSubDirectory, save ) ).ConfigureAwait( true );
+
+				progressBar1.Style = ProgressBarStyle.Blocks;
+				progressBar1.Value = 100;
+				UpdateUIWithPerformance( perf );
+				OpenWithDefaultProgram( savePath );
+			}
+			catch (InvalidOperationException ex) when (ex.Message.Contains( "security reasons", StringComparison.OrdinalIgnoreCase ))
+			{
+				toolStripStatusLabelException.Text = "Security block";
+				Logger.Warning( ex, "Security block in {MethodName}", nameof( RunExportAsync ) );
+				MessageBox.Show( this, ex.Message, "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
+			}
+			catch (System.ComponentModel.Win32Exception ex)
+			{
+				toolStripStatusLabelException.Text = "No associated application";
+				Logger.Error( ex, "Win32 error in {MethodName}", nameof( RunExportAsync ) );
+				MessageBox.Show( this, "Could not open the file. It might not have an associated application.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
 			catch (UnauthorizedAccessException ex)
 			{
 				toolStripStatusLabelException.Text = "Access Denied";
-				Logger.Warning( ex, "Access denied in {MethodName}", nameof( BtnStart_Click ) );
+				Logger.Warning( ex, "Access denied in {MethodName}", nameof( RunExportAsync ) );
 			}
 			catch (System.Security.SecurityException ex)
 			{
 				toolStripStatusLabelException.Text = "Access Denied";
-				Logger.Warning( ex, "Security exception in {MethodName}", nameof( BtnStart_Click ) );
+				Logger.Warning( ex, "Security exception in {MethodName}", nameof( RunExportAsync ) );
 			}
 			catch (IOException ex)
 			{
 				toolStripStatusLabelException.Text = "An IO error occurred";
-				Logger.Error( ex, "IO Error in {MethodName}", nameof( BtnStart_Click ) );
+				Logger.Error( ex, "IO Error in {MethodName}", nameof( RunExportAsync ) );
 			}
 #pragma warning disable CA1031 // Do not catch general exception types
 			catch (Exception ex)
 			{
 				toolStripStatusLabelException.Text = "An unexpected error occurred";
-				Logger.Error( ex, "Error in {MethodName}", nameof( BtnStart_Click ) );
+				Logger.Error( ex, "Error in {MethodName}", nameof( RunExportAsync ) );
 			}
 #pragma warning restore CA1031 // Do not catch general exception types
 			finally
 			{
-				btnStartXml.Enabled = true;
-				btnStartHtml.Enabled = true;
-				if (btnStartUi != null) btnStartUi.Enabled = true;
+				SetExportControlsEnabled( true );
 				UseWaitCursor = false;
 			}
+		}
+
+		private async void BtnStart_Click (object sender, EventArgs e)
+		{
+			await RunExportAsync(
+				saveContentFileDialog,
+				".xml",
+				(browser, directory, path) => browser.SaveAsXMLAsync( path, directory ) ).ConfigureAwait( true );
 		}
 
 		private void UpdateUIWithPerformance (PerformanceCount perf)
@@ -173,41 +210,41 @@ toolStripStatusLabelTotalTime.Visible = false;
 			}
 		}
 
-		private async Task<PerformanceCount> PerformDirectoryBrowseXmlAsync (string selecteDirectory, string saveFilePath)
+		private async Task<PerformanceCount> PerformDirectoryBrowseAsync (
+			string selectedDirectoryPath,
+			string saveFilePath,
+			bool browseSubDirectory,
+			Func<DirectoryBrowser, HdlgDirectory, string, Task> save)
 		{
-			Logger.Debug( "{MethodName} started at {StartTime:T}", nameof( PerformDirectoryBrowseXmlAsync ), DateTime.Now );
-			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
+			Logger.Debug( "{MethodName} started at {StartTime:T}", nameof( PerformDirectoryBrowseAsync ), DateTime.Now );
+			if (string.IsNullOrWhiteSpace( selectedDirectoryPath ))
 			{
-				Logger.Information( "{SelectedDirectory}", selecteDirectory );
-				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
-				Stopwatch stopwatch = Stopwatch.StartNew( );
-
-				Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
-				await directory.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
-				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.BrowseAsync ), directory.Name );
-				TimeSpan browseTime = stopwatch.Elapsed;
-				propertyBrowser.LogGetterStatistics( );
-
-				DirectoryBrowser db = new( Logger );
-				Logger.Debug( "Ready to start {MethodName}", nameof( DirectoryBrowser.SaveAsXMLAsync ) );
-
-				await db.SaveAsXMLAsync( saveFilePath, directory ).ConfigureAwait( false );
-
-				Logger.Debug( "{MethodName} done", nameof( DirectoryBrowser.SaveAsXMLAsync ) );
-				stopwatch.Stop( );
-
-				TimeSpan saveTime = stopwatch.Elapsed - browseTime;
-
-				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
-
-				Logger.Information( "Done at {EndTime:T}", DateTime.Now );
-				return result;
-			}
-			else
-			{
-				Logger.Information( "No {SelectedDirectoryParamName}", nameof( selecteDirectory ) );
+				Logger.Information( "No {SelectedDirectoryParamName}", nameof( selectedDirectoryPath ) );
 				return PerformanceCount.Empty;
 			}
+
+			Logger.Information( "{SelectedDirectory}", selectedDirectoryPath );
+			HdlgDirectory directory = new( selectedDirectoryPath, true, browseSubDirectory, Logger );
+			Stopwatch stopwatch = Stopwatch.StartNew( );
+
+			Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
+			await directory.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
+			Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.BrowseAsync ), directory.Name );
+			TimeSpan browseTime = stopwatch.Elapsed;
+			propertyBrowser.LogGetterStatistics( );
+
+			DirectoryBrowser db = new( Logger );
+			await save( db, directory, saveFilePath ).ConfigureAwait( false );
+			stopwatch.Stop( );
+
+			var result = new PerformanceCount( )
+			{
+				BrowseTime = browseTime,
+				SaveTime = stopwatch.Elapsed - browseTime,
+				TotalTime = stopwatch.Elapsed
+			};
+			Logger.Information( "Done at {EndTime:T}", DateTime.Now );
+			return result;
 		}
 
 		/// <summary>
@@ -257,17 +294,7 @@ toolStripStatusLabelTotalTime.Visible = false;
 		{
 			try
 			{
-				OpenWithDefaultProgram( path, p =>
-				{
-					using Process fileopener = new( );
-					string explorerPath = System.IO.Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "explorer.exe" );
-					fileopener.StartInfo = new ProcessStartInfo( explorerPath, $"\"{p}\"" )
-					{
-						UseShellExecute = false,
-						WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
-					};
-					fileopener.Start( );
-				}, fullPath =>
+				OpenWithDefaultProgram( path, StartWithExplorer, fullPath =>
 				{
 					DialogResult res = MessageBox.Show( $"You are about to open the following file:\n\n{fullPath}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
 					return res == DialogResult.Yes;
@@ -277,6 +304,62 @@ toolStripStatusLabelTotalTime.Visible = false;
 			{
 				MessageBox.Show( ex.Message, "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
 			}
+		}
+
+		private static void StartWithExplorer (string argument)
+		{
+			using Process fileopener = new( );
+			string explorerPath = System.IO.Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "explorer.exe" );
+			fileopener.StartInfo = new ProcessStartInfo( explorerPath )
+			{
+				UseShellExecute = false,
+				WorkingDirectory = Environment.GetFolderPath( Environment.SpecialFolder.System )
+			};
+			fileopener.StartInfo.ArgumentList.Add( argument );
+			fileopener.Start( );
+		}
+
+		/// <summary>
+		/// Open an http or https URL with the default program after user confirmation.
+		/// </summary>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="uri"/> is null</exception>
+		/// <exception cref="InvalidOperationException">Thrown when the URI is not an absolute http/https URL</exception>
+		public static void OpenUrlSafe (Uri uri)
+		{
+			OpenUrlSafe( uri, StartWithExplorer, absoluteUri =>
+			{
+				DialogResult res = MessageBox.Show( $"You are about to open an external website:\n\n{absoluteUri}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
+				return res == DialogResult.Yes;
+			} );
+		}
+
+		/// <summary>
+		/// Testable URL open: scheme check, confirm with <see cref="Uri.AbsoluteUri"/>, then launch that same value.
+		/// </summary>
+		public static void OpenUrlSafe (Uri uri, Action<string> processStarter, Func<string, bool>? promptUser = null)
+		{
+			ArgumentNullException.ThrowIfNull( uri );
+			ArgumentNullException.ThrowIfNull( processStarter );
+
+			if (!uri.IsAbsoluteUri ||
+				(uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+			{
+				throw new InvalidOperationException( $"Opening URLs with scheme other than http/https is not allowed for security reasons. URL: {uri}" );
+			}
+
+			string absoluteUri = uri.AbsoluteUri;
+			Func<string, bool> actualPromptUser = promptUser ?? (shown =>
+			{
+				DialogResult res = MessageBox.Show( $"You are about to open an external website:\n\n{shown}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
+				return res == DialogResult.Yes;
+			});
+
+			if (!actualPromptUser( absoluteUri ))
+			{
+				return;
+			}
+
+			processStarter( absoluteUri );
 		}
 
 		/// <summary>
@@ -408,107 +491,23 @@ toolStripStatusLabelTotalTime.Visible = false;
 
 		private async void BtnStartHtml_Click (object sender, EventArgs e)
 		{
-			try
-			{
-				progressBar1.Value = 0;
-				toolStripStatusLabelBrowseTime.Text = string.Empty;
-				toolStripStatusLabelSaveTime.Text = string.Empty;
-				toolStripStatusLabelTotalTime.Text = string.Empty;
-				toolStripStatusLabelException.Text = string.Empty;
-
-				if (!string.IsNullOrWhiteSpace( selectedDirectory ))
-				{
-					DirectoryInfo di = new( selectedDirectory );
-					saveFileDialogHtml.FileName = $"{di.Name}.html";
-					var result = saveFileDialogHtml.ShowDialog( );
-					if (result == DialogResult.OK)
-					{
-						btnStartXml.Enabled = false;
-						btnStartHtml.Enabled = false;
-						if (btnStartUi != null) btnStartUi.Enabled = false;
-						UseWaitCursor = true;
-						Logger.Information( "Start browse with {SelectedDirectory}", selectedDirectory );
-
-						progressBar1.Style = ProgressBarStyle.Marquee;
-
-						var perf = await Task.Run( () => PerformDirectoryBrowseHtmlAsync( selectedDirectory, saveFileDialogHtml.FileName ) ).ConfigureAwait( true );
-
-						progressBar1.Style = ProgressBarStyle.Blocks;
-						progressBar1.Value = 100;
-
-						UpdateUIWithPerformance( perf );
-						OpenWithDefaultProgram( saveFileDialogHtml.FileName );
-					}
-				}
-			}
-			catch (UnauthorizedAccessException ex)
-			{
-				toolStripStatusLabelException.Text = "Access Denied";
-				Logger.Warning( ex, "Access denied in {MethodName}", nameof( BtnStartHtml_Click ) );
-			}
-			catch (System.Security.SecurityException ex)
-			{
-				toolStripStatusLabelException.Text = "Access Denied";
-				Logger.Warning( ex, "Security exception in {MethodName}", nameof( BtnStartHtml_Click ) );
-			}
-			catch (IOException ex)
-			{
-				toolStripStatusLabelException.Text = "An IO error occurred";
-				Logger.Error( ex, "IO Error in {MethodName}", nameof( BtnStartHtml_Click ) );
-			}
-#pragma warning disable CA1031 // Do not catch general exception types
-			catch (Exception ex)
-			{
-				toolStripStatusLabelException.Text = "An unexpected error occurred";
-				Logger.Error( ex, "Error in {MethodName}", nameof( BtnStartHtml_Click ) );
-			}
-#pragma warning restore CA1031 // Do not catch general exception types
-			finally
-			{
-				btnStartXml.Enabled = true;
-				btnStartHtml.Enabled = true;
-				if (btnStartUi != null) btnStartUi.Enabled = true;
-				UseWaitCursor = false;
-			}
-		}
-
-		private async Task<PerformanceCount> PerformDirectoryBrowseHtmlAsync (string selecteDirectory, string saveFilePath)
-		{
-			Debug.Write( $"{nameof( PerformDirectoryBrowseHtmlAsync )} started at {DateTime.Now:T}" );
-			if (!string.IsNullOrWhiteSpace( selecteDirectory ))
-			{
-				Logger.Information( "{SelectedDirectory}", selecteDirectory );
-				HdlgDirectory directory = new( selecteDirectory, true, cbBrowseSubDirectory.Checked, Logger );
-				Stopwatch stopwatch = Stopwatch.StartNew( );
-				Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
-				await directory.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
-				Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.BrowseAsync ), directory.Name );
-				TimeSpan browseTime = stopwatch.Elapsed;
-				propertyBrowser.LogGetterStatistics( );
-
-				DirectoryBrowser db = new( Logger );
-				Logger.Debug( "Ready to start {MethodName}", nameof( DirectoryBrowser.SaveAsHTMLAsync ) );
-
-				await db.SaveAsHTMLAsync( saveFilePath, directory ).ConfigureAwait( false );
-
-				Logger.Debug( "{MethodName} done", nameof( DirectoryBrowser.SaveAsHTMLAsync ) );
-				stopwatch.Stop( );
-				TimeSpan saveTime = stopwatch.Elapsed - browseTime;
-
-				var result = new PerformanceCount( ) { BrowseTime = browseTime, SaveTime = saveTime, TotalTime = stopwatch.Elapsed };
-				Logger.Information( "Done at {EndTime:T}", DateTime.Now );
-				return result;
-			}
-			else
-			{
-				Logger.Information( "No {SelectedDirectoryParamName}", nameof( selecteDirectory ) );
-				return PerformanceCount.Empty;
-			}
+			await RunExportAsync(
+				saveFileDialogHtml,
+				".html",
+				(browser, directory, path) => browser.SaveAsHTMLAsync( path, directory ) ).ConfigureAwait( true );
 		}
 
 		private void SaveFileDialogHtml_FileOk (object sender, CancelEventArgs e)
 		{
 
+		}
+
+		private async void BtnStartJson_Click (object sender, EventArgs e)
+		{
+			await RunExportAsync(
+				saveFileDialogJson,
+				".json",
+				(browser, directory, path) => browser.SaveAsJSONAsync( path, directory ) ).ConfigureAwait( true );
 		}
 
 		private void BtnStartUi_Click (object sender, EventArgs e)

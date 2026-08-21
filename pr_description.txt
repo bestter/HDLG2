@@ -1,3 +1,0 @@
-💡 What: Optimized URL path encoding by replacing `string.Split` and `string.Join` with a single-pass `StringBuilder` loop.
-🎯 Why: `string.Split` and `string.Join` create numerous short-lived string array allocations and intermediate strings, which induces GC pressure and CPU overhead when called frequently during deep directory HTML generation.
-📊 Measured Improvement: Benchmarks show the `StringBuilder` approach runs ~2x faster (~78 million ticks vs ~156 million ticks for 100k iterations) and cuts string allocations by about 10-15%.
