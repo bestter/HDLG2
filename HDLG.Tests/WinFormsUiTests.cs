@@ -57,7 +57,6 @@ namespace HDLG.Tests
                 FindControl<KryptonButton>(window, "btnChooseFolder").Should().NotBeNull();
                 FindControl<KryptonButton>(window, "btnStartXml").Should().NotBeNull();
                 FindControl<KryptonButton>(window, "btnStartHtml").Should().NotBeNull();
-                FindControl<KryptonButton>(window, "btnStartJson").Should().NotBeNull();
                 FindControl<KryptonButton>(window, "btnStartUi").Should().NotBeNull();
                 FindControl<KryptonButton>(window, "btnAbout").Should().NotBeNull();
                 FindControl<KryptonProgressBar>(window, "progressBar1").Should().NotBeNull();

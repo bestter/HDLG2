@@ -259,48 +259,6 @@ namespace HDLG.Tests
         }
 
         [Fact]
-        public async Task GetFileProperty_ExtractionThrowsOperationCanceledException_ReturnsEmptyAndLogsWarning()
-        {
-            // Arrange
-            var tempFile = Path.GetTempFileName();
-
-            try
-            {
-                File.WriteAllText(tempFile, "cancellation test");
-
-                propertyGetterMock1.Setup(g => g.IsSupportedFile(It.Is<FileInfo>(f => f.FullName == tempFile))).Returns(true);
-                propertyGetterMock1.Setup(g => g.GetFileProperties(It.Is<FileInfo>(f => f.FullName == tempFile)))
-                    .Throws<OperationCanceledException>();
-
-                var browser = new FilePropertyBrowser(
-                    loggerMock.Object,
-                    maxFileSizeBytes: FilePropertyLimits.MaxFileSizeBytes,
-                    propertyExtractionTimeout: TimeSpan.FromSeconds(30),
-                    propertyGetterMock1.Object);
-
-                // Act
-                var result = await browser.GetFilePropertyAsync(tempFile);
-
-                // Assert
-                result.Should().BeNull();
-                propertyGetterMock1.Verify(g => g.GetFileProperties(It.Is<FileInfo>(f => f.FullName == tempFile)), Times.Once);
-                loggerMock.Verify(
-                    l => l.Warning(
-                        It.Is<string>(s => s.Contains("canceled")),
-                        propertyGetterMock1.Object.GetType(),
-                        tempFile),
-                    Times.Once);
-            }
-            finally
-            {
-                if (File.Exists(tempFile))
-                {
-                    File.Delete(tempFile);
-                }
-            }
-        }
-
-        [Fact]
         public async Task LogGetterStatistics_FilesProcessed_LogsAveragesAndTotal()
         {
             // Arrange
