@@ -87,6 +87,14 @@ namespace HDLG_winforms
 				if (_showError != null) _showError( "An unexpected argument error occurred while loading the directory." );
 				else MessageBox.Show( this, "An unexpected argument error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 			}
+#pragma warning disable CA1031 // Do not catch general exception types
+			catch (Exception ex)
+			{
+				logger.Error( ex, "Error loading root directory in BrowserForm" );
+				if (_showError != null) _showError( "An unexpected error occurred while loading the directory." );
+				else MessageBox.Show( this, "An unexpected error occurred while loading the directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+			}
+#pragma warning restore CA1031 // Do not catch general exception types
 		}
 
 		private class NodeInfo
@@ -227,6 +235,13 @@ namespace HDLG_winforms
 					logger.Error( ex, "Argument error loading directory: {Path}", info.Path );
 					AddErrorNode( e.Node, "Argument Error" );
 				}
+#pragma warning disable CA1031 // Do not catch general exception types
+				catch (Exception ex)
+				{
+					logger.Error( ex, "Unexpected error loading directory: {Path}", info.Path );
+					AddErrorNode( e.Node, "Unexpected Error" );
+				}
+#pragma warning restore CA1031 // Do not catch general exception types
 				finally
 				{
 					Cursor = Cursors.Default;
@@ -401,6 +416,16 @@ namespace HDLG_winforms
 					AddPropertyToListView( "Error", "An argument error occurred." );
 				}
 			}
+#pragma warning disable CA1031 // Do not catch general exception types
+			catch (Exception ex)
+			{
+				if (treeView1.SelectedNode == e.Node)
+				{
+					logger.Error( ex, "Unexpected error reading properties for file: {Path}", info.Path );
+					AddPropertyToListView( "Error", "An unexpected error occurred." );
+				}
+			}
+#pragma warning restore CA1031 // Do not catch general exception types
 			finally
 			{
 				if (treeView1.SelectedNode == e.Node)
@@ -467,6 +492,13 @@ namespace HDLG_winforms
 						logger.Error( ex, "Argument error opening file: {Path}", info.Path );
 						MessageBox.Show( this, "Could not open the file due to an invalid argument.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
 					}
+#pragma warning disable CA1031 // Do not catch general exception types
+					catch (Exception ex)
+					{
+						logger.Error( ex, "Unexpected error opening file: {Path}", info.Path );
+						MessageBox.Show( this, "An unexpected error occurred.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+					}
+#pragma warning restore CA1031 // Do not catch general exception types
 				}
 				else
 				{
