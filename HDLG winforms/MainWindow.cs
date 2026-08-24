@@ -304,6 +304,24 @@ namespace HDLG_winforms
 			{
 				MessageBox.Show( ex.Message, "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
 			}
+			catch (InvalidOperationException ex) when (ex.Message.Contains( "security reasons", StringComparison.OrdinalIgnoreCase ))
+			{
+				MessageBox.Show( ex.Message, "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
+			}
+			catch (FileNotFoundException)
+			{
+				MessageBox.Show( "The file could not be found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+			}
+			catch (System.ComponentModel.Win32Exception)
+			{
+				MessageBox.Show( "Could not open the file. It might not have an associated application.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+			}
+#pragma warning disable CA1031 // Do not catch general exception types
+			catch (Exception)
+			{
+				MessageBox.Show( "An unexpected error occurred.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+			}
+#pragma warning restore CA1031 // Do not catch general exception types
 		}
 
 		private static void StartWithExplorer (string argument)
@@ -326,11 +344,28 @@ namespace HDLG_winforms
 		/// <exception cref="InvalidOperationException">Thrown when the URI is not an absolute http/https URL</exception>
 		public static void OpenUrlSafe (Uri uri)
 		{
-			OpenUrlSafe( uri, StartWithExplorer, absoluteUri =>
+			try
 			{
-				DialogResult res = MessageBox.Show( $"You are about to open an external website:\n\n{absoluteUri}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
-				return res == DialogResult.Yes;
-			} );
+				OpenUrlSafe( uri, StartWithExplorer, absoluteUri =>
+				{
+					DialogResult res = MessageBox.Show( $"You are about to open an external website:\n\n{absoluteUri}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
+					return res == DialogResult.Yes;
+				} );
+			}
+			catch (InvalidOperationException ex) when (ex.Message.Contains( "security reasons", StringComparison.OrdinalIgnoreCase ))
+			{
+				MessageBox.Show( ex.Message, "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
+			}
+			catch (System.ComponentModel.Win32Exception)
+			{
+				MessageBox.Show( "Could not open the link. It might not have an associated application.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+			}
+#pragma warning disable CA1031 // Do not catch general exception types
+			catch (Exception)
+			{
+				MessageBox.Show( "An unexpected error occurred while opening the link.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+			}
+#pragma warning restore CA1031 // Do not catch general exception types
 		}
 
 		/// <summary>
