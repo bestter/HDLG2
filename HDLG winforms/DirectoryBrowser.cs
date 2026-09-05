@@ -713,7 +713,8 @@ namespace HDLG_winforms
 			writer.WriteStartObject( );
 			writer.WriteString( "Version", version );
 			writer.WriteString( "Directory", directory.Path );
-			writer.WriteString( "DateTime", DateTime.Now.ToString( "O", CultureInfo.InvariantCulture ) );
+			// Performance optimization: Avoid string allocations by letting Utf8JsonWriter format DateTime natively
+			writer.WriteString( "DateTime", DateTime.Now );
 			writer.WriteNumber( "DirectoriesCount", directory.TotalDirectories );
 			writer.WriteNumber( "FilesCount", directory.TotalFiles );
 			writer.WritePropertyName( "Root" );
@@ -731,7 +732,8 @@ namespace HDLG_winforms
 			writer.WriteStartObject( );
 			writer.WriteString( "Name", directory.Name );
 			writer.WriteString( "Path", directory.Path );
-			writer.WriteString( "CreationTime", directory.CreationTime.ToString( "O", CultureInfo.InvariantCulture ) );
+			// Performance optimization: Avoid string allocations by letting Utf8JsonWriter format DateTime natively
+			writer.WriteString( "CreationTime", directory.CreationTime );
 
 			writer.WritePropertyName( "Directories" );
 			writer.WriteStartArray( );
@@ -769,7 +771,8 @@ namespace HDLG_winforms
 			writer.WriteString( "Path", file.Path );
 			writer.WriteString( "Extension", file.Extension );
 			writer.WriteNumber( "Size", file.Size );
-			writer.WriteString( "CreationTime", file.CreationTime.ToString( "O", CultureInfo.InvariantCulture ) );
+			// Performance optimization: Avoid string allocations by letting Utf8JsonWriter format DateTime natively
+			writer.WriteString( "CreationTime", file.CreationTime );
 
 			writer.WritePropertyName( "ExtentedProperties" );
 			writer.WriteStartObject( );
@@ -812,7 +815,8 @@ namespace HDLG_winforms
 			switch (value)
 			{
 				case DateTime dtValue:
-					writer.WriteStringValue( dtValue.ToString( "O", CultureInfo.InvariantCulture ) );
+					// Performance optimization: Avoid string allocations by letting Utf8JsonWriter format DateTime natively
+					writer.WriteStringValue( dtValue );
 					break;
 				case bool boolValue:
 					writer.WriteBooleanValue( boolValue );
