@@ -182,3 +182,6 @@
 ## 2026-08-18 - Prevent interface boxing during JSON properties export
 **Learning:** Iterating over `IReadOnlyDictionary<string, IConvertible>` using `foreach` causes the runtime to box the underlying `Dictionary` struct enumerator into an `IEnumerator<T>` object on the heap, generating garbage collection pressure. This happens frequently when saving properties for thousands of files during a JSON export.
 **Action:** In C# hot loops over properties arrays exposed via interfaces (such as during file or node serialization), type-check and explicitly cast the collection to its concrete type `if (file.Properties is Dictionary<string, IConvertible> dictProperties)` to use the struct-based enumerator without boxing overhead.
+## 2026-08-25 - Avoid string allocations for DateTime formatting in Utf8JsonWriter
+**Learning:** Calling `DateTime.ToString("O", CultureInfo.InvariantCulture)` to format dates for JSON serialization allocates unnecessary string objects on the heap.
+**Action:** In .NET, when using `Utf8JsonWriter` to serialize `DateTime` objects, pass the `DateTime` instance directly to `WriteString` or `WriteStringValue`. The writer natively formats the date directly into the underlying UTF-8 buffer in ISO 8601-1 format, bypassing string memory allocations and reducing GC overhead.
