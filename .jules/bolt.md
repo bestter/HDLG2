@@ -185,3 +185,11 @@
 ## 2026-08-20 - Eliminate string allocations when writing JSON DateTimes
 **Learning:** Calling `DateTime.ToString("O")` to manually format dates before passing them to `Utf8JsonWriter.WriteString` or `WriteStringValue` allocates a new string on the heap for every date, causing GC pressure during large exports. `Utf8JsonWriter` natively supports serializing `DateTime` objects directly to the same ISO-8601 extended format using the underlying `Utf8Formatter` without any intermediate string allocations.
 **Action:** Always pass `DateTime` objects directly to `Utf8JsonWriter` methods instead of converting them to strings first when generating JSON in hot paths.
+
+## 2026-08-25 - Stopwatch Optimization
+**Learning:** In .NET 7+ applications, to avoid heap allocations when measuring elapsed execution time in hot paths, prefer using the static `Stopwatch.GetTimestamp()` and `Stopwatch.GetElapsedTime(startTimestamp)` methods instead of instantiating a new object with `Stopwatch.StartNew()`.
+**Action:** Replace `Stopwatch.StartNew()` with `Stopwatch.GetTimestamp()` and use `Stopwatch.GetElapsedTime(startTimestamp)` to measure elapsed time without allocations.
+
+## 2026-08-26 - Prevent O(N^2) path string processing during recursive tree generation
+**Learning:** When generating hierarchical outputs (like HTML nested folders or XML nested nodes) and encoding/sanitizing paths at every level, calling the encoding function on the full absolute path string at every level causes $O(N^2)$ path traversal string processing. The root parts of the path are redundantly re-encoded for every single subdirectory and file.
+**Action:** Always pre-calculate and pass the encoded/sanitized parent path string down through recursive calls. The child node can then avoid parsing the full absolute path by simply safely concatenating the processed parent path with its own processed local name, reducing path string manipulations to $O(N)$.
