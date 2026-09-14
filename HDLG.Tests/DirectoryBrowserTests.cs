@@ -380,7 +380,7 @@ namespace HDLG.Tests
                 camera.GetString().Should().Be("Nikon");
                 ext.TryGetProperty("Camera_x0020_Model", out _).Should().BeFalse();
                 ext.GetProperty("Width").GetInt32().Should().Be(1920);
-                ext.GetProperty("Taken").GetString().Should().Be(new DateTime(2020, 1, 2, 3, 4, 5, DateTimeKind.Unspecified).ToString("O", System.Globalization.CultureInfo.InvariantCulture));
+                ext.GetProperty("Taken").GetDateTime().Should().Be(new DateTime(2020, 1, 2, 3, 4, 5, DateTimeKind.Unspecified));
                 ext.TryGetProperty("   ", out _).Should().BeFalse();
 
                 foreach (JsonElement file in files.EnumerateArray())
