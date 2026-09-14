@@ -238,7 +238,7 @@ namespace HDLG_winforms
 			DirectoryBrowser db = new( Logger );
 			await save( db, directory, saveFilePath ).ConfigureAwait( false );
 
-			var totalTime = Stopwatch.GetElapsedTime( startTimestamp );
+			TimeSpan totalTime = Stopwatch.GetElapsedTime( startTimestamp );
 			var result = new PerformanceCount( )
 			{
 				BrowseTime = browseTime,

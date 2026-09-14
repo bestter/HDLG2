@@ -182,6 +182,7 @@
 ## 2026-08-18 - Prevent interface boxing during JSON properties export
 **Learning:** Iterating over `IReadOnlyDictionary<string, IConvertible>` using `foreach` causes the runtime to box the underlying `Dictionary` struct enumerator into an `IEnumerator<T>` object on the heap, generating garbage collection pressure. This happens frequently when saving properties for thousands of files during a JSON export.
 **Action:** In C# hot loops over properties arrays exposed via interfaces (such as during file or node serialization), type-check and explicitly cast the collection to its concrete type `if (file.Properties is Dictionary<string, IConvertible> dictProperties)` to use the struct-based enumerator without boxing overhead.
-## 2023-10-27 - Stopwatch Optimization
+
+## 2026-08-25 - Stopwatch Optimization
 **Learning:** In .NET 7+ applications, to avoid heap allocations when measuring elapsed execution time in hot paths, prefer using the static `Stopwatch.GetTimestamp()` and `Stopwatch.GetElapsedTime(startTimestamp)` methods instead of instantiating a new object with `Stopwatch.StartNew()`.
 **Action:** Replace `Stopwatch.StartNew()` with `Stopwatch.GetTimestamp()` and use `Stopwatch.GetElapsedTime(startTimestamp)` to measure elapsed time without allocations.
