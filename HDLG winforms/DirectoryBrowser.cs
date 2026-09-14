@@ -546,10 +546,7 @@ namespace HDLG_winforms
 						}
 						else
 						{
-							// Note: AsSpan cannot be directly used with Uri.EscapeDataString in this framework version without allocating a string first anyway, but suppressing CA1846 by adding a #pragma or we can just leave it since it's just a warning. Let's fix the warning anyway to be clean.
-#pragma warning disable CA1846
-							sb.Append(Uri.EscapeDataString(path.Substring(startIndex, i - startIndex)));
-#pragma warning restore CA1846
+							sb.Append(Uri.EscapeDataString(path.AsSpan(startIndex, i - startIndex)));
 						}
 					}
 
