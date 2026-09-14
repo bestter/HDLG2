@@ -2,7 +2,7 @@
 
 Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
-**Version** : 1.5.0.0  
+**Version** : 1.5.1.0  
 **Dernière mise à jour** : 14 septembre 2026 — Ajout des consignes pour agents tiers sur les pull requests créées par Google Labs Jules et précision sur les signatures d'IA.
 **Propriétaire** : Martin Labelle (@bestter)
 
