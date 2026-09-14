@@ -2,7 +2,7 @@
 
 Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
-**Version** : 1.5.0.0  
+**Version** : 1.5.1.0  
 **Dernière mise à jour** : 14 septembre 2026 — Ajout des consignes pour agents tiers sur les pull requests créées par Google Labs Jules et précision sur les signatures d'IA.
 **Propriétaire** : Martin Labelle (@bestter)
 
@@ -10,26 +10,25 @@ Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
 ## Golden Rules – Règles Absolues (Ne jamais transgresser)
 
-1. **Ne modifie jamais les fichiers AGENTS.md, ANTIGRAVITY.md et .editorconfig sans autorisation explicite**  
-   Ces fichiers sont la source de vérité pour l'agent IA.  
-   **Toute modification nécessite une autorisation claire et explicite du propriétaire du projet** (exemple : « Tu peux réécrire AGENTS.md » ou « Mets à jour la section X »). Sans cette autorisation, tu n'y touches pas.
+1. **Ne modifie jamais les fichiers de gouvernance (`AGENTS.md`, `.editorconfig`, `.github/copilot-instructions.md`) sans autorisation explicite**  
+   Ces fichiers sont la source de vérité absolue pour tout agent IA. Même pour corriger une faute, mettre à jour la documentation ou réorganiser une section, **toute modification nécessite une autorisation claire et explicite du propriétaire du projet** (exemple : « Tu peux réécrire AGENTS.md » ou « Mets à jour la section X »). Sans cette autorisation expresse, tu n'y touches sous aucun prétexte.
 
-2. **Minimalisme extrême**  
-   Priorise toujours un code fonctionnel, durable et facilement maintenable.  
-   **Aucune nouvelle dépendance** (NuGet ou autre) ne doit être ajoutée sans validation explicite, même pour des utilitaires « petits ».
+2. **Minimalisme extrême (dépendances et architecture)**  
+   Priorise toujours un code simple, lisible, fonctionnel et durable en t'appuyant uniquement sur les fonctionnalités natives de .NET 10 et les bibliothèques déjà installées. **Aucune nouvelle dépendance** (package NuGet ou bibliothèque externe) ne doit être ajoutée sans validation explicite du propriétaire, même pour des utilitaires « petits ». Évite toute sur-ingénierie ou couche d'abstraction non justifiée.
 
 3. **Demande avant d'improviser**  
-   Si une fonctionnalité, un pattern ou une décision d'architecture n'est pas clairement documenté dans `AGENTS.md` ou `ANTIGRAVITY.md` → **pose la question** au lieu de deviner.
+   Si une exigence, un motif de conception (pattern), un comportement d'interface ou une décision d'architecture n'est pas clairement documenté dans `AGENTS.md`, ou en cas d'ambiguïté technique → **arrête-toi et pose la question** au propriétaire au lieu de faire des suppositions.
 
-4. **Respecte .editorconfig + langue dans le code**  
-   Avant de générer ou de modifier du code, analyse et respecte **impérativement** les règles des fichiers `.editorconfig` (racine **et** `HDLG winforms\.editorconfig`).  
-   Tous les commentaires de code, messages de commit et documentation technique doivent être rédigés **en anglais**, à l'exception des fichiers `AGENTS.md` et `ANTIGRAVITY.md` qui doivent rester en français.
+4. **Respect strict de l'indentation (.editorconfig) et répartition linguistique**  
+   - **Indentation et style** : Respecte rigoureusement l'indentation propre à chaque projet (`HDLG winforms` en **tabulations**, `HDLG file property`, `HDLG.Tests` et `Benchmark` en **4 espaces** ; tous en fins de ligne **CRLF**).  
+   - **Langue dans le dépôt** : L'intégralité du code source C#, des commentaires de code, des messages de commit Git, des titres/descriptions de PR et de la documentation technique doit être rédigée **strictement en anglais** (à l'exception de `AGENTS.md` qui demeure en français).  
+   - **Langue d'échange avec l'utilisateur** : Toutes les communications, explications et synthèses destinées au propriétaire se font **toujours en français québécois**.
 
-5. **Toute nouvelle fonctionnalité doit être accompagnée de tests**  
-   Chaque nouvelle fonctionnalité implémentée doit inclure des tests unitaires dans le projet `HDLG.Tests` qui valident son bon fonctionnement. **Aucune fonctionnalité ne sera considérée comme terminée sans ses tests.**
+5. **Toute nouvelle fonctionnalité doit être accompagnée de tests unitaires**  
+   Chaque nouvelle fonctionnalité implémentée doit inclure des tests unitaires automatisés dans le projet `HDLG.Tests` qui valident son bon fonctionnement (xUnit v3, FluentAssertions, Moq). Les tests UI de formulaires WinForms doivent obligatoirement s'exécuter sur thread STA (`RunSta`), simuler les dialogues sans bloquer l'UI et libérer leurs ressources temporaires (`IDisposable`). **Aucune fonctionnalité ne sera considérée comme terminée sans ses tests.**
 
-6. **Toute modification de fonctionnalité existante doit mettre à jour les tests**  
-   Lorsqu'une fonctionnalité existante est modifiée, les tests unitaires correspondants doivent être mis à jour pour refléter le nouveau comportement attendu. Les tests obsolètes ou cassés ne sont **jamais acceptables**.
+6. **Toute modification de code doit préserver l'intégrité des tests (100 % de réussite)**  
+   Lorsqu'une fonctionnalité ou un comportement existant est modifié, les tests unitaires correspondants doivent être mis à jour sans délai pour refléter le nouveau comportement attendu. `dotnet test HDLG.sln` doit toujours s'exécuter avec **0 échec**. Les tests désactivés arbitrairement, obsolètes ou cassés ne sont **jamais acceptables**.
 
 ---
 
@@ -37,12 +36,13 @@ Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
 Avant toute modification, suis toujours cet ordre :
 
-1. Lire intégralement `AGENTS.md` (et `ANTIGRAVITY.md` si présent).
-2. Analyser le besoin et **imaginer le design** (surtout pour l'UI).
-3. Implémenter **uniquement** selon les règles définies dans ce document.
-4. Exécuter `dotnet build HDLG.sln` et obtenir **0 erreur, 0 warning** de build.
-5. Exécuter `dotnet test HDLG.sln` et obtenir **0 échec** de test.
-6. Si le moindre doute existe sur l'architecture, le design ou une décision non documentée → **poser la question immédiatement**.
+1. Lire intégralement `AGENTS.md`.
+2. Vérifier la branche Git active (`git branch --show-current`) et s'assurer de ne jamais être directement sur `main` ou `master`.
+3. Analyser le besoin et **imaginer le design** (surtout pour l'UI).
+4. Implémenter **uniquement** selon les règles définies dans ce document.
+5. Exécuter `dotnet build HDLG.sln` et obtenir **0 erreur, 0 warning** de build.
+6. Exécuter `dotnet test HDLG.sln` et obtenir **0 échec** de test (100 % de réussite).
+7. Si le moindre doute existe sur l'architecture, le design ou une décision non documentée → **poser la question immédiatement**.
 
 ---
 
@@ -75,15 +75,16 @@ La solution `HDLG.sln` contient **quatre projets** :
 | **`BrowserForm.cs`** | Formulaire de navigation arborescente (`KryptonTreeView`) avec chargement paresseux (lazy loading) des répertoires/fichiers. Affiche les propriétés d'un fichier sélectionné dans un `KryptonListView`. |
 | **`BrowserForm.Designer.cs`** | Layout WinForms de l'explorateur (contrôles Krypton, `KryptonSplitContainer`). |
 | **`DirectoryBrowser.cs`** | Cœur logique de l'export. Contient `SaveAsXMLAsync()` (génération XML via `XmlWriter`), `SaveAsHTMLAsync()` (génération HTML self-contained avec CSS embarqué ; polices système uniquement, sans Google Fonts externes pour offline/sécurité) et `SaveAsJSONAsync()` (enveloppe async + `FlushAsync` ; la marche synchrone de l'arbre est dans `WriteJsonDocument`, JSON compact via `Utf8JsonWriter`, modèle PascalCase aligné sur l'XML, arbre sous `Root`). |
-| **`Directory.cs`** | Modèle de données (legacy) représentant un répertoire. Implémente `IEquatable`, `IComparable`. Parcourt récursivement les sous-répertoires et fichiers. |
-| **`HdlgDirectory.cs`** | Modèle de données (version refactorisée) d'un répertoire. Même rôle que `Directory.cs` mais avec un code plus propre (utilisation de `IReadOnlyList`, `ArgumentNullException.ThrowIfNull`, etc.). |
-| **`File.cs`** | Modèle de données (legacy) d'un fichier. Contient les métadonnées (nom, chemin, extension, taille, date de création, propriétés étendues). |
-| **`HdlgFile.cs`** | Modèle de données (version refactorisée) d'un fichier. Version améliorée de `File.cs`. |
+| **`Directory.cs`** | Modèle de données legacy (`[Obsolete(..., true)]`). **Interdit d'usage**, conservé temporairement avant suppression. |
+| **`HdlgDirectory.cs`** | Modèle de données actif d'un répertoire. Utilise `IReadOnlyList`, `ArgumentNullException.ThrowIfNull`, etc. |
+| **`File.cs`** | Modèle de données legacy (`[Obsolete(..., true)]`). **Interdit d'usage**, conservé temporairement avant suppression. |
+| **`HdlgFile.cs`** | Modèle de données actif d'un fichier. Contient les métadonnées (nom, chemin, extension, taille, date de création, propriétés étendues). |
 | **`PerformanceCount.cs`** | Structure pour stocker les métriques de performance (temps de parcours, sauvegarde, total). |
 | **`credit.cs`** | Formulaire « About » (`KryptonForm`) affichant la version, la licence GPLv3, et le monogramme HDLG (`AppBranding.LoadLogoImage()`). Le lien GPL appelle `MainWindow.OpenUrlSafe(GplLicenseUri)`. |
+| **`credit.Designer.cs`** | Layout WinForms du formulaire « About » (contrôles Krypton). |
 | **`hdlg.css`** | Feuille de style CSS embarquée dans les fichiers HTML générés (polices système uniquement pour self-containment ; version obsolète avec Google Fonts existe à la racine mais n'est pas utilisée). |
 
-### Projet 2 : `HdlgFileProperty` (Bibliothèque d'extraction de propriétés)
+### Projet 2 : `HdlgFileProperty` (Dossier physique : `HDLG file property`)
 
 | Fichier | Rôle |
 |---|---|
@@ -114,6 +115,10 @@ La solution `HDLG.sln` contient **quatre projets** :
 | **`PropertyGetterTests.cs`** | Tests des implémentations `IFilePropertyGetter` : `ImagePropertyGetter`, `Mp3PropertyGetter`, `PdfPropertyGetter`. Vérifie `AddLogger()`, la validation null, `IsSupportedFile()` via `[Theory]`/`[InlineData]`, et le rejet des images trop volumineuses. |
 | **`WordPropertyGetterTests.cs`** | Tests dédiés de `WordPropertyGetter` : extraction des propriétés, gestion des fichiers invalides/manquants, et journalisation Serilog. |
 | **`ExcelPropertyGetterTests.cs`** | Tests dédiés de `ExcelPropertyGetter` : extraction des propriétés, gestion des fichiers invalides/manquants, et journalisation Serilog. |
+| **`ExcelSetup.cs`** | Utilitaire de génération de classeurs Excel de test pour `ExcelPropertyGetterTests`. |
+| **`ImageSetup.cs`** | Utilitaire de génération d'images de test pour `PropertyGetterTests`. |
+| **`WordSetup.cs`** | Utilitaire de génération de documents Word de test pour `WordPropertyGetterTests`. |
+| **`WordPropertyGetterTestSetup.cs`** | Configuration et fixtures communes pour les tests de `WordPropertyGetter`. |
 | **`FilePropertyGetterStatisticTests.cs`** | Tests de `FilePropertyGetterStatistic` : validation des statistiques d'exécution d'un getter (temps écoulé, nombre de fichiers traités). |
 | **`HdlgFileTests.cs`** | Tests de `HdlgFile` : validation de la construction, propriétés, calculs de taille et extension. |
 | **`PerformanceCountTests.cs`** | Tests de `PerformanceCount.Empty` (TimeSpans à `MinValue`). |
@@ -125,6 +130,7 @@ La solution `HDLG.sln` contient **quatre projets** :
 | **`AppLogoRendererTests.cs`** | Tests de chargement des assets logo/icône empaquetés. |
 | **`WinFormsUiTestCollection.cs`** | Collection xUnit sérialisée pour éviter les conflits GDI+ entre tests WinForms. |
 | **`WinFormsUiTests.cs`** | Tests UI structurels (thread STA) : instanciation des formulaires et présence des contrôles Krypton clés (`MainWindow` dont `btnStartJson`, `BrowserForm`, `Credit`). |
+| **Fixtures binaires** | Fichiers de test embarqués copiés dans le dossier de sortie (`test.mp3`, `test.pdf`, `test.xlsx`, etc.). |
 
 ---
 
@@ -189,6 +195,10 @@ Pour toute modification de l'interface utilisateur :
 
 7. **Branding** : Monogramme HDLG original (Concept C, grille 2×2 sans lignes visibles). Wordmark via `hdlg-logo.svg` (About + HTML) ; icône Windows via `hdlg-app-icon.svg` (optimisée 16–48 px). Régénérer PNG/ICO avec `scripts/GenerateAppLogoAssets.ps1` (Inkscape requis). Ne pas réutiliser d'assets Flaticon.
 
+8. **Gestion des exceptions UI (UI Exception Shielding)** : Les méthodes événementielles WinForms (particulièrement asynchrones ou déclenchées par l'utilisateur) doivent systématiquement intercepter les exceptions I/O et générales (`UnauthorizedAccessException`, `IOException`, `SecurityException`, `Exception`), consigner l'incident dans Serilog (`logger.Error` / `logger.Warning`), et présenter un message clair et non bloquant à l'utilisateur (`_showError` ou `MessageBox.Show`) sans provoquer le crash du thread d'interface.
+
+9. **Régénération des assets graphiques** : Lors de toute modification d'un fichier source SVG dans `HDLG winforms/Assets/` (`hdlg-logo.svg`, `hdlg-app-icon.svg`), exécuter obligatoirement le script PowerShell `scripts/GenerateAppLogoAssets.ps1` (nécessite Inkscape) pour régénérer `hdlg-logo.png` et `hdlg-icon.ico`.
+
 ---
 
 ## ⚙️ Fonctionnalités Clés Implémentées
@@ -210,22 +220,45 @@ Pour toute modification de l'interface utilisateur :
 
 ## 🛠️ Directives de Développement (Pour les agents)
 
-- **Architecture** : La solution suit un modèle à deux couches : l'application WinForms (`HDLG winforms`) qui gère l'UI et l'orchestration, et la bibliothèque (`HdlgFileProperty`) qui gère l'extraction de propriétés. Cette séparation doit être maintenue. Le projet `Benchmark` mesure uniquement `BrowseAsync` ; il ne doit pas devenir un troisième cœur métier.
+- **Architecture** : La solution suit un modèle à deux couches : l'application WinForms (`HDLG winforms`) qui gère l'UI et l'orchestration, et la bibliothèque (`HdlgFileProperty`, dossier `HDLG file property`) qui gère l'extraction de propriétés. Cette séparation doit être maintenue. Le projet `Benchmark` mesure uniquement `BrowseAsync` ; il ne doit pas devenir un troisième cœur métier.
 - **Pattern Strategy** : L'extraction de propriétés utilise le pattern Strategy via l'interface `IFilePropertyGetter`. Pour ajouter le support d'un nouveau type de fichier, créer une nouvelle implémentation de cette interface dans le projet `HdlgFileProperty` et l'enregistrer dans le DI de `Program.cs`.
-- **Modèles en doublon** : Il existe actuellement deux versions de modèles (`Directory.cs`/`File.cs` et `HdlgDirectory.cs`/`HdlgFile.cs`). Les versions `Hdlg*` sont la version refactorisée et doivent être privilégiées pour tout nouveau développement.
+- **Modèles de données (interdiction stricte du legacy)** : Les anciennes classes `Directory.cs` et `File.cs` sont marquées `[Obsolete(..., true)]` (erreur bloquante de compilation). **Leur utilisation est formellement interdite**. Seules les versions refactorisées `HdlgDirectory` et `HdlgFile` doivent être utilisées dans l'ensemble de la solution.
+- **Sécurité et exécution de processus** :
+  - **Interdiction formelle** d'invoquer `Process.Start` directement avec `UseShellExecute = true` ou avec des arguments bruts non validés.
+  - Utiliser exclusivement les wrappers sécurisés de `MainWindow` : `MainWindow.OpenWithDefaultProgram(path)` (qui valide l'extension contre `SafeExtensions` et `DangerousExtensions`, vérifie l'absence de substitution TOCTOU avant/après dialogue et exige une confirmation explicite) et `MainWindow.OpenUrlSafe(uri)` (restreint strictement aux schémas `http`/`https` avec confirmation).
+  - Dans l'arborescence (`BrowserForm`), valider systématiquement l'appartenance des chemins au répertoire racine (`IsPathWithinRoot`) pour bloquer toute traversée de répertoires (*path traversal*).
+  - Respecter impérativement les constantes de protection anti-DoS dans `FilePropertyLimits.cs` (taille max 100 Mo, timeout de 30 s par getter, dimensions image max 32 768 px).
+- **Architecture des tests unitaires (`HDLG.Tests`)** :
+  - Tout test instanciant ou manipulant des formulaires WinForms (`BrowserForm`, `MainWindow`, `Credit`) doit obligatoirement être rattaché à la collection sérialisée `[Collection(nameof(WinFormsUiTestCollection))]` et exécuté sur un thread STA via le helper `RunSta()`.
+  - Ne jamais afficher de boîte de dialogue modale réelle (`MessageBox.Show`, `FolderBrowserDialog.ShowDialog`) dans les tests : injecter systématiquement les délégués ou hooks prévus (`_showError`, `processStarter`, `promptUser`, `_getFileSystemInfosHook`).
+  - Nettoyer systématiquement les fichiers et répertoires temporaires créés lors des tests via le patron `IDisposable`.
+  - Aucun test unitaire n'est requis pour les modifications touchant exclusivement la documentation ou les fichiers de configuration.
 - **Logging** : Utiliser exclusivement Serilog via l'injection du `Logger`. Ne pas créer de nouvelles instances de logger en dehors de `Program.cs`.
-- **Build** : Le projet se compile via `dotnet build HDLG.sln`. Un fichier `build.bat` est fourni à la racine pour simplifier la commande.
+- **Build** : Le projet se compile via `dotnet build HDLG.sln`. Un fichier `build.bat` est fourni à la racine pour simplifier la commande. Exigence : **0 erreur, 0 avertissement**.
 - **CI/CD** : GitHub Actions (`.github/workflows/dotnet-desktop.yml`) exécute le build (via msbuild) sur push/PR vers `main` en configurations Debug et Release (tests commentés dans le workflow). Dependabot est activé pour les mises à jour NuGet (pas d'écosystème GitHub Actions configuré dans dependabot.yml).
-- **Tests** : Le projet `HDLG.Tests` (xUnit) contient les tests unitaires de la solution. Les tests utilisent **FluentAssertions** pour des assertions expressives et **Moq** pour le mocking d'interfaces. Pour exécuter les tests : `dotnet test HDLG.sln`. Tout nouveau code doit être accompagné de tests unitaires correspondants dans ce projet.
-- **Encodage des fichiers** : Les fichiers `.cs` de `HDLG winforms` et `HdlgFileProperty` utilisent des **tabulations** (`indent_style = tab`, `tab_width = 4`) et les fins de ligne **CRLF**. `HDLG.Tests` utilise actuellement une indentation de **4 espaces** — **respecte le fichier que tu modifies**.
+- **Tests** : Le projet `HDLG.Tests` (xUnit v3) contient les tests unitaires de la solution. Les tests utilisent **FluentAssertions** pour des assertions expressives et **Moq** pour le mocking d'interfaces. Pour exécuter les tests : `dotnet test HDLG.sln`. Tout nouveau code doit être accompagné de tests unitaires correspondants dans ce projet. Exigence : **100 % de réussite (0 échec)**.
+- **Encodage et indentation des fichiers** :
+  - `HDLG winforms` : **Tabulations** (`indent_style = tab`, `tab_width = 4`) et fins de ligne **CRLF**.
+  - `HDLG file property` (dossier `HDLG file property`) : **4 espaces** (`indent_size = 4`) et fins de ligne **CRLF**.
+  - `HDLG.Tests` : **4 espaces** (`indent_size = 4`) et fins de ligne **CRLF**.
+  - `Benchmark` : **4 espaces** (`indent_size = 4`) et fins de ligne **CRLF**.
+  - Respecte scrupuleusement le fichier que tu modifies.
 
 ## 🐙 Conventions Git et Historique
 
-- **Gestion des branches (Branching) :** Ne pousse **jamais** de code directement sur les branches principales (`main` ou `master`). Crée toujours une branche de travail distincte, courte et descriptive (ex: `feature/nom-de-la-fonctionnalite`, `bugfix/nom-du-bug`, `refactor/nom-du-composant`).
+- **Gestion des branches (Branching) :** Avant tout travail, exécute `git branch --show-current` et `git status`. Ne pousse **jamais** de code directement sur les branches principales (`main` ou `master`). Crée toujours une branche de travail distincte, courte et descriptive (ex: `feature/nom-de-la-fonctionnalite`, `bugfix/nom-du-bug`, `refactor/nom-du-composant`).
 - **Pull Requests (PR) :** Tout changement doit obligatoirement passer par la création d'une Pull Request. Aucune fusion (merge) ne doit être effectuée sans une revue préalable.
 - **Commits atomiques :** Chaque commit doit représenter une unité de travail cohérente et complète. Évite les commits qui mélangent plusieurs changements non liés.
 - **Format des messages :** Utilise la spécification *Conventional Commits* (`feat:`, `fix:`, `refactor:`, `chore:`, etc.) pour structurer les titres de tes commits.
-- **Signature de l'IA :** Signe tes commits avec le nom de ton outil (ex: Antigravity, Vs Code, Claude Code, Codex, etc.) et le nom de ton modèle exact: (ex: Gemini 3.7 Flash, ChatGpt 6 Astra, etc.). Cette traçabilité est essentielle pour auditer avec précision le code produit par les différents agents locaux ou distants.
+- **Signature de l'IA (format standardisé) :** Signe tes commits avec un trailer standard dans le corps du message :
+  ```text
+  Generated-by: <ToolName> (<ModelName>)
+  ```
+  Exemples :
+  - `Generated-by: Antigravity (Gemini 3.8 Flash)`
+  - `Generated-by: Claude Code (Claude 3.7 Sonnet)`
+  - `Generated-by: GitHub Copilot (GPT-4o)`
+  Cette traçabilité est essentielle pour auditer avec précision le code produit par les différents agents locaux ou distants.
 - **Langue :** Conformément à la Règle Dorée #4, l'intégralité des messages de commit (titre et description) doit être rédigée **strictement en anglais**.
 
 
