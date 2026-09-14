@@ -225,23 +225,25 @@ namespace HDLG_winforms
 
 			Logger.Information( "{SelectedDirectory}", selectedDirectoryPath );
 			HdlgDirectory directory = new( selectedDirectoryPath, true, browseSubDirectory, Logger );
-			Stopwatch stopwatch = Stopwatch.StartNew( );
+			// Performance optimization: Use Stopwatch.GetTimestamp() instead of Stopwatch.StartNew()
+			// to avoid heap allocation of a new Stopwatch object when measuring execution time.
+			long startTimestamp = Stopwatch.GetTimestamp( );
 
 			Logger.Debug( "Ready to start {MethodName}", nameof( directory.BrowseAsync ) );
 			await directory.BrowseAsync( propertyBrowser ).ConfigureAwait( false );
 			Logger.Debug( "{MethodName} of directory {DirectoryName} done", nameof( directory.BrowseAsync ), directory.Name );
-			TimeSpan browseTime = stopwatch.Elapsed;
+			TimeSpan browseTime = Stopwatch.GetElapsedTime( startTimestamp );
 			propertyBrowser.LogGetterStatistics( );
 
 			DirectoryBrowser db = new( Logger );
 			await save( db, directory, saveFilePath ).ConfigureAwait( false );
-			stopwatch.Stop( );
 
+			TimeSpan totalTime = Stopwatch.GetElapsedTime( startTimestamp );
 			var result = new PerformanceCount( )
 			{
 				BrowseTime = browseTime,
-				SaveTime = stopwatch.Elapsed - browseTime,
-				TotalTime = stopwatch.Elapsed
+				SaveTime = totalTime - browseTime,
+				TotalTime = totalTime
 			};
 			Logger.Information( "Done at {EndTime:T}", DateTime.Now );
 			return result;
