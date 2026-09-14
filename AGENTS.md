@@ -10,7 +10,7 @@ Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
 ## Golden Rules – Règles Absolues (Ne jamais transgresser)
 
-1. **Ne modifie jamais les fichiers AGENTS.md, ANTIGRAVITY.md et .editorconfig sans autorisation explicite**  
+1. **Ne modifie jamais les fichiers AGENTS.md et .editorconfig sans autorisation explicite**  
    Ces fichiers sont la source de vérité pour l'agent IA.  
    **Toute modification nécessite une autorisation claire et explicite du propriétaire du projet** (exemple : « Tu peux réécrire AGENTS.md » ou « Mets à jour la section X »). Sans cette autorisation, tu n'y touches pas.
 
@@ -19,11 +19,11 @@ Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
    **Aucune nouvelle dépendance** (NuGet ou autre) ne doit être ajoutée sans validation explicite, même pour des utilitaires « petits ».
 
 3. **Demande avant d'improviser**  
-   Si une fonctionnalité, un pattern ou une décision d'architecture n'est pas clairement documenté dans `AGENTS.md` ou `ANTIGRAVITY.md` → **pose la question** au lieu de deviner.
+   Si une fonctionnalité, un pattern ou une décision d'architecture n'est pas clairement documenté dans `AGENTS.md` → **pose la question** au lieu de deviner.
 
 4. **Respecte .editorconfig + langue dans le code**  
    Avant de générer ou de modifier du code, analyse et respecte **impérativement** les règles des fichiers `.editorconfig` (racine **et** `HDLG winforms\.editorconfig`).  
-   Tous les commentaires de code, messages de commit et documentation technique doivent être rédigés **en anglais**, à l'exception des fichiers `AGENTS.md` et `ANTIGRAVITY.md` qui doivent rester en français.
+   Tous les commentaires de code, messages de commit et documentation technique doivent être rédigés **en anglais**, à l'exception du fichier `AGENTS.md` qui doit rester en français.
 
 5. **Toute nouvelle fonctionnalité doit être accompagnée de tests**  
    Chaque nouvelle fonctionnalité implémentée doit inclure des tests unitaires dans le projet `HDLG.Tests` qui valident son bon fonctionnement. **Aucune fonctionnalité ne sera considérée comme terminée sans ses tests.**
@@ -37,7 +37,7 @@ Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
 Avant toute modification, suis toujours cet ordre :
 
-1. Lire intégralement `AGENTS.md` (et `ANTIGRAVITY.md` si présent).
+1. Lire intégralement `AGENTS.md`.
 2. Analyser le besoin et **imaginer le design** (surtout pour l'UI).
 3. Implémenter **uniquement** selon les règles définies dans ce document.
 4. Exécuter `dotnet build HDLG.sln` et obtenir **0 erreur, 0 warning** de build.
