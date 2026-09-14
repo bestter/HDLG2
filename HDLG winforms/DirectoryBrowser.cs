@@ -475,7 +475,7 @@ namespace HDLG_winforms
 			{
 				dirPath = parentHtmlEncodedPath.EndsWith( '\\' ) || parentHtmlEncodedPath.EndsWith( '/' )
 					? parentHtmlEncodedPath + dirName
-					: parentHtmlEncodedPath + "\\" + dirName;
+					: parentHtmlEncodedPath + Path.DirectorySeparatorChar + dirName;
 			}
 
 			await writer.WriteLineAsync( $"{spacer}<li><a href=\"#{dirPath}\" title=\"{dirName}\">{dirName}</a></li>" ).ConfigureAwait( false );
@@ -513,7 +513,7 @@ namespace HDLG_winforms
 			{
 				encodedPath = parentHtmlEncodedPath.EndsWith( '\\' ) || parentHtmlEncodedPath.EndsWith( '/' )
 					? parentHtmlEncodedPath + name
-					: parentHtmlEncodedPath + "\\" + name;
+					: parentHtmlEncodedPath + Path.DirectorySeparatorChar + name;
 			}
 
 			// Performance optimization: When recursing directories, do not redundantly parse and encode the full absolute path.
