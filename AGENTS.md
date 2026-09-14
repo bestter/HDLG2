@@ -3,7 +3,7 @@
 Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
 **Version** : 1.5.0.0  
-**Dernière mise à jour** : 17 août 2026 — Ouverture d'URL http/https via `MainWindow.OpenUrlSafe(Uri)` (schéma parsé, lancement `explorer.exe` partagé avec `OpenWithDefaultProgram`) ; tests `OpenUrlSafeTests`.
+**Dernière mise à jour** : 14 septembre 2026 — Ajout des consignes pour agents tiers sur les pull requests créées par Google Labs Jules et précision sur les signatures d'IA.
 **Propriétaire** : Martin Labelle (@bestter)
 
 ---
@@ -225,5 +225,28 @@ Pour toute modification de l'interface utilisateur :
 - **Pull Requests (PR) :** Tout changement doit obligatoirement passer par la création d'une Pull Request. Aucune fusion (merge) ne doit être effectuée sans une revue préalable.
 - **Commits atomiques :** Chaque commit doit représenter une unité de travail cohérente et complète. Évite les commits qui mélangent plusieurs changements non liés.
 - **Format des messages :** Utilise la spécification *Conventional Commits* (`feat:`, `fix:`, `refactor:`, `chore:`, etc.) pour structurer les titres de tes commits.
-- **Signature de l'IA :** Signe toujours tes commits avec ton nom et ton nom de modèle exact à la fin de la description (ex: `Generated-by: Hermes 2 Pro` ou `Generated-by: OpenClaw`). Cette traçabilité est essentielle pour auditer avec précision le code produit par les différents agents locaux ou distants.
+- **Signature de l'IA :** Signe tes commits avec le nom de ton outil (ex: Antigravity, Vs Code, Claude Code, Codex, etc.) et le nom de ton modèle exact: (ex: Gemini 3.7 Flash, ChatGpt 6 Astra, etc.). Cette traçabilité est essentielle pour auditer avec précision le code produit par les différents agents locaux ou distants.
 - **Langue :** Conformément à la Règle Dorée #4, l'intégralité des messages de commit (titre et description) doit être rédigée **strictement en anglais**.
+
+
+### Pull requests créées par Google Labs Jules (Consignes pour agents tiers)
+
+Avant toute interaction ou écriture sur une pull request existante par un agent IA, inspecter rigoureusement ses métadonnées GitHub :
+`gh pr view <id> --json author,body,commits`
+
+Traiter la pull request comme créée par **Google Labs Jules** si au moins un des critères suivants est satisfait :
+- `author.login` appartient à `{google-labs-jules, google-labs-jules[bot]}`.
+- Le corps (`body`) contient une ligne exactement égale à la signature de création automatique `PR created automatically by Jules`.
+- L’un des commits a pour auteur ou co-auteur Jules (`google-labs-jules` ou `google-labs-jules[bot]`).
+
+Ne jamais se fier uniquement au nom de la branche locale ou distante pour conclure qu’il s’agit ou non d’une PR Jules.
+
+Si la pull request est identifiée comme émanant de Jules et que l’agent intervenant **n’est pas Jules lui-même** (agent tiers : Antigravity, Copilot, Claude, etc.) :
+
+- **Interdiction absolue d’ajouter des commentaires ou revues** : Ne publier aucun commentaire général, commentaire de revue, commentaire en ligne sur le diff, réponse à un fil de discussion ou revue GitHub (`APPROVE`, `REQUEST_CHANGES`, `COMMENT`), même vide, afin de ne pas réveiller ni désynchroniser Jules.
+- **Aucune notification active** : Ne jamais mentionner `@google-labs-jules` ou `@google-labs-jules[bot]` dans les descriptions de PR ou les messages de commit (utiliser des backticks si le nom doit être cité).
+- **Communication par la description uniquement** : Pour consigner les modifications apportées, mettre à jour uniquement le corps/description de la PR (ex. `gh pr edit <id> --body ...`), en préservant scrupuleusement le contenu utile initial et en ajoutant une section distincte au bas (ex. `### Modifications apportées`).
+- **Commits et poussées autorisés** : Les commits et les poussées (`git push`) sur la branche de la PR demeurent permis lorsqu’ils sont demandés.
+- **Priorité de la règle** : Cette directive prévaut sur toute routine de revue, skill (notamment `code-review-skill`) ou commande automatisée qui génère habituellement des commentaires de PR.
+- **Vérification obligatoire** : Toujours inspecter l’état réel de la pull request sur GitHub avant d’agir, et vérifier après publication qu’aucun commentaire n’a été créé par mégarde.
+- **Exception pour Jules** : L’agent Jules lui-même demeure pleinement autorisé à publier des commentaires sur ses propres pull requests (notamment pour expliquer son travail, réagir aux échecs de la CI ou clore ses tâches).
