@@ -49,6 +49,35 @@ namespace HDLG.Tests
         }
 
         [Fact]
+        public async System.Threading.Tasks.Task IncrementFile_ShouldIncreaseTotalFilesConcurrently()
+        {
+            // Arrange
+            var mockGetter = new Mock<IFilePropertyGetter>();
+            var statistic = new FilePropertyGetterStatistic(mockGetter.Object);
+            int numberOfTasks = 100;
+            int incrementsPerTask = 1000;
+
+            // Act
+            var tasks = new System.Collections.Generic.List<System.Threading.Tasks.Task>();
+            for (int i = 0; i < numberOfTasks; i++)
+            {
+                tasks.Add(System.Threading.Tasks.Task.Run(() =>
+                {
+                    for (int j = 0; j < incrementsPerTask; j++)
+                    {
+                        statistic.IncrementFile();
+                    }
+                }));
+            }
+
+            await System.Threading.Tasks.Task.WhenAll(tasks);
+
+            // Assert
+            statistic.TotalFiles.Should().Be(numberOfTasks * incrementsPerTask);
+        }
+
+        [Fact]
+
         public void StartAndStopTimer_ShouldRecordExecutionTime()
         {
             // Arrange
