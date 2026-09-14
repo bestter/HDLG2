@@ -6,24 +6,27 @@ All AI agents and assistants must comply with [`AGENTS.md`](../AGENTS.md), which
 
 ## Golden Rules
 
-1. **Do not modify `AGENTS.md`, `ANTIGRAVITY.md`, or `.editorconfig`** without explicit authorization from the repository owner.
+1. **Do not modify `AGENTS.md`, `.editorconfig`, or `.github/copilot-instructions.md`** without explicit authorization from the repository owner.
 2. **Extreme minimalism**: Never add new NuGet packages or dependencies without explicit owner approval.
 3. **Ask before improvising**: If any design, architecture pattern, or requirement is unclear, ask before assuming.
 4. **Language & Code style**:
-   - All code comments, commit messages, and technical documentation must be written **strictly in English** (except `AGENTS.md` and `ANTIGRAVITY.md` which remain in French).
-   - Respect `.editorconfig` rules (C# code in `HDLG winforms` and `HdlgFileProperty` uses tabs and CRLF; `HDLG.Tests` uses 4 spaces).
+   - All code comments, commit messages, PR descriptions, and technical documentation must be written **strictly in English** (except `AGENTS.md` which remains in French).
+   - Respect `.editorconfig` rules (tabs and CRLF for `HDLG winforms`; 4 spaces and CRLF for `HDLG file property`, `HDLG.Tests`, and `Benchmark`).
 5. **Testing**:
-   - Every new feature or modified behavior must have unit tests in `HDLG.Tests` (xUnit, FluentAssertions, Moq).
-   - UI tests must run on an STA thread.
+   - Every new feature or modified behavior must have unit tests in `HDLG.Tests` (xUnit v3, FluentAssertions, Moq).
+   - UI tests must run on an STA thread (`RunSta`) within `WinFormsUiTestCollection`.
+   - Never show modal dialogs in tests; mock/inject test delegates instead.
 6. **Build quality**:
    - `dotnet build HDLG.sln` must yield **0 errors, 0 warnings**.
    - `dotnet test HDLG.sln` must pass **100% of tests**.
 
 ## Git Conventions
 
-- Never commit directly to `main` or `master`.
+- Never commit directly to `main` or `master`. Always check `git branch --show-current` first.
 - Use Conventional Commits in English (`feat:`, `fix:`, `refactor:`, `chore:`, etc.).
-- Sign commits with tool and model name (e.g., `Generated-by: GitHub Copilot`).
+- Sign commits with a standard trailer in the commit body:
+  `Generated-by: <ToolName> (<ModelName>)`
+  (e.g., `Generated-by: GitHub Copilot (GPT-4o)`).
 
 ## Critical Rule: Google Labs Jules Pull Requests
 
