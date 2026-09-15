@@ -380,7 +380,7 @@ namespace HDLG.Tests
                 camera.GetString().Should().Be("Nikon");
                 ext.TryGetProperty("Camera_x0020_Model", out _).Should().BeFalse();
                 ext.GetProperty("Width").GetInt32().Should().Be(1920);
-                ext.GetProperty("Taken").GetString().Should().Be(new DateTime(2020, 1, 2, 3, 4, 5, DateTimeKind.Unspecified).ToString("O", System.Globalization.CultureInfo.InvariantCulture));
+                ext.GetProperty("Taken").GetDateTime().Should().Be(new DateTime(2020, 1, 2, 3, 4, 5, DateTimeKind.Unspecified));
                 ext.TryGetProperty("   ", out _).Should().BeFalse();
 
                 foreach (JsonElement file in files.EnumerateArray())
@@ -444,6 +444,52 @@ namespace HDLG.Tests
             child.GetProperty("Files").EnumerateArray()
                 .Select(f => f.GetProperty("Name").GetString())
                 .Should().Contain("nested.txt");
+        }
+
+        [Fact]
+        public async Task SaveAsXMLAsync_BrowsedTree_WritesAccurateNestedPaths()
+        {
+            var subDirPath = Path.Combine(baseDirectoryPath, "nestedChild");
+            System.IO.Directory.CreateDirectory(subDirPath);
+            var nestedFilePath = Path.Combine(subDirPath, "deepFile.txt");
+            await System.IO.File.WriteAllTextAsync(nestedFilePath, "deepContent");
+
+            var browser = new HdlgFileProperty.FilePropertyBrowser(loggerMock.Object);
+            var dir = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+            await dir.BrowseAsync(browser);
+
+            await directoryBrowser.SaveAsXMLAsync(tempXmlFilePath, dir);
+
+            var doc = XDocument.Load(tempXmlFilePath);
+            var dirs = doc.Descendants("Directory").ToList();
+            var childDir = dirs.FirstOrDefault(d => (string?)d.Element("Name") == "nestedChild");
+            childDir.Should().NotBeNull();
+            ((string?)childDir!.Element("Path")).Should().Be(subDirPath);
+
+            var files = doc.Descendants("File").ToList();
+            var childFile = files.FirstOrDefault(f => (string?)f.Element("Name") == "deepFile.txt");
+            childFile.Should().NotBeNull();
+            ((string?)childFile!.Element("Path")).Should().Be(nestedFilePath);
+        }
+
+        [Fact]
+        public async Task SaveAsHTMLAsync_BrowsedTree_WritesMatchingAnchorIds()
+        {
+            var subDirPath = Path.Combine(baseDirectoryPath, "htmlChild");
+            System.IO.Directory.CreateDirectory(subDirPath);
+            var nestedFilePath = Path.Combine(subDirPath, "childFile.txt");
+            await System.IO.File.WriteAllTextAsync(nestedFilePath, "htmlContent");
+
+            var browser = new HdlgFileProperty.FilePropertyBrowser(loggerMock.Object);
+            var dir = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+            await dir.BrowseAsync(browser);
+
+            await directoryBrowser.SaveAsHTMLAsync(tempHtmlFilePath, dir);
+
+            var htmlContent = await System.IO.File.ReadAllTextAsync(tempHtmlFilePath);
+            var encodedSubPath = WebUtility.HtmlEncode(subDirPath);
+            htmlContent.Should().Contain($"<a href=\"#{encodedSubPath}\"");
+            htmlContent.Should().Contain($"<details class=\"directory\" id=\"{encodedSubPath}\"");
         }
     }
 }
