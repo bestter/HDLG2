@@ -115,12 +115,26 @@ namespace HDLG_winforms
 		/// <param name="writer"></param>
 		/// <param name="directory"></param>
 		/// <returns></returns>
-		private async Task WriteXmlDirectoryAsync (XmlWriter writer, HdlgDirectory directory)
+		private async Task WriteXmlDirectoryAsync (XmlWriter writer, HdlgDirectory directory, string? parentSanitizedPath = null)
 		{
 			log.Debug( "In {Method} {Type} {Directory}", nameof( WriteXmlDirectoryAsync ), nameof( HdlgDirectory ), directory );
 			await writer.WriteStartElementAsync( null, "Directory", null ).ConfigureAwait( false );
-			await writer.WriteElementStringAsync( null, "Name", null, SanitizeXmlString( directory.Name ) ).ConfigureAwait( false );
-			await writer.WriteElementStringAsync( null, "Path", null, SanitizeXmlString( directory.Path ) ).ConfigureAwait( false );
+
+			string sanitizedName = SanitizeXmlString( directory.Name );
+			string sanitizedPath;
+			if (parentSanitizedPath == null)
+			{
+				sanitizedPath = SanitizeXmlString( directory.Path );
+			}
+			else
+			{
+				sanitizedPath = parentSanitizedPath.EndsWith( '\\' ) || parentSanitizedPath.EndsWith( '/' )
+					? parentSanitizedPath + sanitizedName
+					: parentSanitizedPath + Path.DirectorySeparatorChar + sanitizedName;
+			}
+
+			await writer.WriteElementStringAsync( null, "Name", null, sanitizedName ).ConfigureAwait( false );
+			await writer.WriteElementStringAsync( null, "Path", null, sanitizedPath ).ConfigureAwait( false );
 			await writer.WriteElementStringAsync( null, "CreationTime", null, directory.CreationTime.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
 			if (directory.Directories.Count > 0)
 			{
@@ -128,7 +142,7 @@ namespace HDLG_winforms
 				for (int i = 0; i < directory.Directories.Count; i++)
 				{
 					HdlgDirectory d = directory.Directories [i];
-					await WriteXmlDirectoryAsync( writer, d ).ConfigureAwait( false );
+					await WriteXmlDirectoryAsync( writer, d, sanitizedPath ).ConfigureAwait( false );
 				}
 				await writer.WriteEndElementAsync( ).ConfigureAwait( false );
 			}
@@ -139,7 +153,7 @@ namespace HDLG_winforms
 				for (int i = 0; i < directory.Files.Count; i++)
 				{
 					HdlgFile file = directory.Files [i];
-					await WriteXmlFileAsync( writer, file ).ConfigureAwait( false );
+					await WriteXmlFileAsync( writer, file, sanitizedPath ).ConfigureAwait( false );
 				}
 				await writer.WriteEndElementAsync( ).ConfigureAwait( false );
 			}
@@ -154,7 +168,7 @@ namespace HDLG_winforms
 		/// <param name="file">File that content the data</param>
 		/// <returns>A task</returns>
 		/// <exception cref="ArgumentNullException"></exception>
-		private async Task WriteXmlFileAsync (XmlWriter writer, HdlgFile file)
+		private async Task WriteXmlFileAsync (XmlWriter writer, HdlgFile file, string sanitizedDirPath)
 		{
 			if (writer is null)
 			{
@@ -165,8 +179,13 @@ namespace HDLG_winforms
 
 			await writer.WriteStartElementAsync( null, "File", null ).ConfigureAwait( false );
 
-			await writer.WriteElementStringAsync( null, "Name", null, SanitizeXmlString( file.Name ) ).ConfigureAwait( false );
-			await writer.WriteElementStringAsync( null, "Path", null, SanitizeXmlString( file.Path ) ).ConfigureAwait( false );
+			string sanitizedName = SanitizeXmlString( file.Name );
+			string sanitizedPath = sanitizedDirPath.EndsWith( '\\' ) || sanitizedDirPath.EndsWith( '/' )
+				? sanitizedDirPath + sanitizedName
+				: sanitizedDirPath + Path.DirectorySeparatorChar + sanitizedName;
+
+			await writer.WriteElementStringAsync( null, "Name", null, sanitizedName ).ConfigureAwait( false );
+			await writer.WriteElementStringAsync( null, "Path", null, sanitizedPath ).ConfigureAwait( false );
 			await writer.WriteElementStringAsync( null, "Extension", null, SanitizeXmlString( file.Extension ) ).ConfigureAwait( false );
 			await writer.WriteElementStringAsync( null, "Size", null, file.Size.ToString( CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
 			await writer.WriteElementStringAsync( null, "CreationTime", null, file.CreationTime.ToString( "O", CultureInfo.InvariantCulture ) ).ConfigureAwait( false );
@@ -430,23 +449,35 @@ namespace HDLG_winforms
 			await writer.WriteLineAsync( "</div>" ).ConfigureAwait( false );
 		}
 
-		private static async Task WriteDirectoriesListContainAsync (TextWriter writer, HdlgDirectory directory, int depth)
+		private static async Task WriteDirectoriesListContainAsync (TextWriter writer, HdlgDirectory directory, int depth, string? parentHtmlEncodedPath = null)
 		{
 			string spacer = depth < 20 ? Spacers [depth] : new string( ' ', depth );
 
 			await writer.WriteLineAsync( spacer + "<ul>" ).ConfigureAwait( false );
 
-			await WriteDirectoryListContainAsync( writer, directory, depth ).ConfigureAwait( false );
+			await WriteDirectoryListContainAsync( writer, directory, depth, parentHtmlEncodedPath ).ConfigureAwait( false );
 
 			await writer.WriteLineAsync( spacer + "</ul>" ).ConfigureAwait( false );
 		}
 
-		private static async Task WriteDirectoryListContainAsync (TextWriter writer, HdlgDirectory directory, int depth)
+		private static async Task WriteDirectoryListContainAsync (TextWriter writer, HdlgDirectory directory, int depth, string? parentHtmlEncodedPath = null)
 		{
 			string spacer = (depth + 1) < 20 ? Spacers [depth + 1] : new string( ' ', depth + 1 );
 			// Truncate long directory names with ellipsis + native title hover popup (per user choice: minimal native title + CSS, ~26ch, no JS).
 			string dirName = WebUtility.HtmlEncode( directory.Name );
-			string dirPath = WebUtility.HtmlEncode( directory.Path );
+
+			string dirPath;
+			if (parentHtmlEncodedPath == null)
+			{
+				dirPath = WebUtility.HtmlEncode( directory.Path );
+			}
+			else
+			{
+				dirPath = parentHtmlEncodedPath.EndsWith( '\\' ) || parentHtmlEncodedPath.EndsWith( '/' )
+					? parentHtmlEncodedPath + dirName
+					: parentHtmlEncodedPath + Path.DirectorySeparatorChar + dirName;
+			}
+
 			await writer.WriteLineAsync( $"{spacer}<li><a href=\"#{dirPath}\" title=\"{dirName}\">{dirName}</a></li>" ).ConfigureAwait( false );
 
 			if (directory.Directories.Count > 0)
@@ -455,7 +486,7 @@ namespace HDLG_winforms
 				for (int i = 0; i < directory.Directories.Count; i++)
 				{
 					HdlgDirectory d = directory.Directories [i];
-					await WriteDirectoriesListContainAsync( writer, d, inDepth ).ConfigureAwait( false );
+					await WriteDirectoriesListContainAsync( writer, d, inDepth, dirPath ).ConfigureAwait( false );
 				}
 
 			}
@@ -467,11 +498,23 @@ namespace HDLG_winforms
 		/// <param name="writer"></param>
 		/// <param name="directory"></param>
 		/// <returns></returns>
-		private async Task WritHtmlDirectoryAsync (TextWriter writer, HdlgDirectory directory, int depth, string? parentUrlEncodedPath = null)
+		private async Task WritHtmlDirectoryAsync (TextWriter writer, HdlgDirectory directory, int depth, string? parentUrlEncodedPath = null, string? parentHtmlEncodedPath = null)
 		{
 			log.Debug( "In {Method} {Type} {Directory}", nameof( WritHtmlDirectoryAsync ), nameof( HdlgDirectory ), directory );
 			string spacer = depth < 20 ? Spacers [depth] : new string( ' ', depth );
-			string encodedPath = WebUtility.HtmlEncode( directory.Path );
+
+			string name = WebUtility.HtmlEncode( directory.Name );
+			string encodedPath;
+			if (parentHtmlEncodedPath == null)
+			{
+				encodedPath = WebUtility.HtmlEncode( directory.Path );
+			}
+			else
+			{
+				encodedPath = parentHtmlEncodedPath.EndsWith( '\\' ) || parentHtmlEncodedPath.EndsWith( '/' )
+					? parentHtmlEncodedPath + name
+					: parentHtmlEncodedPath + Path.DirectorySeparatorChar + name;
+			}
 
 			// Performance optimization: When recursing directories, do not redundantly parse and encode the full absolute path.
 			// Instead, concatenate the URL-encoded child name to the URL-encoded parent path.
@@ -488,7 +531,6 @@ namespace HDLG_winforms
 			}
 
 			string id = encodedPath; // Re-use cached encoded path
-			string name = WebUtility.HtmlEncode( directory.Name );
 			string created = directory.CreationTime.ToString( "F", CultureInfo.CurrentCulture );
 
 			// 2026 design: use native <details>/<summary> for clean, accessible, collapsible directory trees.
@@ -507,7 +549,7 @@ namespace HDLG_winforms
 				for (int i = 0; i < directory.Directories.Count; i++)
 				{
 					HdlgDirectory d = directory.Directories [i];
-					await WritHtmlDirectoryAsync( writer, d, inDepth, urlEncodedDirPath ).ConfigureAwait( false );
+					await WritHtmlDirectoryAsync( writer, d, inDepth, urlEncodedDirPath, encodedPath ).ConfigureAwait( false );
 				}
 				await writer.WriteLineAsync( spacer + "\t</div>" ).ConfigureAwait( false );
 			}
@@ -546,10 +588,7 @@ namespace HDLG_winforms
 						}
 						else
 						{
-							// Note: AsSpan cannot be directly used with Uri.EscapeDataString in this framework version without allocating a string first anyway, but suppressing CA1846 by adding a #pragma or we can just leave it since it's just a warning. Let's fix the warning anyway to be clean.
-#pragma warning disable CA1846
-							sb.Append(Uri.EscapeDataString(path.Substring(startIndex, i - startIndex)));
-#pragma warning restore CA1846
+							sb.Append(Uri.EscapeDataString(path.AsSpan(startIndex, i - startIndex)));
 						}
 					}
 
@@ -713,7 +752,8 @@ namespace HDLG_winforms
 			writer.WriteStartObject( );
 			writer.WriteString( "Version", version );
 			writer.WriteString( "Directory", directory.Path );
-			// Performance optimization: Avoid string allocations by letting Utf8JsonWriter format DateTime natively
+			// Performance optimization: Pass DateTime directly to Utf8JsonWriter to use its native Utf8Formatter.
+			// This completely eliminates string allocation on the heap for the timestamp vs calling ToString("O").
 			writer.WriteString( "DateTime", DateTime.Now );
 			writer.WriteNumber( "DirectoriesCount", directory.TotalDirectories );
 			writer.WriteNumber( "FilesCount", directory.TotalFiles );
@@ -732,7 +772,7 @@ namespace HDLG_winforms
 			writer.WriteStartObject( );
 			writer.WriteString( "Name", directory.Name );
 			writer.WriteString( "Path", directory.Path );
-			// Performance optimization: Avoid string allocations by letting Utf8JsonWriter format DateTime natively
+			// Performance optimization: Pass DateTime directly to Utf8JsonWriter to eliminate string allocations.
 			writer.WriteString( "CreationTime", directory.CreationTime );
 
 			writer.WritePropertyName( "Directories" );
@@ -771,7 +811,7 @@ namespace HDLG_winforms
 			writer.WriteString( "Path", file.Path );
 			writer.WriteString( "Extension", file.Extension );
 			writer.WriteNumber( "Size", file.Size );
-			// Performance optimization: Avoid string allocations by letting Utf8JsonWriter format DateTime natively
+			// Performance optimization: Pass DateTime directly to Utf8JsonWriter to eliminate string allocations.
 			writer.WriteString( "CreationTime", file.CreationTime );
 
 			writer.WritePropertyName( "ExtentedProperties" );
@@ -815,7 +855,7 @@ namespace HDLG_winforms
 			switch (value)
 			{
 				case DateTime dtValue:
-					// Performance optimization: Avoid string allocations by letting Utf8JsonWriter format DateTime natively
+					// Performance optimization: Write DateTime value directly to avoid heap allocations.
 					writer.WriteStringValue( dtValue );
 					break;
 				case bool boolValue:
