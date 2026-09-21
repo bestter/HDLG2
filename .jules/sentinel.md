@@ -168,7 +168,7 @@
 **Vulnerability:** Invoking `Process.Start` for files without associated applications resulted in a `System.ComponentModel.Win32Exception` that was previously uncaught locally, exposing the full stack trace and application paths to the user via the global WinForms error dialog (CWE-209).
 **Learning:** Security validations and file executions must be explicitly wrapped in catch blocks that handle expected platform exceptions (like `Win32Exception`) gracefully, rather than relying on global catch-all blocks which are insecure by default.
 **Prevention:** Always wrap `Process.Start` calls (even inside abstract methods like `OpenWithDefaultProgram`) in local `try/catch` blocks that gracefully present UI feedback for `Win32Exception` and filter `InvalidOperationException` when security boundaries block execution.
-## 2025-02-14 - Limit OpenXML Parsing to prevent Zip Bombs / XXE
-**Vulnerability:** DocumentFormat.OpenXml is vulnerable to Zip Bomb and XXE attacks when parsing maliciously crafted or excessively large Word/Excel documents without character limits.
-**Learning:** The default `OpenSettings` used when opening `SpreadsheetDocument` or `WordprocessingDocument` do not bound the number of characters parsed in a part, allowing unbounded resource consumption.
-**Prevention:** Always instantiate `OpenSettings`, explicitly set the `MaxCharactersInPart` property to a safe threshold (e.g., 10,000,000), and pass the settings object to `WordprocessingDocument.Open` or `SpreadsheetDocument.Open`.
+## 2025-02-14 - Limit OpenXML Parsing to Prevent Zip Bombs / XXE
+**Vulnerability:** Maliciously crafted Word or Excel packages can expand structural or core-property parts far beyond their compressed size, and oversized package properties can consume excessive memory.
+**Learning:** `OpenSettings.MaxCharactersInPart` does not protect `OpenXmlPackage.PackageProperties`; package structures and core properties must be validated through bounded streams before those properties are materialized.
+**Prevention:** Bound the physical package size, entry count, decompressed structural and core-property data, and individual metadata values. Prohibit DTD processing, disable external XML resolution, and retain `MaxCharactersInPart` as defense in depth.

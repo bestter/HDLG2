@@ -85,6 +85,101 @@ namespace HDLG.Tests
             loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Could not open Word file") || s.Contains("Cannot read properties from file")), It.IsAny<string>()), Times.Once);
         }
 
+        [Fact]
+        public void WordPropertyGetter_GetFileProperties_TitleAtLimit_ReturnsTitle()
+        {
+            string title = new('A', FilePropertyLimits.MaxOpenXmlPropertyCharacters);
+            using var testFile = OpenXmlSecurityTestFile.CreateWord(title: title);
+            var getter = new WordPropertyGetter();
+
+            var properties = getter.GetFileProperties(new FileInfo(testFile.Path));
+
+            properties["Title"].Should().Be(title);
+        }
+
+        [Fact]
+        public void WordPropertyGetter_GetFileProperties_TitleOverLimit_LogsWarningAndReturnsEmpty()
+        {
+            string title = new('A', FilePropertyLimits.MaxOpenXmlPropertyCharacters + 1);
+            using var testFile = OpenXmlSecurityTestFile.CreateWord(title: title);
+            var getter = new WordPropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            var properties = getter.GetFileProperties(new FileInfo(testFile.Path));
+
+            properties.Should().BeEmpty();
+            VerifyWarningLogged();
+        }
+
+        [Fact]
+        public void WordPropertyGetter_GetFileProperties_OriginalOversizedTitleTrigger_LogsWarningAndReturnsEmpty()
+        {
+            string title = new('A', 10_000_001);
+            using var testFile = OpenXmlSecurityTestFile.CreateWord(title: title);
+            var getter = new WordPropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            var properties = getter.GetFileProperties(new FileInfo(testFile.Path));
+
+            properties.Should().BeEmpty();
+            VerifyWarningLogged();
+        }
+
+        [Fact]
+        public void WordPropertyGetter_GetFileProperties_CreatorOverLimit_LogsWarningAndReturnsEmpty()
+        {
+            string creator = new('A', FilePropertyLimits.MaxOpenXmlPropertyCharacters + 1);
+            using var testFile = OpenXmlSecurityTestFile.CreateWord(creator: creator);
+            var getter = new WordPropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            var properties = getter.GetFileProperties(new FileInfo(testFile.Path));
+
+            properties.Should().BeEmpty();
+            VerifyWarningLogged();
+        }
+
+        [Fact]
+        public void WordPropertyGetter_GetFileProperties_OversizedStructuralPart_LogsWarningAndReturnsEmpty()
+        {
+            using var testFile = OpenXmlSecurityTestFile.CreatePackageWithOversizedContentTypes(".docx");
+            var getter = new WordPropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            var properties = getter.GetFileProperties(new FileInfo(testFile.Path));
+
+            properties.Should().BeEmpty();
+            VerifyWarningLogged();
+        }
+
+        [Fact]
+        public void WordPropertyGetter_GetFileProperties_LargeUnparsedBinary_ReturnsProperties()
+        {
+            using var testFile = OpenXmlSecurityTestFile.CreateWord(
+                embeddedBinaryBytes: FilePropertyLimits.MaxOpenXmlPartSizeBytes + 1);
+            var getter = new WordPropertyGetter();
+
+            var properties = getter.GetFileProperties(new FileInfo(testFile.Path));
+
+            properties["Title"].Should().Be("Safe Title");
+            properties["Creator"].Should().Be("Safe Creator");
+        }
+
+        [Fact]
+        public void WordPropertyGetter_GetFileProperties_PhysicalFileOverLimit_LogsWarningAndReturnsEmpty()
+        {
+            using var testFile = OpenXmlSecurityTestFile.CreateSizedFile(
+                ".docx",
+                FilePropertyLimits.MaxFileSizeBytes + 1);
+            var getter = new WordPropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            var properties = getter.GetFileProperties(new FileInfo(testFile.Path));
+
+            properties.Should().BeEmpty();
+            VerifyWarningLogged();
+        }
+
         [Theory]
         [InlineData("test.doc", false)]
         [InlineData("test.docx", true)]
@@ -99,6 +194,16 @@ namespace HDLG.Tests
 
             // Assert
             result.Should().Be(expected);
+        }
+
+        private void VerifyWarningLogged()
+        {
+            loggerMock.Verify(
+                l => l.Warning(
+                    It.IsAny<Exception>(),
+                    It.Is<string>(s => s.Contains("Could not open Word file") || s.Contains("Cannot read properties from file")),
+                    It.IsAny<string>()),
+                Times.Once);
         }
     }
 }
