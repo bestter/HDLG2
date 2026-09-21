@@ -29,7 +29,11 @@ namespace HdlgFileProperty
             try
             {
                 using FileStream stream = new(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                using WordprocessingDocument wordDoc = WordprocessingDocument.Open(stream, false);
+                OpenSettings settings = new()
+                {
+                    MaxCharactersInPart = FilePropertyLimits.MaxOpenXmlCharacters
+                };
+                using WordprocessingDocument wordDoc = WordprocessingDocument.Open(stream, false, settings);
                 var packageProperties = wordDoc.PackageProperties;
 
                 if (!string.IsNullOrWhiteSpace(packageProperties.Title))
