@@ -77,7 +77,20 @@ namespace HDLG.Tests
         }
 
         [Fact]
+        public void GetTotalExecutionTime_WhenNoExecutionTimeAdded_ShouldReturnZero()
+        {
+            // Arrange
+            var mockGetter = new Mock<IFilePropertyGetter>();
+            var statistic = new FilePropertyGetterStatistic(mockGetter.Object);
 
+            // Act
+            var totalExecutionTime = statistic.GetTotalExecutionTime();
+
+            // Assert
+            totalExecutionTime.Should().Be(TimeSpan.Zero);
+        }
+
+        [Fact]
         public void StartAndStopTimer_ShouldRecordExecutionTime()
         {
             // Arrange
