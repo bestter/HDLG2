@@ -1,6 +1,7 @@
 using HdlgFileProperty;
 using Serilog;
 using System.Collections.ObjectModel;
+using System.Threading;
 
 namespace HDLG_winforms
 {
@@ -71,12 +72,31 @@ namespace HDLG_winforms
 			}
 
 			// Reverted back to EnumerateFiles to avoid severe memory bloat and array allocation
+			var fileTasks = new List<Task>();
+			using var fileSemaphore = new SemaphoreSlim(Environment.ProcessorCount);
+			object fileLock = new object();
+
 			foreach (var f in directoryInfo.EnumerateFiles( ))
 			{
-				var properties = await propertyBrowser.GetFilePropertyAsync( f ).ConfigureAwait( false );
-				var file = new File( f.FullName, properties ?? System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>.Empty );
-				files.Add( file );
+				await fileSemaphore.WaitAsync().ConfigureAwait(false);
+				fileTasks.Add(Task.Run(async () =>
+				{
+					try
+					{
+						var properties = await propertyBrowser.GetFilePropertyAsync( f ).ConfigureAwait( false );
+						var file = new File( f.FullName, properties ?? System.Collections.ObjectModel.ReadOnlyDictionary<string, IConvertible>.Empty );
+						lock (fileLock)
+						{
+							files.Add( file );
+						}
+					}
+					finally
+					{
+						fileSemaphore.Release();
+					}
+				}));
 			}
+			await Task.WhenAll(fileTasks).ConfigureAwait(false);
 			files.Sort( );
 
 			var tasks = new Task [directories.Count];
