@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.IO.Compression;
+using System.Text;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using HdlgFileProperty;
@@ -68,16 +70,29 @@ namespace HDLG.Tests
             return new OpenXmlSecurityTestFile(path);
         }
 
-        public static OpenXmlSecurityTestFile CreatePackageWithOversizedContentTypes(string extension)
+        public static OpenXmlSecurityTestFile CreatePackageWithOversizedContentTypes(string extension, long contentTypesPaddingBytes)
         {
             string path = CreatePath(extension);
             using FileStream fileStream = new(path, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None);
-            using System.IO.Compression.ZipArchive archive = new(fileStream, System.IO.Compression.ZipArchiveMode.Create);
-            System.IO.Compression.ZipArchiveEntry entry = archive.CreateEntry("[Content_Types].xml");
+            using ZipArchive archive = new(fileStream, ZipArchiveMode.Create);
+            WriteTextEntry(
+                archive,
+                "_rels/.rels",
+                "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
+                + "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties\" Target=\"docProps/core.xml\"/>"
+                + "</Relationships>");
+            WriteTextEntry(
+                archive,
+                "docProps/core.xml",
+                "<cp:coreProperties xmlns:cp=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\">"
+                + "<dc:title>Safe Title</dc:title>"
+                + "<dc:creator>Safe Creator</dc:creator>"
+                + "</cp:coreProperties>");
+            ZipArchiveEntry entry = archive.CreateEntry("[Content_Types].xml");
             using Stream entryStream = entry.Open();
-            using StreamWriter writer = new(entryStream);
+            using StreamWriter writer = new(entryStream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             writer.Write("<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">");
-            WriteRepeatedCharacters(writer, FilePropertyLimits.MaxOpenXmlPartSizeBytes + 1);
+            WriteRepeatedCharacters(writer, contentTypesPaddingBytes);
             writer.Write("</Types>");
             return new OpenXmlSecurityTestFile(path);
         }
@@ -101,6 +116,14 @@ namespace HDLG.Tests
         private static string CreatePath(string extension)
         {
             return System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"hdlg-openxml-{Guid.NewGuid():N}{extension}");
+        }
+
+        private static void WriteTextEntry(ZipArchive archive, string name, string content)
+        {
+            ZipArchiveEntry entry = archive.CreateEntry(name);
+            using Stream entryStream = entry.Open();
+            using StreamWriter writer = new(entryStream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            writer.Write(content);
         }
 
         private static void WriteRepeatedBytes(Stream stream, long count)

@@ -29,13 +29,7 @@ namespace HdlgFileProperty
             try
             {
                 using FileStream stream = new(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                long processedBytes = OpenXmlPackageGuard.ValidateArchiveStructure(stream);
-                OpenSettings settings = new()
-                {
-                    MaxCharactersInPart = FilePropertyLimits.MaxOpenXmlCharacters
-                };
-                using SpreadsheetDocument excelDoc = SpreadsheetDocument.Open(stream, false, settings);
-                return OpenXmlPackageGuard.ExtractProperties(excelDoc, processedBytes);
+                return OpenXmlPackageGuard.ReadCoreProperties(stream);
             }
             catch (Exception ex) when (ex is IOException || ex is InvalidDataException || ex is OpenXmlPackageException || ex is FileFormatException)
             {

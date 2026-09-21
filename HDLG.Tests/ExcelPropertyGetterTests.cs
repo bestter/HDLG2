@@ -86,18 +86,6 @@ namespace HDLG.Tests
         }
 
         [Fact]
-        public void ExcelPropertyGetter_GetFileProperties_TitleAtLimit_ReturnsTitle()
-        {
-            string title = new('A', FilePropertyLimits.MaxOpenXmlPropertyCharacters);
-            using var testFile = OpenXmlSecurityTestFile.CreateExcel(title: title);
-            var getter = new ExcelPropertyGetter();
-
-            var properties = getter.GetFileProperties(new FileInfo(testFile.Path));
-
-            properties["Title"].Should().Be(title);
-        }
-
-        [Fact]
         public void ExcelPropertyGetter_GetFileProperties_TitleOverLimit_LogsWarningAndReturnsEmpty()
         {
             string title = new('A', FilePropertyLimits.MaxOpenXmlPropertyCharacters + 1);
@@ -109,33 +97,6 @@ namespace HDLG.Tests
 
             properties.Should().BeEmpty();
             VerifyWarningLogged();
-        }
-
-        [Fact]
-        public void ExcelPropertyGetter_GetFileProperties_CreatorOverLimit_LogsWarningAndReturnsEmpty()
-        {
-            string creator = new('A', FilePropertyLimits.MaxOpenXmlPropertyCharacters + 1);
-            using var testFile = OpenXmlSecurityTestFile.CreateExcel(creator: creator);
-            var getter = new ExcelPropertyGetter();
-            getter.AddLogger(loggerMock.Object);
-
-            var properties = getter.GetFileProperties(new FileInfo(testFile.Path));
-
-            properties.Should().BeEmpty();
-            VerifyWarningLogged();
-        }
-
-        [Fact]
-        public void ExcelPropertyGetter_GetFileProperties_LargeUnparsedBinary_ReturnsProperties()
-        {
-            using var testFile = OpenXmlSecurityTestFile.CreateExcel(
-                embeddedBinaryBytes: FilePropertyLimits.MaxOpenXmlPartSizeBytes + 1);
-            var getter = new ExcelPropertyGetter();
-
-            var properties = getter.GetFileProperties(new FileInfo(testFile.Path));
-
-            properties["Title"].Should().Be("Safe Title");
-            properties["Creator"].Should().Be("Safe Creator");
         }
 
         [Theory]

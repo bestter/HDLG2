@@ -31,7 +31,8 @@ namespace HdlgFileProperty
         public static readonly TimeSpan PropertyExtractionTimeout = TimeSpan.FromSeconds(30);
 
         /// <summary>
-        /// Maximum characters allowed when parsing OpenXML parts to prevent XXE/Zip bomb attacks.
+        /// Maximum characters the XML reader accepts while parsing the root relationships part
+        /// and the core-properties part.
         /// </summary>
         public const long MaxOpenXmlCharacters = 10_000_000L;
 

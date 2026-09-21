@@ -12,21 +12,52 @@ using System.Globalization;
 using System.IO.Compression;
 using System.Text;
 using System.Xml;
-using DocumentFormat.OpenXml.Packaging;
 
 namespace HdlgFileProperty
 {
+    /// <summary>
+    /// Reads Title, Creator, and Created from an OpenXML package.
+    /// Only the root relationships part and the core-properties part are inflated.
+    /// </summary>
     internal static class OpenXmlPackageGuard
     {
-        internal static long ValidateArchiveStructure(
+        private const string RelationshipsNamespace = "http://schemas.openxmlformats.org/package/2006/relationships";
+        private const string CorePropertiesRelationshipType = "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties";
+
+        internal static IReadOnlyDictionary<string, IConvertible> ReadCoreProperties(
             Stream packageStream,
             long maxFileSizeBytes = FilePropertyLimits.MaxFileSizeBytes,
             int maxEntries = FilePropertyLimits.MaxOpenXmlEntries,
             long maxPartSizeBytes = FilePropertyLimits.MaxOpenXmlPartSizeBytes,
-            long maxProcessedBytes = FilePropertyLimits.MaxOpenXmlProcessedBytes)
+            long maxProcessedBytes = FilePropertyLimits.MaxOpenXmlProcessedBytes,
+            int maxPropertyCharacters = FilePropertyLimits.MaxOpenXmlPropertyCharacters)
         {
             ArgumentNullException.ThrowIfNull(packageStream);
 
+            try
+            {
+                return ReadCorePropertiesCore(
+                    packageStream,
+                    maxFileSizeBytes,
+                    maxEntries,
+                    maxPartSizeBytes,
+                    maxProcessedBytes,
+                    maxPropertyCharacters);
+            }
+            catch (XmlException ex)
+            {
+                throw new InvalidDataException("The OpenXML package contains invalid XML.", ex);
+            }
+        }
+
+        private static IReadOnlyDictionary<string, IConvertible> ReadCorePropertiesCore(
+            Stream packageStream,
+            long maxFileSizeBytes,
+            int maxEntries,
+            long maxPartSizeBytes,
+            long maxProcessedBytes,
+            int maxPropertyCharacters)
+        {
             if (!packageStream.CanRead || !packageStream.CanSeek)
             {
                 throw new InvalidDataException("The OpenXML package stream must be readable and seekable.");
@@ -47,89 +78,119 @@ namespace HdlgFileProperty
                     throw new InvalidDataException($"The OpenXML package contains more than {maxEntries} entries.");
                 }
 
-                foreach (ZipArchiveEntry entry in archive.Entries)
+                ZipArchiveEntry? relationshipsEntry = archive.GetEntry("_rels/.rels") ?? archive.GetEntry("/_rels/.rels");
+                if (relationshipsEntry == null)
                 {
-                    if (entry.Name.Length == 0 || !IsStructuralEntry(entry.FullName))
-                    {
-                        continue;
-                    }
-
-                    using Stream entryStream = entry.Open();
-                    using MemoryStream xmlBuffer = ReadBoundedPart(
-                        entryStream,
-                        entry.Length,
-                        maxPartSizeBytes,
-                        maxProcessedBytes,
-                        ref processedBytes);
-                    ValidateXml(xmlBuffer);
+                    return IFilePropertyGetter.EmptyProperties;
                 }
+
+                string? coreEntryName;
+                using (Stream relationshipsStream = relationshipsEntry.Open())
+                using (MemoryStream relationshipsBuffer = ReadBoundedPart(
+                    relationshipsStream,
+                    relationshipsEntry.Length,
+                    maxPartSizeBytes,
+                    maxProcessedBytes,
+                    ref processedBytes))
+                {
+                    coreEntryName = FindCorePropertiesEntryName(relationshipsBuffer);
+                }
+
+                if (coreEntryName == null)
+                {
+                    return IFilePropertyGetter.EmptyProperties;
+                }
+
+                // The target is validated before this lookup, so an illegal path is never inflated.
+                ZipArchiveEntry? coreEntry = archive.GetEntry(coreEntryName);
+                if (coreEntry == null || coreEntry.Name.Length == 0)
+                {
+                    throw new InvalidDataException("The OpenXML core-properties part is missing.");
+                }
+
+                using Stream coreStream = coreEntry.Open();
+                using MemoryStream coreBuffer = ReadBoundedPart(
+                    coreStream,
+                    coreEntry.Length,
+                    maxPartSizeBytes,
+                    maxProcessedBytes,
+                    ref processedBytes);
+                return ExtractCoreProperties(coreBuffer, maxPropertyCharacters);
             }
             finally
             {
                 packageStream.Position = 0;
             }
-
-            return processedBytes;
         }
 
-        internal static IReadOnlyDictionary<string, IConvertible> ExtractProperties(
-            WordprocessingDocument package,
-            long processedBytes,
-            long maxPartSizeBytes = FilePropertyLimits.MaxOpenXmlPartSizeBytes,
-            long maxProcessedBytes = FilePropertyLimits.MaxOpenXmlProcessedBytes,
-            int maxPropertyCharacters = FilePropertyLimits.MaxOpenXmlPropertyCharacters)
+        private static string? FindCorePropertiesEntryName(Stream relationshipsXml)
         {
-            ArgumentNullException.ThrowIfNull(package);
-            return ExtractProperties(
-                package.CoreFilePropertiesPart,
-                processedBytes,
-                maxPartSizeBytes,
-                maxProcessedBytes,
-                maxPropertyCharacters);
-        }
-
-        internal static IReadOnlyDictionary<string, IConvertible> ExtractProperties(
-            SpreadsheetDocument package,
-            long processedBytes,
-            long maxPartSizeBytes = FilePropertyLimits.MaxOpenXmlPartSizeBytes,
-            long maxProcessedBytes = FilePropertyLimits.MaxOpenXmlProcessedBytes,
-            int maxPropertyCharacters = FilePropertyLimits.MaxOpenXmlPropertyCharacters)
-        {
-            ArgumentNullException.ThrowIfNull(package);
-            return ExtractProperties(
-                package.CoreFilePropertiesPart,
-                processedBytes,
-                maxPartSizeBytes,
-                maxProcessedBytes,
-                maxPropertyCharacters);
-        }
-
-        private static IReadOnlyDictionary<string, IConvertible> ExtractProperties(
-            CoreFilePropertiesPart? corePropertiesPart,
-            long processedBytes,
-            long maxPartSizeBytes,
-            long maxProcessedBytes,
-            int maxPropertyCharacters)
-        {
-            if (corePropertiesPart == null)
+            using XmlReader reader = XmlReader.Create(relationshipsXml, CreateXmlReaderSettings());
+            while (reader.Read())
             {
-                return IFilePropertyGetter.EmptyProperties;
+                if (reader.NodeType != XmlNodeType.Element
+                    || reader.LocalName != "Relationship"
+                    || reader.NamespaceURI != RelationshipsNamespace)
+                {
+                    continue;
+                }
+
+                if (!string.Equals(reader.GetAttribute("Type"), CorePropertiesRelationshipType, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                if (string.Equals(reader.GetAttribute("TargetMode"), "External", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidDataException("The OpenXML core-properties target is external.");
+                }
+
+                return ResolveEntryName(reader.GetAttribute("Target"));
             }
 
-            using Stream propertiesStream = corePropertiesPart.GetStream(FileMode.Open, FileAccess.Read);
-            using MemoryStream xmlBuffer = ReadBoundedPart(
-                propertiesStream,
-                declaredLength: null,
-                maxPartSizeBytes,
-                maxProcessedBytes,
-                ref processedBytes);
-            return ExtractCoreProperties(xmlBuffer, maxPropertyCharacters);
+            return null;
         }
 
-        private static bool IsStructuralEntry(string entryName)
+        private static string ResolveEntryName(string? target)
         {
-            return entryName.Equals("[Content_Types].xml", StringComparison.OrdinalIgnoreCase)
-                || entryName.EndsWith(".rels", StringComparison.OrdinalIgnoreCase);
+            if (string.IsNullOrWhiteSpace(target))
+            {
+                throw new InvalidDataException("The OpenXML core-properties target is missing.");
+            }
+
+            string decoded;
+            try
+            {
+                decoded = Uri.UnescapeDataString(target);
+            }
+            catch (UriFormatException ex)
+            {
+                throw new InvalidDataException("The OpenXML core-properties target is outside the package.", ex);
+            }
+
+            if (decoded.Contains(':', StringComparison.Ordinal)
+                || decoded.Contains('\\', StringComparison.Ordinal)
+                || decoded.Contains("//", StringComparison.Ordinal))
+            {
+                throw new InvalidDataException("The OpenXML core-properties target is outside the package.");
+            }
+
+            string relative = decoded.TrimStart('/');
+            if (relative.Length == 0)
+            {
+                throw new InvalidDataException("The OpenXML core-properties target is outside the package.");
+            }
+
+            string[] segments = relative.Split('/');
+            foreach (string segment in segments)
+            {
+                if (segment.Length == 0 || segment == "." || segment == "..")
+                {
+                    throw new InvalidDataException("The OpenXML core-properties target is outside the package.");
+                }
+            }
+
+            return string.Join('/', segments);
         }
 
         private static MemoryStream ReadBoundedPart(
@@ -181,14 +242,6 @@ namespace HdlgFileProperty
             {
                 buffer.Dispose();
                 throw;
-            }
-        }
-
-        private static void ValidateXml(Stream xmlStream)
-        {
-            using XmlReader reader = XmlReader.Create(xmlStream, CreateXmlReaderSettings());
-            while (reader.Read())
-            {
             }
         }
 
