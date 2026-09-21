@@ -77,7 +77,6 @@ namespace HDLG.Tests
         }
 
         [Fact]
-
         public void StartAndStopTimer_ShouldRecordExecutionTime()
         {
             // Arrange
