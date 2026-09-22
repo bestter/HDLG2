@@ -29,5 +29,31 @@ namespace HdlgFileProperty
         /// Maximum time allowed for a single property getter invocation.
         /// </summary>
         public static readonly TimeSpan PropertyExtractionTimeout = TimeSpan.FromSeconds(30);
+
+        /// <summary>
+        /// Maximum characters the XML reader accepts while parsing the root relationships part
+        /// and the core-properties part.
+        /// </summary>
+        public const long MaxOpenXmlCharacters = 10_000_000L;
+
+        /// <summary>
+        /// Maximum number of entries allowed in an OpenXML package.
+        /// </summary>
+        public const int MaxOpenXmlEntries = 10_000;
+
+        /// <summary>
+        /// Maximum decompressed size allowed for an OpenXML part that is parsed by the property extractors.
+        /// </summary>
+        public const long MaxOpenXmlPartSizeBytes = 10L * 1024 * 1024;
+
+        /// <summary>
+        /// Maximum cumulative decompressed size allowed for OpenXML parts parsed during property extraction.
+        /// </summary>
+        public const long MaxOpenXmlProcessedBytes = 100L * 1024 * 1024;
+
+        /// <summary>
+        /// Maximum characters allowed in a single OpenXML core property value.
+        /// </summary>
+        public const int MaxOpenXmlPropertyCharacters = 4_096;
     }
 }
