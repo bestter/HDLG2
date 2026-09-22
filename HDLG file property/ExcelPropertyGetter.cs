@@ -26,31 +26,10 @@ namespace HdlgFileProperty
         public IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo)
         {
             ArgumentNullException.ThrowIfNull(fileInfo);
-            Dictionary<string, IConvertible>? properties = null;
             try
             {
                 using FileStream stream = new(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                using SpreadsheetDocument excelDoc = SpreadsheetDocument.Open(stream, false);
-                var packageProperties = excelDoc.PackageProperties;
-
-                if (!string.IsNullOrWhiteSpace(packageProperties.Title))
-                {
-                    properties = new Dictionary<string, IConvertible>(3);
-                    properties.Add("Title", packageProperties.Title);
-                }
-
-                DateTime? created = packageProperties.Created;
-                if (created != null)
-                {
-                    properties ??= new Dictionary<string, IConvertible>(3);
-                    properties.Add("Created", created.Value);
-                }
-
-                if (!string.IsNullOrWhiteSpace(packageProperties.Creator))
-                {
-                    properties ??= new Dictionary<string, IConvertible>(3);
-                    properties.Add("Creator", packageProperties.Creator);
-                }
+                return OpenXmlPackageGuard.ReadCoreProperties(stream);
             }
             catch (Exception ex) when (ex is IOException || ex is InvalidDataException || ex is OpenXmlPackageException || ex is FileFormatException)
             {
@@ -63,7 +42,7 @@ namespace HdlgFileProperty
             }
 #pragma warning restore CA1031 // Ne pas intercepter les types d'exception générale
 
-            return properties ?? IFilePropertyGetter.EmptyProperties;
+            return IFilePropertyGetter.EmptyProperties;
         }
 
         public bool IsSupportedFile(FileInfo fileInfo)

@@ -301,6 +301,24 @@ namespace HDLG.Tests
         }
 
         [Fact]
+        public async Task GetFileProperty_OversizedWordTitle_ReturnsNoPropertiesAndLogsWarning()
+        {
+            string title = new('A', FilePropertyLimits.MaxOpenXmlPropertyCharacters + 1);
+            using var testFile = OpenXmlSecurityTestFile.CreateWord(title: title);
+            var browser = new FilePropertyBrowser(loggerMock.Object, new WordPropertyGetter());
+
+            var result = await browser.GetFilePropertyAsync(testFile.Path);
+
+            result.Should().BeNull();
+            loggerMock.Verify(
+                l => l.Warning(
+                    It.IsAny<Exception>(),
+                    It.Is<string>(s => s.Contains("Could not open Word file") || s.Contains("Cannot read properties from file")),
+                    testFile.Path),
+                Times.Once);
+        }
+
+        [Fact]
         public async Task LogGetterStatistics_FilesProcessed_LogsAveragesAndTotal()
         {
             // Arrange

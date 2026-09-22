@@ -85,6 +85,20 @@ namespace HDLG.Tests
             loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Could not open Excel file") || s.Contains("Cannot read properties from file")), It.IsAny<string>()), Times.Once);
         }
 
+        [Fact]
+        public void ExcelPropertyGetter_GetFileProperties_TitleOverLimit_LogsWarningAndReturnsEmpty()
+        {
+            string title = new('A', FilePropertyLimits.MaxOpenXmlPropertyCharacters + 1);
+            using var testFile = OpenXmlSecurityTestFile.CreateExcel(title: title);
+            var getter = new ExcelPropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            var properties = getter.GetFileProperties(new FileInfo(testFile.Path));
+
+            properties.Should().BeEmpty();
+            VerifyWarningLogged();
+        }
+
         [Theory]
         [InlineData("test.xls", false)]
         [InlineData("test.xlsx", true)]
@@ -99,6 +113,16 @@ namespace HDLG.Tests
 
             // Assert
             result.Should().Be(expected);
+        }
+
+        private void VerifyWarningLogged()
+        {
+            loggerMock.Verify(
+                l => l.Warning(
+                    It.IsAny<Exception>(),
+                    It.Is<string>(s => s.Contains("Could not open Excel file") || s.Contains("Cannot read properties from file")),
+                    It.IsAny<string>()),
+                Times.Once);
         }
     }
 }
