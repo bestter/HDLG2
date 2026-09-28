@@ -124,5 +124,33 @@ namespace HDLG.Tests
                     It.IsAny<string>()),
                 Times.Once);
         }
+
+        [Fact]
+        public void ExcelPropertyGetter_GetFileProperties_GeneralException_LogsWarningAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new ExcelPropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+            string tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(tempDir);
+
+            try
+            {
+                // Act
+                // Opening a directory as a file stream throws UnauthorizedAccessException
+                var properties = getter.GetFileProperties(new FileInfo(tempDir));
+
+                // Assert
+                properties.Should().BeEmpty();
+                loggerMock.Verify(l => l.Warning(It.IsAny<UnauthorizedAccessException>(), It.Is<string>(s => s.Contains("Cannot read properties from file")), It.IsAny<string>()), Times.Once);
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir))
+                {
+                    try { Directory.Delete(tempDir); } catch { }
+                }
+            }
+        }
     }
 }
