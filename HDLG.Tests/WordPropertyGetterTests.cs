@@ -99,6 +99,32 @@ namespace HDLG.Tests
             VerifyWarningLogged();
         }
 
+        [Fact]
+        public void WordPropertyGetter_GetFileProperties_GeneralException_LogsWarningAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new WordPropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            // Passing a directory path to FileInfo and then using it in FileStream throws an UnauthorizedAccessException,
+            // which falls through to the general Exception catch block since it's not one of the specific handled types.
+            string dirPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(dirPath);
+            try
+            {
+                // Act
+                var properties = getter.GetFileProperties(new FileInfo(dirPath));
+
+                // Assert
+                properties.Should().BeEmpty();
+                loggerMock.Verify(l => l.Warning(It.IsAny<UnauthorizedAccessException>(), It.Is<string>(s => s.Contains("Cannot read properties from file")), It.IsAny<string>()), Times.Once());
+            }
+            finally
+            {
+                Directory.Delete(dirPath);
+            }
+        }
+
         [Theory]
         [InlineData("test.doc", false)]
         [InlineData("test.docx", true)]
