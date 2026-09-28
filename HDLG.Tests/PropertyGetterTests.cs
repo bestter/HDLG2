@@ -220,6 +220,92 @@ namespace HDLG.Tests
 
 
         [Fact]
+        public void Mp3PropertyGetter_GetFileProperties_NullFileInfo_ThrowsArgumentNullException()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => getter.GetFileProperties(null!));
+        }
+
+        [Fact]
+        public void Mp3PropertyGetter_IsSupportedFile_NullFileInfo_ReturnsFalse()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+
+            // Act
+            var result = getter.IsSupportedFile(null!);
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public void Mp3PropertyGetter_GetFileProperties_GeneralException_LogsWarningAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            var dir = "no_access_dir_mp3";
+            Directory.CreateDirectory(dir);
+            var file = Path.Combine(dir, "test.mp3");
+            System.IO.File.WriteAllText(file, "test");
+
+            // Remove permissions on Linux to trigger UnauthorizedAccessException (which is caught by Exception block)
+            System.IO.File.SetUnixFileMode(file, System.IO.UnixFileMode.None);
+
+            try
+            {
+                // Act
+                var properties = getter.GetFileProperties(new FileInfo(file));
+
+                // Assert
+                loggerMock.Verify(l => l.Warning(It.IsAny<UnauthorizedAccessException>(), It.Is<string>(s => s.Contains("Cannot read properties from file")), It.IsAny<string>()), Times.Once);
+                properties.Should().BeEmpty();
+            }
+            finally
+            {
+                System.IO.File.SetUnixFileMode(file, System.IO.UnixFileMode.UserRead | System.IO.UnixFileMode.UserWrite);
+                System.IO.File.Delete(file);
+                Directory.Delete(dir);
+            }
+        }
+
+        [Fact]
+        public void Mp3PropertyGetter_GetFileProperties_PossiblyCorrupt_LogsWarning()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            // We need a file that loads in TagLib but is flagged as PossiblyCorrupt.
+            // One way is to create a small dummy file with some ID3 header but incomplete data.
+            var testFile = "test_possibly_corrupt.mp3";
+            var bytes = System.IO.File.ReadAllBytes("test.mp3");
+            // Truncate to just the first 1000 bytes (header area)
+            System.IO.File.WriteAllBytes(testFile, bytes.AsSpan(0, Math.Min(bytes.Length, 1000)).ToArray());
+
+            try
+            {
+                // Act
+                var properties = getter.GetFileProperties(new FileInfo(testFile));
+
+                // Assert
+                properties.Should().BeEmpty();
+                loggerMock.Verify(l => l.Warning(It.IsAny<string>(), It.IsAny<object[]>()), Times.AtLeastOnce);
+            }
+            finally
+            {
+                if (System.IO.File.Exists(testFile))
+                {
+                    System.IO.File.Delete(testFile);
+                }
+            }
+        }
+        [Fact]
         public void Mp3PropertyGetter_AddLogger_SetsLogger()
         {
             // Arrange
