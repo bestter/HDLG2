@@ -15,3 +15,10 @@
 **Learning:** Logo tests (`AppBrandingTests`, `AppLogoRendererTests`) belong to the serialized `WinFormsUiTestCollection` to avoid GDI+ cross-thread conflicts with other tests.
 
 **Action:** After editing SVG sources under `HDLG winforms/Assets/`, run `scripts/GenerateAppLogoAssets.ps1` (Inkscape) before validating UI assets manually.
+## 2024-05-14 - Simulating SystemExceptions for Fallback Catch Blocks
+
+**What:** When a framework method like `FileStream` is wrapped in multiple `catch` blocks—e.g., catching specific `IOException`s first, then falling back to a general `Exception` block—testing the fallback block can be tricky if you try to use typical I/O errors (like passing invalid file data, which throws `FileFormatException` or `InvalidDataException`, caught by the first block).
+
+**Coverage:** We needed to test the generic `catch (Exception ex)` block in `WordPropertyGetter.cs` without throwing an `IOException` or OpenXml-specific exception.
+
+**Result:** By passing a directory path to a `FileInfo` object and feeding it to a `FileStream`, the framework consistently throws an `UnauthorizedAccessException` (which inherits from `SystemException`, not `IOException`) on both Linux and Windows. This cleanly bypasses the specific `IOException` catch block and perfectly triggers the general exception fallback block, allowing for reliable testing without injecting internal test hooks or mocking un-mockable framework classes.
