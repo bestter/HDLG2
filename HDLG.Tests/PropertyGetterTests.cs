@@ -435,7 +435,7 @@ namespace HDLG.Tests
             var properties = getter.GetFileProperties(new FileInfo("nonexistent.pdf"));
 
             // Assert
-
+            properties.Should().BeEmpty();
             loggerMock.Verify(l => l.Error(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Cannot read file")), It.IsAny<string>()), Times.Once);
         }
 
@@ -450,7 +450,7 @@ namespace HDLG.Tests
             var properties = getter.GetFileProperties(new FileInfo("test_invalid.pdf"));
 
             // Assert
-
+            properties.Should().BeEmpty();
             loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Cannot read properties from file")), It.IsAny<string>()), Times.Once);
         }
 
@@ -465,6 +465,7 @@ namespace HDLG.Tests
             var properties = getter.GetFileProperties(new FileInfo("test_encrypted.pdf"));
 
             // Assert
+            properties.Should().BeEmpty();
             loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("password protected")), It.IsAny<string>()), Times.Once);
         }
 
