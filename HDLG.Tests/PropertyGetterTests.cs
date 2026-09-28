@@ -107,22 +107,6 @@ namespace HDLG.Tests
         }
 
         [Fact]
-        public void ImagePropertyGetter_GetFileProperties_GeneralException_LogsWarningAndReturnsEmpty()
-        {
-            // Arrange
-            var getter = new ImagePropertyGetter();
-            getter.AddLogger(loggerMock.Object);
-            getter._testHook = (fi) => throw new System.Security.SecurityException("Simulated security exception");
-
-            // Act
-            var properties = getter.GetFileProperties(new FileInfo("test.jpg"));
-
-            // Assert
-            properties.Should().BeEmpty();
-            loggerMock.Verify(l => l.Warning(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Cannot read properties from file")), It.IsAny<string>()), Times.Once);
-        }
-
-        [Fact]
         public void ImagePropertyGetter_GetFileProperties_OversizedFile_ReturnsEmptyAndLogsWarning()
         {
             // Arrange

@@ -29,13 +29,9 @@ namespace HdlgFileProperty
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        // Internal hook for testing
-        internal Action<FileInfo>? _testHook;
-
         public IReadOnlyDictionary<string, IConvertible> GetFileProperties(FileInfo fileInfo)
         {
             ArgumentNullException.ThrowIfNull(fileInfo);
-            _testHook?.Invoke(fileInfo);
             Dictionary<string, IConvertible>? properties = null;
             try
             {
