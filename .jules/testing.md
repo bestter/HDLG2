@@ -15,3 +15,10 @@
 **Learning:** Logo tests (`AppBrandingTests`, `AppLogoRendererTests`) belong to the serialized `WinFormsUiTestCollection` to avoid GDI+ cross-thread conflicts with other tests.
 
 **Action:** After editing SVG sources under `HDLG winforms/Assets/`, run `scripts/GenerateAppLogoAssets.ps1` (Inkscape) before validating UI assets manually.
+## 2026-09-28 - [Add tests for Mp3PropertyGetter missing test cases]
+**What:** Missing tests for Mp3PropertyGetter null checks, generic exception handling, and corrupted file cases.
+**Coverage:**
+- ArgumentNullException for null FileInfo in GetFileProperties and IsSupportedFile.
+- General exception handling by passing a directory path to trigger UnauthorizedAccessException across all platforms without Unix-only permissions.
+- Handling of PossiblyCorrupt tags by generating a minimal M4A audio file with an oversized box header.
+**Result:** Increased line/branch coverage and reliability of Mp3PropertyGetter by confirming all error cases return EmptyProperties and log warnings/errors appropriately as defined in the contract.

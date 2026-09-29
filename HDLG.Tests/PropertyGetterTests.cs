@@ -242,6 +242,123 @@ namespace HDLG.Tests
 
 
         [Fact]
+        public void Mp3PropertyGetter_GetFileProperties_NullFileInfo_ThrowsArgumentNullException()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => getter.GetFileProperties(null!));
+        }
+
+        [Fact]
+        public void Mp3PropertyGetter_IsSupportedFile_NullFileInfo_ReturnsFalse()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+
+            // Act
+            var result = getter.IsSupportedFile(null!);
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public void Mp3PropertyGetter_GetFileProperties_GeneralException_LogsWarningAndReturnsEmpty()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            var dir = "unauthorized_dir_as_file.mp3";
+            Directory.CreateDirectory(dir);
+
+            try
+            {
+                // Act - passing a directory path as a file triggers UnauthorizedAccessException across platforms
+                var properties = getter.GetFileProperties(new FileInfo(dir));
+
+                // Assert
+                loggerMock.Verify(l => l.Warning(It.IsAny<UnauthorizedAccessException>(), It.Is<string>(s => s.Contains("Cannot read properties from file")), It.IsAny<string>()), Times.Once);
+                properties.Should().BeEmpty();
+            }
+            finally
+            {
+                if (Directory.Exists(dir))
+                {
+                    Directory.Delete(dir);
+                }
+            }
+        }
+
+        [Fact]
+        public void Mp3PropertyGetter_GetFileProperties_PossiblyCorrupt_LogsWarning()
+        {
+            // Arrange
+            var getter = new Mp3PropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            // TagLib marks a file PossiblyCorrupt when an MP4/M4A child box size exceeds the file or parent box length
+            var testFile = "test_possibly_corrupt.m4a";
+            using (var ms = new MemoryStream())
+            using (var writer = new BinaryWriter(ms))
+            {
+                // 1. ftyp box (20 bytes)
+                writer.Write(System.Buffers.Binary.BinaryPrimitives.ReverseEndianness((int)20));
+                writer.Write(System.Text.Encoding.ASCII.GetBytes("ftyp"));
+                writer.Write(System.Text.Encoding.ASCII.GetBytes("M4A "));
+                writer.Write((int)0);
+                writer.Write(System.Text.Encoding.ASCII.GetBytes("M4A "));
+
+                // 2. moov box header (size = 8 + 108 + 8 = 124 bytes)
+                writer.Write(System.Buffers.Binary.BinaryPrimitives.ReverseEndianness((int)124));
+                writer.Write(System.Text.Encoding.ASCII.GetBytes("moov"));
+
+                // 3. mvhd box (108 bytes)
+                writer.Write(System.Buffers.Binary.BinaryPrimitives.ReverseEndianness((int)108));
+                writer.Write(System.Text.Encoding.ASCII.GetBytes("mvhd"));
+                byte[] mvhdData = new byte[100];
+                // timescale at offset 12 (4 bytes): 1000
+                mvhdData[12] = 0x00; mvhdData[13] = 0x00; mvhdData[14] = 0x03; mvhdData[15] = 0xE8;
+                // rate at offset 20: 1.0 (0x00010000)
+                mvhdData[20] = 0x00; mvhdData[21] = 0x01; mvhdData[22] = 0x00; mvhdData[23] = 0x00;
+                // volume at offset 24: 1.0 (0x0100)
+                mvhdData[24] = 0x01; mvhdData[25] = 0x00;
+                // next track id at offset 96: 1
+                mvhdData[96] = 0x00; mvhdData[97] = 0x00; mvhdData[98] = 0x00; mvhdData[99] = 0x01;
+                writer.Write(mvhdData);
+
+                // 4. corrupt child box: size claims 4096 bytes (exceeds moov and file)
+                writer.Write(System.Buffers.Binary.BinaryPrimitives.ReverseEndianness((int)4096));
+                writer.Write(System.Text.Encoding.ASCII.GetBytes("trak"));
+
+                File.WriteAllBytes(testFile, ms.ToArray());
+            }
+
+            try
+            {
+                // Act
+                var properties = getter.GetFileProperties(new FileInfo(testFile));
+
+                // Assert
+                properties.Should().BeEmpty();
+                loggerMock.Verify(
+                    l => l.Warning(
+                        It.Is<string>(s => s.Contains("might be corrupted")),
+                        It.IsAny<string>(),
+                        It.IsAny<IEnumerable<string>>()),
+                    Times.Once);
+            }
+            finally
+            {
+                if (File.Exists(testFile))
+                {
+                    File.Delete(testFile);
+                }
+            }
+        }
+        [Fact]
         public void Mp3PropertyGetter_AddLogger_SetsLogger()
         {
             // Arrange
