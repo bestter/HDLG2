@@ -85,6 +85,28 @@ namespace HDLG.Tests
 
 
         [Fact]
+        public void ImagePropertyGetter_GetFileProperties_OversizedDimension_ReturnsEmptyAndLogsWarning()
+        {
+            // Arrange
+            var getter = new ImagePropertyGetter();
+            getter.AddLogger(loggerMock.Object);
+
+            // Act
+            var properties = getter.GetFileProperties(new FileInfo("test_oversized_dimension.png"));
+
+            // Assert
+            properties.Should().BeEmpty();
+            loggerMock.Verify(
+                l => l.Warning(
+                    It.Is<string>(s => s.Contains("exceed maximum allowed")),
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<string>()),
+                Times.Once);
+        }
+
+        [Fact]
         public void ImagePropertyGetter_GetFileProperties_OversizedFile_ReturnsEmptyAndLogsWarning()
         {
             // Arrange
