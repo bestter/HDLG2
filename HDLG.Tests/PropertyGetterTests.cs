@@ -271,18 +271,13 @@ namespace HDLG.Tests
             var getter = new Mp3PropertyGetter();
             getter.AddLogger(loggerMock.Object);
 
-            var dir = "no_access_dir_mp3";
+            var dir = "unauthorized_dir_as_file.mp3";
             Directory.CreateDirectory(dir);
-            var file = Path.Combine(dir, "test.mp3");
-            System.IO.File.WriteAllText(file, "test");
-
-            // Remove permissions on Linux to trigger UnauthorizedAccessException (which is caught by Exception block)
-            System.IO.File.SetUnixFileMode(file, System.IO.UnixFileMode.None);
 
             try
             {
-                // Act
-                var properties = getter.GetFileProperties(new FileInfo(file));
+                // Act - passing a directory path as a file triggers UnauthorizedAccessException across platforms
+                var properties = getter.GetFileProperties(new FileInfo(dir));
 
                 // Assert
                 loggerMock.Verify(l => l.Warning(It.IsAny<UnauthorizedAccessException>(), It.Is<string>(s => s.Contains("Cannot read properties from file")), It.IsAny<string>()), Times.Once);
@@ -290,9 +285,10 @@ namespace HDLG.Tests
             }
             finally
             {
-                System.IO.File.SetUnixFileMode(file, System.IO.UnixFileMode.UserRead | System.IO.UnixFileMode.UserWrite);
-                System.IO.File.Delete(file);
-                Directory.Delete(dir);
+                if (Directory.Exists(dir))
+                {
+                    Directory.Delete(dir);
+                }
             }
         }
 
@@ -303,12 +299,42 @@ namespace HDLG.Tests
             var getter = new Mp3PropertyGetter();
             getter.AddLogger(loggerMock.Object);
 
-            // We need a file that loads in TagLib but is flagged as PossiblyCorrupt.
-            // One way is to create a small dummy file with some ID3 header but incomplete data.
-            var testFile = "test_possibly_corrupt.mp3";
-            var bytes = System.IO.File.ReadAllBytes("test.mp3");
-            // Truncate to just the first 1000 bytes (header area)
-            System.IO.File.WriteAllBytes(testFile, bytes.AsSpan(0, Math.Min(bytes.Length, 1000)).ToArray());
+            // TagLib marks a file PossiblyCorrupt when an MP4/M4A child box size exceeds the file or parent box length
+            var testFile = "test_possibly_corrupt.m4a";
+            using (var ms = new MemoryStream())
+            using (var writer = new BinaryWriter(ms))
+            {
+                // 1. ftyp box (20 bytes)
+                writer.Write(System.Buffers.Binary.BinaryPrimitives.ReverseEndianness((int)20));
+                writer.Write(System.Text.Encoding.ASCII.GetBytes("ftyp"));
+                writer.Write(System.Text.Encoding.ASCII.GetBytes("M4A "));
+                writer.Write((int)0);
+                writer.Write(System.Text.Encoding.ASCII.GetBytes("M4A "));
+
+                // 2. moov box header (size = 8 + 108 + 8 = 124 bytes)
+                writer.Write(System.Buffers.Binary.BinaryPrimitives.ReverseEndianness((int)124));
+                writer.Write(System.Text.Encoding.ASCII.GetBytes("moov"));
+
+                // 3. mvhd box (108 bytes)
+                writer.Write(System.Buffers.Binary.BinaryPrimitives.ReverseEndianness((int)108));
+                writer.Write(System.Text.Encoding.ASCII.GetBytes("mvhd"));
+                byte[] mvhdData = new byte[100];
+                // timescale at offset 12 (4 bytes): 1000
+                mvhdData[12] = 0x00; mvhdData[13] = 0x00; mvhdData[14] = 0x03; mvhdData[15] = 0xE8;
+                // rate at offset 20: 1.0 (0x00010000)
+                mvhdData[20] = 0x00; mvhdData[21] = 0x01; mvhdData[22] = 0x00; mvhdData[23] = 0x00;
+                // volume at offset 24: 1.0 (0x0100)
+                mvhdData[24] = 0x01; mvhdData[25] = 0x00;
+                // next track id at offset 96: 1
+                mvhdData[96] = 0x00; mvhdData[97] = 0x00; mvhdData[98] = 0x00; mvhdData[99] = 0x01;
+                writer.Write(mvhdData);
+
+                // 4. corrupt child box: size claims 4096 bytes (exceeds moov and file)
+                writer.Write(System.Buffers.Binary.BinaryPrimitives.ReverseEndianness((int)4096));
+                writer.Write(System.Text.Encoding.ASCII.GetBytes("trak"));
+
+                File.WriteAllBytes(testFile, ms.ToArray());
+            }
 
             try
             {
@@ -317,13 +343,18 @@ namespace HDLG.Tests
 
                 // Assert
                 properties.Should().BeEmpty();
-                loggerMock.Verify(l => l.Warning(It.IsAny<string>(), It.IsAny<object[]>()), Times.AtLeastOnce);
+                loggerMock.Verify(
+                    l => l.Warning(
+                        It.Is<string>(s => s.Contains("might be corrupted")),
+                        It.IsAny<string>(),
+                        It.IsAny<IEnumerable<string>>()),
+                    Times.Once);
             }
             finally
             {
-                if (System.IO.File.Exists(testFile))
+                if (File.Exists(testFile))
                 {
-                    System.IO.File.Delete(testFile);
+                    File.Delete(testFile);
                 }
             }
         }
