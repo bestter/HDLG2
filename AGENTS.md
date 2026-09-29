@@ -3,7 +3,7 @@
 Ce fichier fournit un contexte aux agents IA travaillant sur ce projet.
 
 **Version** : 1.5.1.0  
-**Dernière mise à jour** : 14 septembre 2026 — Ajout des consignes pour agents tiers sur les pull requests créées par Google Labs Jules et précision sur les signatures d'IA.
+**Dernière mise à jour** : 28 septembre 2026 — Suppression définitive des classes legacy Directory.cs et File.cs.
 **Propriétaire** : Martin Labelle (@bestter)
 
 ---
@@ -75,9 +75,7 @@ La solution `HDLG.sln` contient **quatre projets** :
 | **`BrowserForm.cs`** | Formulaire de navigation arborescente (`KryptonTreeView`) avec chargement paresseux (lazy loading) des répertoires/fichiers. Affiche les propriétés d'un fichier sélectionné dans un `KryptonListView`. |
 | **`BrowserForm.Designer.cs`** | Layout WinForms de l'explorateur (contrôles Krypton, `KryptonSplitContainer`). |
 | **`DirectoryBrowser.cs`** | Cœur logique de l'export. Contient `SaveAsXMLAsync()` (génération XML via `XmlWriter`), `SaveAsHTMLAsync()` (génération HTML self-contained avec CSS embarqué ; polices système uniquement, sans Google Fonts externes pour offline/sécurité) et `SaveAsJSONAsync()` (enveloppe async + `FlushAsync` ; la marche synchrone de l'arbre est dans `WriteJsonDocument`, JSON compact via `Utf8JsonWriter`, modèle PascalCase aligné sur l'XML, arbre sous `Root`). |
-| **`Directory.cs`** | Modèle de données legacy (`[Obsolete(..., true)]`). **Interdit d'usage**, conservé temporairement avant suppression. |
 | **`HdlgDirectory.cs`** | Modèle de données actif d'un répertoire. Utilise `IReadOnlyList`, `ArgumentNullException.ThrowIfNull`, etc. |
-| **`File.cs`** | Modèle de données legacy (`[Obsolete(..., true)]`). **Interdit d'usage**, conservé temporairement avant suppression. |
 | **`HdlgFile.cs`** | Modèle de données actif d'un fichier. Contient les métadonnées (nom, chemin, extension, taille, date de création, propriétés étendues). |
 | **`PerformanceCount.cs`** | Structure pour stocker les métriques de performance (temps de parcours, sauvegarde, total). |
 | **`credit.cs`** | Formulaire « About » (`KryptonForm`) affichant la version, la licence GPLv3, et le monogramme HDLG (`AppBranding.LoadLogoImage()`). Le lien GPL appelle `MainWindow.OpenUrlSafe(GplLicenseUri)`. |
@@ -222,7 +220,7 @@ Pour toute modification de l'interface utilisateur :
 
 - **Architecture** : La solution suit un modèle à deux couches : l'application WinForms (`HDLG winforms`) qui gère l'UI et l'orchestration, et la bibliothèque (`HdlgFileProperty`, dossier `HDLG file property`) qui gère l'extraction de propriétés. Cette séparation doit être maintenue. Le projet `Benchmark` mesure uniquement `BrowseAsync` ; il ne doit pas devenir un troisième cœur métier.
 - **Pattern Strategy** : L'extraction de propriétés utilise le pattern Strategy via l'interface `IFilePropertyGetter`. Pour ajouter le support d'un nouveau type de fichier, créer une nouvelle implémentation de cette interface dans le projet `HdlgFileProperty` et l'enregistrer dans le DI de `Program.cs`.
-- **Modèles de données (interdiction stricte du legacy)** : Les anciennes classes `Directory.cs` et `File.cs` sont marquées `[Obsolete(..., true)]` (erreur bloquante de compilation). **Leur utilisation est formellement interdite**. Seules les versions refactorisées `HdlgDirectory` et `HdlgFile` doivent être utilisées dans l'ensemble de la solution.
+- **Modèles de données** : Seules les versions refactorisées `HdlgDirectory` et `HdlgFile` sont utilisées dans l'ensemble de la solution (les anciennes classes legacy `Directory.cs` et `File.cs` ont été définitivement supprimées).
 - **Sécurité et exécution de processus** :
   - **Interdiction formelle** d'invoquer `Process.Start` directement avec `UseShellExecute = true` ou avec des arguments bruts non validés.
   - Utiliser exclusivement les wrappers sécurisés de `MainWindow` : `MainWindow.OpenWithDefaultProgram(path)` (qui valide l'extension contre `SafeExtensions` et `DangerousExtensions`, vérifie l'absence de substitution TOCTOU avant/après dialogue et exige une confirmation explicite) et `MainWindow.OpenUrlSafe(uri)` (restreint strictement aux schémas `http`/`https` avec confirmation).
