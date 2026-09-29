@@ -39,6 +39,10 @@ namespace HDLG.Tests
             byte[] corruptedJpeg = new byte[30];
             Array.Copy(validJpegNoExif, corruptedJpeg, 30);
             File.WriteAllBytes("test_corrupted.jpg", corruptedJpeg);
+
+            // Create oversized dimension image (32769x1)
+            byte[] oversizedDimensionPng = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAgAEAAAABCAIAAADnlmZBAAAAdklEQVR4nO3BMQEAAADCoPVP7WULoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAuAGAEwABfOwHIAAAAABJRU5ErkJggg==");
+            File.WriteAllBytes("test_oversized_dimension.png", oversizedDimensionPng);
         }
     }
 }
