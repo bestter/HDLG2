@@ -35,6 +35,31 @@ namespace HDLG.Tests
         }
 
         [Fact]
+        public void CompareTo_WithNullObject_ReturnsGreaterThanZero()
+        {
+            var hdlgDirectory = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+            var result = hdlgDirectory.CompareTo((object?)null);
+            result.Should().BeGreaterThan(0);
+        }
+
+        [Fact]
+        public void CompareTo_WithNullDirectory_ReturnsGreaterThanZero()
+        {
+            var hdlgDirectory = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+            var result = hdlgDirectory.CompareTo((HdlgDirectory?)null);
+            result.Should().BeGreaterThan(0);
+        }
+
+        [Fact]
+        public void CompareTo_WithInvalidObjectType_ThrowsArgumentException()
+        {
+            var hdlgDirectory = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+            var act = () => hdlgDirectory.CompareTo(new object());
+            act.Should().Throw<ArgumentException>()
+                .WithMessage("Object is not a HdlgDirectory");
+        }
+
+        [Fact]
         public void Constructor_ValidDirectory_PopulatesProperties()
         {
             // Act
