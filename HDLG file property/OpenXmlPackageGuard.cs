@@ -181,16 +181,25 @@ namespace HdlgFileProperty
                 throw new InvalidDataException("The OpenXML core-properties target is outside the package.");
             }
 
-            string[] segments = relative.Split('/');
-            foreach (string segment in segments)
+            ReadOnlySpan<char> span = relative.AsSpan();
+            while (true)
             {
-                if (segment.Length == 0 || segment == "." || segment == "..")
+                int index = span.IndexOf('/');
+                ReadOnlySpan<char> segment = index == -1 ? span : span.Slice(0, index);
+
+                if (segment.Length == 0 || segment.SequenceEqual(".") || segment.SequenceEqual(".."))
                 {
                     throw new InvalidDataException("The OpenXML core-properties target is outside the package.");
                 }
+
+                if (index == -1)
+                {
+                    break;
+                }
+                span = span.Slice(index + 1);
             }
 
-            return string.Join('/', segments);
+            return relative;
         }
 
         private static MemoryStream ReadBoundedPart(
