@@ -193,3 +193,7 @@
 ## 2026-08-26 - Prevent O(N^2) path string processing during recursive tree generation
 **Learning:** When generating hierarchical outputs (like HTML nested folders or XML nested nodes) and encoding/sanitizing paths at every level, calling the encoding function on the full absolute path string at every level causes $O(N^2)$ path traversal string processing. The root parts of the path are redundantly re-encoded for every single subdirectory and file.
 **Action:** Always pre-calculate and pass the encoded/sanitized parent path string down through recursive calls. The child node can then avoid parsing the full absolute path by simply safely concatenating the processed parent path with its own processed local name, reducing path string manipulations to $O(N)$.
+
+## 2024-10-04 - Optimize ReadOnlySpan path segment parsing
+**Learning:** In C# (.NET 10.0+), when refactoring `string.Split('/')` loops to use `ReadOnlySpan<char>` to eliminate string allocations, the native `.Split('/')` method yields an empty string `""` when a trailing slash is present.
+**Action:** A naive `while (!span.IsEmpty)` loop will incorrectly skip the final validation of an empty segment caused by a trailing slash because `span.IsEmpty` will be true after processing the last character. Instead, use an infinite loop `while (true)` and strictly rely on the `index == -1` returned by `IndexOf('/')` to branch, guarantee all trailing empty segments are processed, and safely `break`.
