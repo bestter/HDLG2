@@ -22,3 +22,12 @@
 **Coverage:** We needed to test the generic `catch (Exception ex)` block in `WordPropertyGetter.cs` without throwing an `IOException` or OpenXml-specific exception.
 
 **Result:** By passing a directory path to a `FileInfo` object and feeding it to a `FileStream`, the framework consistently throws an `UnauthorizedAccessException` (which inherits from `SystemException`, not `IOException`) on both Linux and Windows. This cleanly bypasses the specific `IOException` catch block and perfectly triggers the general exception fallback block, allowing for reliable testing without injecting internal test hooks or mocking un-mockable framework classes.
+
+## 2026-09-28 - [Add tests for Mp3PropertyGetter missing test cases]
+**What:** Missing tests for Mp3PropertyGetter null checks, generic exception handling, and corrupted file cases.
+**Coverage:**
+- ArgumentNullException for null FileInfo in GetFileProperties and IsSupportedFile.
+- General exception handling by passing a directory path to trigger UnauthorizedAccessException across all platforms without Unix-only permissions.
+- Handling of PossiblyCorrupt tags by generating a minimal M4A audio file with an oversized box header.
+**Result:** Increased line/branch coverage and reliability of Mp3PropertyGetter by confirming all error cases return EmptyProperties and log warnings/errors appropriately as defined in the contract.
+
