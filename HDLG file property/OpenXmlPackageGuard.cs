@@ -196,7 +196,6 @@ namespace HdlgFileProperty
                 {
                     break;
                 }
-
                 span = span.Slice(index + 1);
             }
 
