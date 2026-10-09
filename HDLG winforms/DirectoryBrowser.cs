@@ -53,6 +53,11 @@ namespace HDLG_winforms
 		/// </summary>
 		private readonly Dictionary<string, string> _xmlEncodedPropertyKeys = new( );
 
+		/// <summary>
+		/// Cache for JSON encoded property keys to avoid redundant UTF-8 transcoding overhead.
+		/// </summary>
+		private readonly Dictionary<string, JsonEncodedText> _jsonEncodedPropertyKeys = new( );
+
 		public DirectoryBrowser (ILogger log)
 		{
 			this.log = log ?? throw new ArgumentNullException( nameof( log ) );
@@ -839,14 +844,20 @@ namespace HDLG_winforms
 			writer.WriteEndObject( );
 		}
 
-		private static void WriteJsonProperty (Utf8JsonWriter writer, string key, IConvertible? value)
+		private void WriteJsonProperty (Utf8JsonWriter writer, string key, IConvertible? value)
 		{
 			if (string.IsNullOrWhiteSpace( key ) || value == null)
 			{
 				return;
 			}
 
-			writer.WritePropertyName( key );
+			if (!_jsonEncodedPropertyKeys.TryGetValue( key, out JsonEncodedText encodedKey ))
+			{
+				encodedKey = JsonEncodedText.Encode( key );
+				_jsonEncodedPropertyKeys [key] = encodedKey;
+			}
+
+			writer.WritePropertyName( encodedKey );
 			WriteJsonConvertibleValue( writer, value );
 		}
 
