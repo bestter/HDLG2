@@ -196,3 +196,7 @@
 ## 2026-08-30 - Prevent string allocations during OpenXML package path validation
 **Learning:** In C#, replacing allocation-heavy `string.Split()` and `string.Join()` calls with a zero-allocation `ReadOnlySpan<char>` loop reduces GC pressure. However, `string.Split()` produces an empty segment for trailing delimiters (e.g., `"folder/"` becomes `["folder", ""]`). A naive `while (!span.IsEmpty)` loop will incorrectly skip evaluating this final empty segment.
 **Action:** When refactoring `string.Split()` into a `ReadOnlySpan<char>` loop, use a `while (true)` loop and explicitly handle the `-1` index returned by `IndexOf` to guarantee all segments (including trailing empty ones) are processed and validated correctly.
+
+## 2026-09-02 - Eliminate redundant UTF-8 string transcoding overhead for JSON serialization
+**Learning:** When repeatedly serializing identical property names across many objects to JSON using `Utf8JsonWriter` in C#, using string keys directly causes redundant UTF-8 transcoding overhead for every property.
+**Action:** Use `JsonEncodedText.Encode(key)` once and cache the result (e.g., in a `Dictionary<string, JsonEncodedText>`) to eliminate the redundant UTF-8 string transcoding overhead. Pass the `JsonEncodedText` object to `Utf8JsonWriter.WritePropertyName`.
