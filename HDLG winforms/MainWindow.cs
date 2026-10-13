@@ -149,7 +149,8 @@ namespace HDLG_winforms
 				progressBar1.Style = ProgressBarStyle.Blocks;
 				progressBar1.Value = 100;
 				UpdateUIWithPerformance( perf );
-				OpenWithDefaultProgram( savePath );
+				// Let the export handler log launch failures and update the status bar.
+				OpenWithDefaultProgram( savePath, StartWithExplorer );
 			}
 			catch (InvalidOperationException ex) when (ex.Message.Contains( "security reasons", StringComparison.OrdinalIgnoreCase ))
 			{
