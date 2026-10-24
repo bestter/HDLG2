@@ -259,6 +259,7 @@ namespace HDLG_winforms
 			".exe", ".bat", ".cmd", ".ps1", ".ps1xml", ".psc1", ".psd1", ".vbs", ".vbe", ".vb", ".js", ".jse", ".py", ".pyw", ".sh", ".bash",
 			".wsf", ".wsh", ".ws", ".wsc", ".sct", ".scr", ".com", ".msi", ".msp", ".pif", ".hta", ".cpl",
 			".jar", ".jnlp", ".reg", ".lnk", ".msc", ".scf", ".shb", ".shs",
+			".ts", ".jsx", ".tsx",
 			// Native libraries and drivers (ShellExecute / rundll32 / registration vectors)
 			".dll", ".ocx", ".sys", ".drv",
 			// Setup, configuration, and deployment manifests
@@ -282,7 +283,7 @@ namespace HDLG_winforms
 			".mp4", ".avi", ".mkv", ".mov", ".wmv", ".webm", ".flv",
 			".html", ".htm", ".xml", ".json", ".yaml", ".yml", ".md", ".log",
 			".zip", ".rar", ".7z", ".tar", ".gz", ".bz2",
-			".cs", ".cpp", ".h", ".c", ".java", ".ts", ".jsx", ".tsx", ".css"
+			".cs", ".cpp", ".h", ".c", ".java", ".css"
 		};
 
 		/// <summary>
