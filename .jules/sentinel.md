@@ -177,3 +177,8 @@
 **Vulnerability:** The extensions `.ts`, `.jsx`, and `.tsx` were explicitly allowed in the `SafeExtensions` list. Opening these files on Windows via `Process.Start` can lead to unintended arbitrary code execution if a runtime (like Node.js, Bun, or Deno) is installed and registered to execute them.
 **Learning:** Similar to `.py` or `.ps1`, JavaScript/TypeScript extensions (`.ts`, `.jsx`, `.tsx`) are script extensions designed to execute arbitrary code. They should never be included in safe allowlists intended for standard documents, even if they are often considered "source code" in development contexts.
 **Prevention:** Always audit safe extension allowlists for script extensions. Explicitly classify script extensions as dangerous alongside binaries like `.exe` and other scripts like `.js` and `.py`.
+
+## 2026-10-25 - [Local Exception Handling for Security Executions]
+**Vulnerability:** In `OpenWithDefaultProgram(string)`, the catch block for `InvalidOperationException` only checked for "changed since you reviewed it", failing to catch exceptions with "security reasons" thrown by internal security checks for dangerous extensions.
+**Learning:** Security validations that result in thrown exceptions (e.g. for dangerous extensions) must be explicitly caught by the immediate UI caller. If unhandled, they bubble up to the global Windows Forms handler, leading to a crash or exposing technical details via a stack trace (CWE-209).
+**Prevention:** When calling functions that enforce security policies by throwing specific exceptions, the caller must ensure all variations of the exception's message filter are caught (or the exception is caught more generically locally) so that the application fails securely and provides localized user feedback.
