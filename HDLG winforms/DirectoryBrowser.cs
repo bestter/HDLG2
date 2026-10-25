@@ -54,7 +54,7 @@ namespace HDLG_winforms
 		private readonly Dictionary<string, string> _xmlEncodedPropertyKeys = new( );
 
 		/// <summary>
-		/// Cache for JSON encoded property keys to eliminate UTF-8 transcoding overhead.
+		/// Cache for JSON encoded property keys to avoid redundant UTF-8 transcoding overhead.
 		/// </summary>
 		private readonly Dictionary<string, JsonEncodedText> _jsonEncodedPropertyKeys = new( );
 
