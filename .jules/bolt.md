@@ -200,3 +200,7 @@
 ## 2026-09-04 - Cache JsonEncodedText for Utf8JsonWriter property keys
 **Learning:** Calling `Utf8JsonWriter.WritePropertyName(string)` repeatedly for identical property keys inside a hot loop (like a JSON export of thousands of files) causes redundant UTF-8 string transcoding overhead for every string. `Utf8JsonWriter` natively supports writing pre-encoded `JsonEncodedText`.
 **Action:** When repeatedly serializing identical property names across many objects to JSON, use `JsonEncodedText.Encode(key)` once and cache the result (e.g., in a dictionary) to eliminate redundant UTF-8 transcoding overhead.
+
+## 2024-10-25 - Avoid redundant Utf8 string transcoding in Utf8JsonWriter
+**Learning:** Using string literals like `writer.WriteString("Name", value)` or `writer.WritePropertyName("Files")` repeatedly across thousands of objects causes `Utf8JsonWriter` to transcode the same string to UTF-8 each time.
+**Action:** When writing fixed property names or keys frequently during JSON serialization in C#, declare them once as `static readonly JsonEncodedText` fields (e.g., `JsonEncodedText.Encode("Name")`) and pass the `JsonEncodedText` variable to `WriteString` or `WritePropertyName` to eliminate redundant transcoding overhead.
