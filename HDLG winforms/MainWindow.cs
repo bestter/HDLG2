@@ -256,7 +256,7 @@ namespace HDLG_winforms
 		private static readonly HashSet<string> DangerousExtensions = new( StringComparer.OrdinalIgnoreCase )
 		{
 			// Executables, scripts, and shell hosts
-			".exe", ".bat", ".cmd", ".ps1", ".ps1xml", ".psc1", ".psd1", ".vbs", ".vbe", ".vb", ".js", ".jse", ".ts", ".jsx", ".tsx", ".py", ".pyw", ".sh", ".bash",
+			".exe", ".bat", ".cmd", ".ps1", ".ps1xml", ".psc1", ".psd1", ".vbs", ".vbe", ".vb", ".js", ".jse", ".mjs", ".cjs", ".ts", ".jsx", ".tsx", ".py", ".pyw", ".sh", ".bash",
 			".wsf", ".wsh", ".ws", ".wsc", ".sct", ".scr", ".com", ".msi", ".msp", ".pif", ".hta", ".cpl",
 			".jar", ".jnlp", ".reg", ".lnk", ".msc", ".scf", ".shb", ".shs",
 			// Native libraries and drivers (ShellExecute / rundll32 / registration vectors)
