@@ -125,6 +125,19 @@ namespace HDLG.Tests
             }
         }
 
+        [Fact]
+        public void WordPropertyGetter_IsSupportedFile_NullFileInfo_ReturnsFalse()
+        {
+            // Arrange
+            var getter = new WordPropertyGetter();
+
+            // Act
+            var result = getter.IsSupportedFile(null!);
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
         [Theory]
         [InlineData("test.doc", false)]
         [InlineData("test.docx", true)]
