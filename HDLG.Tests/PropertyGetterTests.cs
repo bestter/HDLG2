@@ -112,9 +112,18 @@ namespace HDLG.Tests
             // Arrange
             var getter = new ImagePropertyGetter();
             getter.AddLogger(loggerMock.Object);
-            var tempFile = Path.GetTempFileName() + ".jpg";
+
+            // Fix temp file leak: GetTempFileName creates an empty file.
+            // We need a .jpg extension for the getter to process it.
+            var baseTempFile = Path.GetTempFileName();
+            var tempFile = baseTempFile + ".jpg";
             try
             {
+                if (File.Exists(baseTempFile))
+                {
+                    File.Delete(baseTempFile);
+                }
+
                 using (var stream = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
                     stream.SetLength(FilePropertyLimits.MaxFileSizeBytes + 1);
