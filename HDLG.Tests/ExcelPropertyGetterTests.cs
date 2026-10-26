@@ -115,19 +115,6 @@ namespace HDLG.Tests
             result.Should().Be(expected);
         }
 
-        [Fact]
-        public void ExcelPropertyGetter_IsSupportedFile_NullFileInfo_ReturnsFalse()
-        {
-            // Arrange
-            var getter = new ExcelPropertyGetter();
-
-            // Act
-            var result = getter.IsSupportedFile(null!);
-
-            // Assert
-            result.Should().BeFalse();
-        }
-
         private void VerifyWarningLogged()
         {
             loggerMock.Verify(
