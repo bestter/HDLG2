@@ -192,6 +192,24 @@ namespace HDLG.Tests
         }
 
         [Fact]
+        public async Task DirectoriesCount_ReturnsExpectedCount()
+        {
+            // Arrange
+            var subDir1 = Path.Combine(baseDirectoryPath, "SubDir1");
+            var subDir2 = Path.Combine(baseDirectoryPath, "SubDir2");
+            System.IO.Directory.CreateDirectory(subDir1);
+            System.IO.Directory.CreateDirectory(subDir2);
+
+            var hdlgDirectory = new HdlgDirectory(baseDirectoryPath, true, true, loggerMock.Object);
+
+            // Act
+            await hdlgDirectory.BrowseAsync(propertyBrowser);
+
+            // Assert
+            hdlgDirectory.DirectoriesCount.Should().Be(2);
+        }
+
+        [Fact]
         public async Task Browse_WithSubdirectories_DiscoversAllFilesAndSubdirectories()
         {
             // Arrange
