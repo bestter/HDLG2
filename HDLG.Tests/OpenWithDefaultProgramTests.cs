@@ -22,6 +22,33 @@ namespace HDLG.Tests
                 System.IO.Directory.Delete(tempDir, true);
         }
 
+        [Theory]
+        [InlineData(".xml")]
+        [InlineData(".html")]
+        [InlineData(".json")]
+        public void OpenWithDefaultProgram_LaunchFailure_PreservesNativeExceptionForExportHandler(string extension)
+        {
+            string path = Path.Combine(tempDir, "export" + extension);
+            File.WriteAllText(path, "test export");
+            var expected = new System.ComponentModel.Win32Exception(5, "Launch denied");
+            bool confirmed = false;
+
+            Action act = () => MainWindow.OpenWithDefaultProgram(path, target =>
+            {
+                confirmed.Should().BeTrue();
+                target.Should().Be(path);
+                throw expected;
+            }, _ =>
+            {
+                confirmed = true;
+                return true;
+            });
+
+            var exception = act.Should().Throw<System.ComponentModel.Win32Exception>().Which;
+            exception.Should().BeSameAs(expected);
+            exception.NativeErrorCode.Should().Be(5);
+        }
+
         [Fact]
         public void OpenWithDefaultProgram_NullPath_ThrowsArgumentException()
         {
@@ -71,6 +98,11 @@ namespace HDLG.Tests
         [InlineData(".msc")]
         [InlineData(".vbe")]
         [InlineData(".jse")]
+        [InlineData(".mjs")]
+        [InlineData(".cjs")]
+        [InlineData(".ts")]
+        [InlineData(".jsx")]
+        [InlineData(".tsx")]
         [InlineData(".scf")]
         [InlineData(".ws")]
         [InlineData(".wsh")]

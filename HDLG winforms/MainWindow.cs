@@ -149,7 +149,8 @@ namespace HDLG_winforms
 				progressBar1.Style = ProgressBarStyle.Blocks;
 				progressBar1.Value = 100;
 				UpdateUIWithPerformance( perf );
-				OpenWithDefaultProgram( savePath );
+				// Let the export handler log launch failures and update the status bar.
+				OpenWithDefaultProgram( savePath, StartWithExplorer );
 			}
 			catch (InvalidOperationException ex) when (ex.Message.Contains( "security reasons", StringComparison.OrdinalIgnoreCase ))
 			{
@@ -255,7 +256,7 @@ namespace HDLG_winforms
 		private static readonly HashSet<string> DangerousExtensions = new( StringComparer.OrdinalIgnoreCase )
 		{
 			// Executables, scripts, and shell hosts
-			".exe", ".bat", ".cmd", ".ps1", ".ps1xml", ".psc1", ".psd1", ".vbs", ".vbe", ".vb", ".js", ".jse", ".py", ".pyw", ".sh", ".bash",
+			".exe", ".bat", ".cmd", ".ps1", ".ps1xml", ".psc1", ".psd1", ".vbs", ".vbe", ".vb", ".js", ".jse", ".mjs", ".cjs", ".ts", ".jsx", ".tsx", ".py", ".pyw", ".sh", ".bash",
 			".wsf", ".wsh", ".ws", ".wsc", ".sct", ".scr", ".com", ".msi", ".msp", ".pif", ".hta", ".cpl",
 			".jar", ".jnlp", ".reg", ".lnk", ".msc", ".scf", ".shb", ".shs",
 			// Native libraries and drivers (ShellExecute / rundll32 / registration vectors)
@@ -281,7 +282,7 @@ namespace HDLG_winforms
 			".mp4", ".avi", ".mkv", ".mov", ".wmv", ".webm", ".flv",
 			".html", ".htm", ".xml", ".json", ".yaml", ".yml", ".md", ".log",
 			".zip", ".rar", ".7z", ".tar", ".gz", ".bz2",
-			".cs", ".cpp", ".h", ".c", ".java", ".ts", ".jsx", ".tsx", ".css"
+			".cs", ".cpp", ".h", ".c", ".java", ".css"
 		};
 
 		/// <summary>
@@ -306,6 +307,10 @@ namespace HDLG_winforms
 			{
 				MessageBox.Show( ex.Message, "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
 			}
+			catch (System.ComponentModel.Win32Exception)
+			{
+				MessageBox.Show( "Could not open the file. It might not have an associated application.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+			}
 		}
 
 		private static void StartWithExplorer (string argument)
@@ -328,11 +333,18 @@ namespace HDLG_winforms
 		/// <exception cref="InvalidOperationException">Thrown when the URI is not an absolute http/https URL</exception>
 		public static void OpenUrlSafe (Uri uri)
 		{
-			OpenUrlSafe( uri, StartWithExplorer, absoluteUri =>
+			try
 			{
-				DialogResult res = MessageBox.Show( $"You are about to open an external website:\n\n{absoluteUri}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
-				return res == DialogResult.Yes;
-			} );
+				OpenUrlSafe( uri, StartWithExplorer, absoluteUri =>
+				{
+					DialogResult res = MessageBox.Show( $"You are about to open an external website:\n\n{absoluteUri}\n\nAre you sure you want to continue?", "Security Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning );
+					return res == DialogResult.Yes;
+				} );
+			}
+			catch (System.ComponentModel.Win32Exception)
+			{
+				MessageBox.Show( "Could not open the link. It might not have an associated application.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+			}
 		}
 
 		/// <summary>
