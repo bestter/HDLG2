@@ -83,6 +83,21 @@ namespace HDLG.Tests
             result.Should().Be(expected);
         }
 
+        [Fact]
+        public void PdfPropertyGetter_IsSupportedFile_NullFileInfo_ReturnsFalse()
+        {
+            // Arrange
+            var getter = new PdfPropertyGetter();
+
+            // Act
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+            var result = getter.IsSupportedFile(null);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
 
         [Fact]
         public void ImagePropertyGetter_GetFileProperties_OversizedDimension_ReturnsEmptyAndLogsWarning()
