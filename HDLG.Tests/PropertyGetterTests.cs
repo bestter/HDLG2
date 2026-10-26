@@ -50,6 +50,19 @@ namespace HDLG.Tests
             Assert.Throws<ArgumentNullException>(() => getter.AddLogger(null!));
         }
 
+        [Fact]
+        public void ImagePropertyGetter_IsSupportedFile_NullFileInfo_ReturnsFalse()
+        {
+            // Arrange
+            var getter = new ImagePropertyGetter();
+
+            // Act
+            bool result = getter.IsSupportedFile(null!);
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
         [Theory]
         [InlineData("test.jpg", true)]
         [InlineData("test.png", true)]
