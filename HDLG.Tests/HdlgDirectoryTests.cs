@@ -401,53 +401,19 @@ namespace HDLG.Tests
             var restrictedDirPath = Path.Combine(baseDirectoryPath, "RestrictedDirNoSub");
             System.IO.Directory.CreateDirectory(restrictedDirPath);
 
-            try
-            {
-                if (OperatingSystem.IsWindows())
-                {
-                    var di = new DirectoryInfo(restrictedDirPath);
-                    var ds = di.GetAccessControl();
-                    ds.AddAccessRule(new System.Security.AccessControl.FileSystemAccessRule(
-                        Environment.UserName,
-                        System.Security.AccessControl.FileSystemRights.ReadData,
-                        System.Security.AccessControl.AccessControlType.Deny));
-                    di.SetAccessControl(ds);
-                }
-                else
-                {
-                    System.IO.File.SetUnixFileMode(restrictedDirPath, System.IO.UnixFileMode.None);
-                }
+            var hdlgDirectory = new HdlgDirectory(restrictedDirPath, true, false, loggerMock.Object);
+            hdlgDirectory._enumerateFilesHook = () => throw new UnauthorizedAccessException("Simulated UnauthorizedAccessException");
 
-                var hdlgDirectory = new HdlgDirectory(restrictedDirPath, true, false, loggerMock.Object);
+            // Act
+            await hdlgDirectory.BrowseAsync(propertyBrowser);
 
-                // Act
-                await hdlgDirectory.BrowseAsync(propertyBrowser);
-
-                // Assert
-                loggerMock.Verify(
-                    l => l.Warning(
-                        It.IsAny<UnauthorizedAccessException>(),
-                        "Access denied to directory: {Path}",
-                        restrictedDirPath),
-                    Times.Once);
-            }
-            finally
-            {
-                if (OperatingSystem.IsWindows())
-                {
-                    var di = new DirectoryInfo(restrictedDirPath);
-                    var ds = di.GetAccessControl();
-                    ds.RemoveAccessRule(new System.Security.AccessControl.FileSystemAccessRule(
-                        Environment.UserName,
-                        System.Security.AccessControl.FileSystemRights.ReadData,
-                        System.Security.AccessControl.AccessControlType.Deny));
-                    di.SetAccessControl(ds);
-                }
-                else
-                {
-                    System.IO.File.SetUnixFileMode(restrictedDirPath, System.IO.UnixFileMode.UserRead | System.IO.UnixFileMode.UserWrite | System.IO.UnixFileMode.UserExecute);
-                }
-            }
+            // Assert
+            loggerMock.Verify(
+                l => l.Warning(
+                    It.IsAny<UnauthorizedAccessException>(),
+                    "Access denied to directory: {Path}",
+                    restrictedDirPath),
+                Times.Once);
         }
 
 
@@ -502,53 +468,19 @@ namespace HDLG.Tests
             var restrictedDirPath = Path.Combine(baseDirectoryPath, "RestrictedDir");
             System.IO.Directory.CreateDirectory(restrictedDirPath);
 
-            try
-            {
-                if (OperatingSystem.IsWindows())
-                {
-                    var di = new DirectoryInfo(restrictedDirPath);
-                    var ds = di.GetAccessControl();
-                    ds.AddAccessRule(new System.Security.AccessControl.FileSystemAccessRule(
-                        Environment.UserName,
-                        System.Security.AccessControl.FileSystemRights.ReadData,
-                        System.Security.AccessControl.AccessControlType.Deny));
-                    di.SetAccessControl(ds);
-                }
-                else
-                {
-                    System.IO.File.SetUnixFileMode(restrictedDirPath, System.IO.UnixFileMode.None);
-                }
+            var hdlgDirectory = new HdlgDirectory(restrictedDirPath, true, true, loggerMock.Object);
+            hdlgDirectory._enumerateFileSystemInfosHook = () => throw new UnauthorizedAccessException("Simulated UnauthorizedAccessException");
 
-                var hdlgDirectory = new HdlgDirectory(restrictedDirPath, true, true, loggerMock.Object);
+            // Act
+            await hdlgDirectory.BrowseAsync(propertyBrowser);
 
-                // Act
-                await hdlgDirectory.BrowseAsync(propertyBrowser);
-
-                // Assert
-                loggerMock.Verify(
-                    l => l.Warning(
-                        It.IsAny<UnauthorizedAccessException>(),
-                        "Access denied to directory: {Path}",
-                        restrictedDirPath),
-                    Times.Once);
-            }
-            finally
-            {
-                if (OperatingSystem.IsWindows())
-                {
-                    var di = new DirectoryInfo(restrictedDirPath);
-                    var ds = di.GetAccessControl();
-                    ds.RemoveAccessRule(new System.Security.AccessControl.FileSystemAccessRule(
-                        Environment.UserName,
-                        System.Security.AccessControl.FileSystemRights.ReadData,
-                        System.Security.AccessControl.AccessControlType.Deny));
-                    di.SetAccessControl(ds);
-                }
-                else
-                {
-                    System.IO.File.SetUnixFileMode(restrictedDirPath, System.IO.UnixFileMode.UserRead | System.IO.UnixFileMode.UserWrite | System.IO.UnixFileMode.UserExecute);
-                }
-            }
+            // Assert
+            loggerMock.Verify(
+                l => l.Warning(
+                    It.IsAny<UnauthorizedAccessException>(),
+                    "Access denied to directory: {Path}",
+                    restrictedDirPath),
+                Times.Once);
         }
 
 
