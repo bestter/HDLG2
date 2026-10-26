@@ -58,6 +58,7 @@ namespace HDLG_winforms
 		/// </summary>
 		private readonly Dictionary<string, JsonEncodedText> _jsonEncodedPropertyKeys = new( );
 
+		// Performance optimization: Pre-encode static JSON keys to avoid redundant UTF-8 transcoding overhead on every single file/dir node.
 		private static readonly JsonEncodedText JsonKeyVersion = JsonEncodedText.Encode( "Version" );
 		private static readonly JsonEncodedText JsonKeyDirectory = JsonEncodedText.Encode( "Directory" );
 		private static readonly JsonEncodedText JsonKeyDateTime = JsonEncodedText.Encode( "DateTime" );

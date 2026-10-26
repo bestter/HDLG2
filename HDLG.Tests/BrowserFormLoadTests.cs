@@ -196,23 +196,16 @@ namespace HDLG.Tests
                     string restrictedDirPath = Path.Combine(tempDir, "RestrictedDir");
                     System.IO.Directory.CreateDirectory(restrictedDirPath);
 
-                    if (OperatingSystem.IsWindows())
-                    {
-                        var di = new DirectoryInfo(restrictedDirPath);
-                        var ds = di.GetAccessControl();
-                        ds.AddAccessRule(new System.Security.AccessControl.FileSystemAccessRule(
-                            Environment.UserName,
-                            System.Security.AccessControl.FileSystemRights.ReadData,
-                            System.Security.AccessControl.AccessControlType.Deny));
-                        di.SetAccessControl(ds);
-                    }
-                    else
-                    {
-                        System.IO.File.SetUnixFileMode(restrictedDirPath, System.IO.UnixFileMode.None);
-                    }
-
                     var propBrowser = new FilePropertyBrowser(mockLogger.Object, new ImagePropertyGetter());
                     using var form = new BrowserForm(tempDir, propBrowser, mockLogger.Object, _ => { });
+                    form._getFileSystemInfosHook = path =>
+                    {
+                        if (string.Equals(path, restrictedDirPath, StringComparison.OrdinalIgnoreCase))
+                        {
+                            throw new UnauthorizedAccessException("Simulated unauthorized access to " + path);
+                        }
+                        return new DirectoryInfo(path).GetFileSystemInfos();
+                    };
 
                     // Native handles required so Expand raises BeforeExpand.
                     _ = form.Handle;
@@ -274,25 +267,6 @@ namespace HDLG.Tests
                 {
                     if (System.IO.Directory.Exists(tempDir))
                     {
-                        // Remove access restrictions so the directory can be deleted
-                        string restrictedDirPath = Path.Combine(tempDir, "RestrictedDir");
-                        if (System.IO.Directory.Exists(restrictedDirPath))
-                        {
-                            if (OperatingSystem.IsWindows())
-                            {
-                                var di = new DirectoryInfo(restrictedDirPath);
-                                var ds = di.GetAccessControl();
-                                ds.RemoveAccessRule(new System.Security.AccessControl.FileSystemAccessRule(
-                                    Environment.UserName,
-                                    System.Security.AccessControl.FileSystemRights.ReadData,
-                                    System.Security.AccessControl.AccessControlType.Deny));
-                                di.SetAccessControl(ds);
-                            }
-                            else
-                            {
-                                System.IO.File.SetUnixFileMode(restrictedDirPath, System.IO.UnixFileMode.UserRead | System.IO.UnixFileMode.UserWrite | System.IO.UnixFileMode.UserExecute);
-                            }
-                        }
                         System.IO.Directory.Delete(tempDir, true);
                     }
                 }

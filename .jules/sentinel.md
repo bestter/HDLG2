@@ -172,3 +172,8 @@
 **Vulnerability:** Maliciously crafted Word or Excel packages can expand structural or core-property parts far beyond their compressed size, and oversized package properties can consume excessive memory.
 **Learning:** `OpenSettings.MaxCharactersInPart` does not protect `OpenXmlPackage.PackageProperties`. Title, Creator, and Created are read from the core-properties part directly, so the document is never opened.
 **Prevention:** Bound the physical package size, entry count, the decompressed root relationships part, the decompressed core-properties part, and each metadata value. Resolve the core-properties target inside the package and reject external or parent-segment targets before inflating them. Prohibit DTD processing, disable external XML resolution, and report malformed XML as `InvalidDataException`.
+
+## 2026-10-22 - [Prevent Process Injection via Script Execution for JS/TS]
+**Vulnerability:** The extensions `.ts`, `.jsx`, and `.tsx` were explicitly allowed in the `SafeExtensions` list. Opening these files on Windows via `Process.Start` can lead to unintended arbitrary code execution if a runtime (like Node.js, Bun, or Deno) is installed and registered to execute them.
+**Learning:** Similar to `.py` or `.ps1`, JavaScript/TypeScript extensions (`.ts`, `.jsx`, `.tsx`) are script extensions designed to execute arbitrary code. They should never be included in safe allowlists intended for standard documents, even if they are often considered "source code" in development contexts.
+**Prevention:** Always audit safe extension allowlists for script extensions. Explicitly classify script extensions as dangerous alongside binaries like `.exe` and other scripts like `.js` and `.py`.
