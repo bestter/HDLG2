@@ -303,7 +303,7 @@ namespace HDLG_winforms
 					return res == DialogResult.Yes;
 				} );
 			}
-			catch (InvalidOperationException ex) when (ex.Message.Contains( "changed since you reviewed it", StringComparison.Ordinal ))
+			catch (InvalidOperationException ex) when (ex.Message.Contains( "changed since you reviewed it", StringComparison.Ordinal ) || ex.Message.Contains( "security reasons", StringComparison.OrdinalIgnoreCase ))
 			{
 				MessageBox.Show( ex.Message, "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
 			}
