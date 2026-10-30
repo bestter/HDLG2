@@ -37,7 +37,7 @@ namespace HDLG_winforms
 			{
 				MainWindow.OpenUrlSafe( GplLicenseUri );
 			}
-			catch (InvalidOperationException ex) when (ex.Message.Contains( "security reasons", StringComparison.OrdinalIgnoreCase ))
+			catch (InvalidOperationException ex) when (ex.Message.Contains( "security reasons", StringComparison.OrdinalIgnoreCase ) || ex.Message.Contains( "changed since you reviewed it", StringComparison.OrdinalIgnoreCase ))
 			{
 				MessageBox.Show( this, ex.Message, "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
 			}
