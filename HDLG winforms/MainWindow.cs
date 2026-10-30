@@ -152,7 +152,7 @@ namespace HDLG_winforms
 				// Let the export handler log launch failures and update the status bar.
 				OpenWithDefaultProgram( savePath, StartWithExplorer );
 			}
-			catch (InvalidOperationException ex) when (ex.Message.Contains( "security reasons", StringComparison.OrdinalIgnoreCase ))
+			catch (InvalidOperationException ex) when (ex.Message.Contains( "security reasons", StringComparison.OrdinalIgnoreCase ) || ex.Message.Contains( "changed since you reviewed it", StringComparison.OrdinalIgnoreCase ))
 			{
 				toolStripStatusLabelException.Text = "Security block";
 				Logger.Warning( ex, "Security block in {MethodName}", nameof( RunExportAsync ) );
@@ -303,7 +303,7 @@ namespace HDLG_winforms
 					return res == DialogResult.Yes;
 				} );
 			}
-			catch (InvalidOperationException ex) when (ex.Message.Contains( "changed since you reviewed it", StringComparison.Ordinal ))
+			catch (InvalidOperationException ex) when (ex.Message.Contains( "changed since you reviewed it", StringComparison.OrdinalIgnoreCase ) || ex.Message.Contains( "security reasons", StringComparison.OrdinalIgnoreCase ))
 			{
 				MessageBox.Show( ex.Message, "Security Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning );
 			}
