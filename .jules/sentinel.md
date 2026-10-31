@@ -177,3 +177,8 @@
 **Vulnerability:** The extensions `.ts`, `.jsx`, and `.tsx` were explicitly allowed in the `SafeExtensions` list. Opening these files on Windows via `Process.Start` can lead to unintended arbitrary code execution if a runtime (like Node.js, Bun, or Deno) is installed and registered to execute them.
 **Learning:** Similar to `.py` or `.ps1`, JavaScript/TypeScript extensions (`.ts`, `.jsx`, `.tsx`) are script extensions designed to execute arbitrary code. They should never be included in safe allowlists intended for standard documents, even if they are often considered "source code" in development contexts.
 **Prevention:** Always audit safe extension allowlists for script extensions. Explicitly classify script extensions as dangerous alongside binaries like `.exe` and other scripts like `.js` and `.py`.
+
+## 2026-10-31 - [Prevent Local Security Catch Bypasses for InvalidOperationException]
+**Vulnerability:** UI handlers catching `InvalidOperationException` were only filtering for one of the security block reasons (e.g. only "security reasons" or only "changed since you reviewed it"), meaning unhandled variations would bypass the local block and crash the global application handler.
+**Learning:** When using exception filters (`when (ex.Message.Contains(...))`) in C# UI handlers to catch and display security blocks, ensure all relevant rejection messages are included in the filter using logical OR (`||`).
+**Prevention:** Unhandled variations bypass local catch blocks and cause application-wide crashes. Always use `|| ex.Message.Contains("changed since you reviewed it")` along with "security reasons".
