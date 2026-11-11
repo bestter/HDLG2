@@ -177,3 +177,7 @@
 **Vulnerability:** The extensions `.ts`, `.jsx`, and `.tsx` were explicitly allowed in the `SafeExtensions` list. Opening these files on Windows via `Process.Start` can lead to unintended arbitrary code execution if a runtime (like Node.js, Bun, or Deno) is installed and registered to execute them.
 **Learning:** Similar to `.py` or `.ps1`, JavaScript/TypeScript extensions (`.ts`, `.jsx`, `.tsx`) are script extensions designed to execute arbitrary code. They should never be included in safe allowlists intended for standard documents, even if they are often considered "source code" in development contexts.
 **Prevention:** Always audit safe extension allowlists for script extensions. Explicitly classify script extensions as dangerous alongside binaries like `.exe` and other scripts like `.js` and `.py`.
+## 2026-08-30 - Prevent Unhandled Security Exceptions in UI Event Handlers
+**Vulnerability:** UI event handlers matching only "security reasons" failed to catch "changed since you reviewed it" rejections from `MainWindow.OpenWithDefaultProgram`, causing application-wide unhandled exceptions.
+**Learning:** Exception filters must explicitly list all possible rejection messages or use a base security exception type to avoid missing cases.
+**Prevention:** When using message-based exception filters (`when (ex.Message.Contains(...))`) for security rejections, ensure all relevant variations are combined using logical OR (`||`).
